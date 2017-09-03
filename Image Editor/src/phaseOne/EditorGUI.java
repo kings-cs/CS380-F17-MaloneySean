@@ -1,16 +1,334 @@
 package phaseOne;
 
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+
+import javax.imageio.ImageIO;
+import javax.swing.JButton;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JToolBar;
 
 /**
  * Main GUI window used in an Image Editor application that will allow the user to perform various modifications on a displayed image.
  * @author Sean Maloney
  */
 public class EditorGUI extends JFrame{
-
+	
 	/**
 	 * Generated Serial ID.
 	 */
 	private static final long serialVersionUID = 7320549510928224667L;
+	
+	/**
+	 * Menu Item used to open the file dialog.
+	 */
+	private JMenuItem file;
+	
+	/**
+	 * Menu Item that can be used to exit the program.
+	 */
+	private JMenuItem exit;
+	
+	/**
+	 * Menu Item used to open image files.
+	 */
+	private JMenuItem open;
+	
+	/**
+	 * Menu Item used to close the currently open image.
+	 */
+	private JMenuItem close;
+	
+	/**
+	 * Menu Item used to save the image currently being edited.
+	 */
+	private JMenuItem save;
+	
+	/**
+	 * Menu Item used to save the image currently being edited to a new destination.
+	 */
+	private JMenuItem saveAs;
+	
+	/**
+	 * The Pane that will be used to display the image being modified.
+	 */
+	private JScrollPane display;
+	
+	/**
+	 * Tool bar used to perform various functions on the displayed image.
+	 */
+	private JToolBar toolBar;
+	
+	/**
+	 * Button used to convert the current image to be in Gray Scale.
+	 */
+	private JButton grayScale;
+	
+	/**
+	 * JPanel used to display an image.
+	 */
+	private JPanel canvas;
+	
+	/**
+	 * The image being displayed currently.
+	 */
+	private BufferedImage image;
+	
+	/**
+	 * The path for the most recently opened image.
+	 */
+	private String currentFilePath;
+	
+	/**
+	 * Constructor for the GUI.
+	 */
+	public EditorGUI() {
+		WindowAdapter wc = new WindowClosing();
+		ActionListener  ae = new ActionEvents();
+		
+		this.setLayout(new BorderLayout());
+		
+		JMenuBar menuBar = new JMenuBar();
+		file = new JMenu("File");
+		exit = new JMenuItem("Exit");
+		open = new JMenuItem("Open");
+		close = new JMenuItem("Close");
+		save = new JMenuItem("Save");
+		saveAs = new JMenuItem("Save As...");
+		
+		
+		menuBar.add(file);
+		file.add(exit);
+		file.add(open);
+		file.add(close);
+		file.add(save);
+		this.setJMenuBar(menuBar);
+		
+		toolBar = new JToolBar("Tool Bar");
+		toolBar.setFloatable(true);
+		
+		
+		//TODO: Come back to this section later to make buttons look better
+		grayScale = new JButton("Gray Scale");
+	
+		
+	
+		
+		//***************Image Displaying Starts Here**********
+		paintImage("Images//crop.png");
 
+		
+		
+		
+		
+		toolBar.add(grayScale);
+		this.add(toolBar, BorderLayout.NORTH);
+		
+		
+
+		
+		//****************Adding Listeners********************************
+		grayScale.addActionListener(ae);
+		exit.addActionListener(ae);
+		open.addActionListener(ae);
+		close.addActionListener(ae);
+		save.addActionListener(ae);
+		saveAs.addActionListener(ae);
+		
+		this.addWindowListener(wc);
+	}
+	
+	/**
+	 * Paint the image at the file path onto the GUI.
+	 * @param filePath The file path of the image.
+	 */
+	private void paintImage(String filePath) {
+		File currentPicture = new File(filePath);
+		BufferedImage ri = null;
+		try {
+			ri = ImageIO.read(currentPicture);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		image = new BufferedImage(ri.getWidth(), ri.getHeight(),
+				BufferedImage.TYPE_INT_ARGB);
+		Graphics g = image.getGraphics();
+		g.drawImage(ri, 0, 0, null);
+		
+	
+		canvas = new JPanel() {
+			/**
+			 * Serial ID.
+			 */
+			private static final long serialVersionUID = 1L;
+
+			@Override
+			public void paintComponent(Graphics g) {
+				super.paintComponent(g);
+				if(image != null) {
+					g.drawImage(image, 0, 0, this);
+				}
+			}
+		};
+		
+		canvas.setPreferredSize(new Dimension(image.getWidth(), image.getHeight()));
+		
+		//****************GUI Sizing********************************
+		int width = (int) (image.getWidth() + 150);
+		int height = (int) (image.getHeight() + 150);
+		
+		
+		int systemWidth = java.awt.GraphicsEnvironment.getLocalGraphicsEnvironment().getMaximumWindowBounds().width;
+		int systemHeight = java.awt.GraphicsEnvironment.getLocalGraphicsEnvironment().getMaximumWindowBounds().height;
+		
+		
+		if(width > systemWidth) {
+			width = systemWidth;
+		}
+		if(height > systemHeight) {
+			height = systemHeight;
+		}
+		
+		this.setSize(new Dimension(width, height));		
+		
+		if(display != null) {
+			display.setVisible(false);
+		}
+		
+		display = new JScrollPane(canvas);	
+		
+		
+		this.add(display, BorderLayout.CENTER);
+		
+		currentFilePath = filePath;
+	}
+	
+	/**
+	 * Private helper method used to save the image currently being edited. 
+	 * @param filePath The destination for the image.
+	 */
+	private void save(String filePath){
+		File outputFile = new File(filePath);
+		try {
+			ImageIO.write(image, "png", outputFile);
+		} catch (IOException e) {
+			JOptionPane.showMessageDialog(null, "The Location To Save The Image To Was Invalid", "Oops", 
+					JOptionPane.ERROR_MESSAGE);
+		}
+	}
+	
+	/**
+	 * Private helper method used to close the program.
+	 */
+	private void exit() {
+		setVisible(false);
+		System.exit(0);
+	}
+	
+	/**
+	 * Private inner class used to listen for Action Events such as button clicks.
+	 * @author Sean Maloney
+	 */
+	private class ActionEvents implements ActionListener {
+		
+		/**
+		 * Performs the appropriate action for a certain button press.
+		 */
+		@Override
+		public void actionPerformed(ActionEvent action) {
+			if(action.getSource() == exit) {
+				exit();
+			}
+			else if(action.getSource() == open) {
+				JFileChooser fileChooser = new JFileChooser();
+				int result = fileChooser.showOpenDialog(null);
+				
+				if(result == JFileChooser.APPROVE_OPTION){
+					String filePath = fileChooser.getSelectedFile().getPath();
+					
+					//TODO: Do something here with file types
+					
+					paintImage(filePath);
+					
+				}
+				else{
+					JOptionPane.showMessageDialog(null, "Image Location Not Properly Selected", "Oops", 
+							JOptionPane.ERROR_MESSAGE);
+				}
+			}
+			else if(action.getSource() == close) {
+				paintImage("Images//crop.png");
+			}
+			else if(action.getSource() == save) {
+				save(currentFilePath);
+			}
+			else if(action.getSource() == saveAs) {
+				JFileChooser fileChooser = new JFileChooser();
+				int result = fileChooser.showOpenDialog(null);
+				
+				if(result == JFileChooser.APPROVE_OPTION){
+					String filePath = fileChooser.getSelectedFile().getPath();
+					
+					
+					save(filePath);
+				}
+				else{
+					JOptionPane.showMessageDialog(null, "Image Location Not Properly Selected", "Oops", 
+							JOptionPane.ERROR_MESSAGE);
+				}
+			}
+			else if(action.getSource() == grayScale) {
+				paintImage("Images//crop blue.png");
+			}
+		}
+	}
+	
+	/**
+	 * The window closing listener that tells the GUI what to do upon exit.
+	 * 
+	 * @author Sean Maloney
+	 */
+	private class WindowClosing extends WindowAdapter {
+		
+		/**
+		 * Closes the Frame when it is done being used.
+		 */
+		
+		@Override
+		public void windowClosing(WindowEvent arg0) {
+			exit();
+		}
+		
+	}
+	
+	
+	/**
+	 * The main method for running the GUI.
+	 * 
+	 * @param args Not Used.
+	 */
+	public static void main(String[] args) {
+		EditorGUI mainFrame = new EditorGUI();
+		mainFrame.setTitle("Oh Crop");
+		//TODO: Modify this to be based off a percentage of the size of the system's screen
+		//mainFrame.setSize(1000, 1000);
+		mainFrame.setVisible(true);
+	}
 }
