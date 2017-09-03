@@ -230,6 +230,7 @@ public class EditorGUI extends JFrame{
 		
 		
 		this.add(display, BorderLayout.CENTER);
+		revalidate();
 	}
 
 	

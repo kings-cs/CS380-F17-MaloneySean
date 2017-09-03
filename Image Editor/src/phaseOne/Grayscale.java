@@ -27,7 +27,7 @@ public class Grayscale extends ImageAlgorithm{
 				int index = row * width + col;
 				
 				int pixel = sourceData[index];
-				System.out.println(pixel);
+				//System.out.println(pixel);
 				
 				//**************Gray Scale Specific Implementation begins here********
 				
@@ -37,14 +37,17 @@ public class Grayscale extends ImageAlgorithm{
 				int green = (pixel & GREEN_MASK) >> GREEN_OFFSET;
 				int blue = (pixel & BLUE_MASK) >> BLUE_OFFSET;
 				
-				int newRed = (int) (red * 0.299);
-				int newGreen = (int) (green * 0.587);
-				int newBlue = (int) (blue * 0.114);
+				int gray = (int) ((red * 0.299) + (green * 0.587) + (blue * 0.114));
+				
+				int newRed = gray;
+				int newGreen = gray;
+				int newBlue = gray;
 				
 				int grayPixel = (alpha << ALPHA_OFFSET) | (newRed << RED_OFFSET) |
 						(newGreen << GREEN_OFFSET) | (newBlue << BLUE_OFFSET);
 				
-				//int grayPixel = (int) ((red * 0.299) + (green * 0.587) + (blue * 0.114));
+				
+				
 				//System.out.println(grayPixel);
 				
 				resultData[index] = grayPixel;
