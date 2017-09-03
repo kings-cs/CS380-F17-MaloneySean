@@ -314,7 +314,16 @@ public class EditorGUI extends JFrame{
 			}
 			else if(action.getSource() == grayScale) {
 				//paintImage(getImageFromFile("Images//crop blue.png"));
+				
+				long startTime = System.nanoTime();
 				BufferedImage gray = Grayscale.grayScale(image);
+				long endTime = System.nanoTime();
+				
+				long timeTaken = endTime - startTime;
+				
+				double miliSeconds = timeTaken / 1000000.0;
+				JOptionPane.showMessageDialog(null, "Time Taken: " + miliSeconds + " (ms)");
+				
 				paintImage(gray);
 			}
 		}
