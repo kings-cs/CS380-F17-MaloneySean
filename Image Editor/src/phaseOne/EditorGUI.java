@@ -312,7 +312,9 @@ public class EditorGUI extends JFrame{
 				}
 			}
 			else if(action.getSource() == grayScale) {
-				paintImage(getImageFromFile("Images//crop blue.png"));
+				//paintImage(getImageFromFile("Images//crop blue.png"));
+				BufferedImage gray = Grayscale.grayScale(image);
+				paintImage(gray);
 			}
 		}
 	}

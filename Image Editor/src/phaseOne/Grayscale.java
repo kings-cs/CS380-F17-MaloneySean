@@ -14,7 +14,7 @@ public class Grayscale extends ImageAlgorithm{
 	 * @param original The original image.
 	 * @return The newly re-colored image.
 	 */
-	public BufferedImage grayScale(BufferedImage original) {
+	public static BufferedImage grayScale(BufferedImage original) {
 		int width = original.getHeight();
 		int height = original.getWidth();
 		
@@ -27,13 +27,32 @@ public class Grayscale extends ImageAlgorithm{
 				int index = row * width + col;
 				
 				int pixel = sourceData[index];
+				System.out.println(pixel);
 				
+				//**************Gray Scale Specific Implementation begins here********
 				
+				int alpha = (pixel & ALPHA_MASK) >> ALPHA_OFFSET;
+				
+				int red = (pixel & RED_MASK) >> RED_OFFSET;
+				int green = (pixel & GREEN_MASK) >> GREEN_OFFSET;
+				int blue = (pixel & BLUE_MASK) >> BLUE_OFFSET;
+				
+				int newRed = (int) (red * 0.299);
+				int newGreen = (int) (green * 0.587);
+				int newBlue = (int) (blue * 0.114);
+				
+				int grayPixel = (alpha << ALPHA_OFFSET) | (newRed << RED_OFFSET) |
+						(newGreen << GREEN_OFFSET) | (newBlue << BLUE_OFFSET);
+				
+				//int grayPixel = (int) ((red * 0.299) + (green * 0.587) + (blue * 0.114));
+				//System.out.println(grayPixel);
+				
+				resultData[index] = grayPixel;
 			}
 		}
 		
-		wrapUp(resultData, original);
-		return null;
+		BufferedImage result = wrapUp(resultData, original);
+		return result;
 	}
 	
 }

@@ -59,7 +59,7 @@ public class ImageAlgorithm {
 	 * @param source The BufferedImage whose raster will be modified.
 	 * @return The source data of the BufferedImage
 	 */
-	public int[] strip(BufferedImage source){
+	public static int[] strip(BufferedImage source){
 		WritableRaster sourceRaster = source.getRaster();
 		DataBuffer sourceDataBuffer = sourceRaster.getDataBuffer();
 		DataBufferInt sourceBytes = (DataBufferInt) sourceDataBuffer;
@@ -76,7 +76,7 @@ public class ImageAlgorithm {
 	 * @param source The original image.
 	 * @return The new BufferedImage.
 	 */
-	public BufferedImage wrapUp(int[] resultData, BufferedImage source) {
+	public static BufferedImage wrapUp(int[] resultData, BufferedImage source) {
 		BufferedImage result = new BufferedImage(source.getHeight(), source.getWidth(),
 				BufferedImage.TYPE_INT_ARGB);
 		
