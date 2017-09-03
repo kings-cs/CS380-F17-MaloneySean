@@ -117,6 +117,7 @@ public class EditorGUI extends JFrame{
 		file.add(open);
 		file.add(close);
 		file.add(save);
+		file.add(saveAs);
 		this.setJMenuBar(menuBar);
 		
 		toolBar = new JToolBar("Tool Bar");
@@ -130,7 +131,8 @@ public class EditorGUI extends JFrame{
 	
 		
 		//***************Image Displaying Starts Here**********
-		paintImage("Images//crop.png");
+		BufferedImage defaultImage = getImageFromFile("Images//crop.png");
+		paintImage(defaultImage);
 
 		
 		
@@ -154,10 +156,11 @@ public class EditorGUI extends JFrame{
 	}
 	
 	/**
-	 * Paint the image at the file path onto the GUI.
-	 * @param filePath The file path of the image.
+	 * Gets a BufferedImage to be used to pain the screen out of a file.
+	 * @param filePath The path of the file.
+	 * @return The desired BufferedImage.
 	 */
-	private void paintImage(String filePath) {
+	private BufferedImage getImageFromFile(String filePath) {
 		File currentPicture = new File(filePath);
 		BufferedImage ri = null;
 		try {
@@ -166,6 +169,17 @@ public class EditorGUI extends JFrame{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		
+		currentFilePath = filePath;
+		return ri;
+	}
+	
+	/**
+	 * Paint the image at the file path onto the GUI.
+	 * @param ri The BufferedImage used to paint the screen.
+	 */
+	private void paintImage(BufferedImage ri) {
+		
 		
 		image = new BufferedImage(ri.getWidth(), ri.getHeight(),
 				BufferedImage.TYPE_INT_ARGB);
@@ -216,9 +230,8 @@ public class EditorGUI extends JFrame{
 		
 		
 		this.add(display, BorderLayout.CENTER);
-		
-		currentFilePath = filePath;
 	}
+
 	
 	/**
 	 * Private helper method used to save the image currently being edited. 
@@ -265,7 +278,8 @@ public class EditorGUI extends JFrame{
 					
 					//TODO: Do something here with file types
 					
-					paintImage(filePath);
+					
+					paintImage(getImageFromFile(filePath));
 					
 				}
 				else{
@@ -274,12 +288,15 @@ public class EditorGUI extends JFrame{
 				}
 			}
 			else if(action.getSource() == close) {
-				paintImage("Images//crop.png");
+				paintImage(getImageFromFile("Images//crop.png"));
 			}
 			else if(action.getSource() == save) {
 				save(currentFilePath);
+				
 			}
 			else if(action.getSource() == saveAs) {
+				//TODO: The file format must be specified
+				
 				JFileChooser fileChooser = new JFileChooser();
 				int result = fileChooser.showOpenDialog(null);
 				
@@ -295,7 +312,7 @@ public class EditorGUI extends JFrame{
 				}
 			}
 			else if(action.getSource() == grayScale) {
-				paintImage("Images//crop blue.png");
+				paintImage(getImageFromFile("Images//crop blue.png"));
 			}
 		}
 	}
@@ -327,8 +344,6 @@ public class EditorGUI extends JFrame{
 	public static void main(String[] args) {
 		EditorGUI mainFrame = new EditorGUI();
 		mainFrame.setTitle("Oh Crop");
-		//TODO: Modify this to be based off a percentage of the size of the system's screen
-		//mainFrame.setSize(1000, 1000);
 		mainFrame.setVisible(true);
 	}
 }
