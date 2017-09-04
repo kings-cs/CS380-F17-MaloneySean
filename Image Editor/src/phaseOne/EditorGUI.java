@@ -109,6 +109,12 @@ public class EditorGUI extends JFrame{
 	 */
 	private String currentFilePath;
 	
+	private int originalHeight;
+	
+	private int originalWidth;
+	
+	private double zoomAmount;
+	
 	/**
 	 * Constructor for the GUI.
 	 */
@@ -158,7 +164,9 @@ public class EditorGUI extends JFrame{
 		paintImage(defaultImage);
 		windowResize(defaultImage.getHeight(), defaultImage.getWidth());
 		
-		
+		originalHeight = defaultImage.getHeight();
+		originalWidth = defaultImage.getWidth();
+		zoomAmount = 100.0;
 		
 		
 		toolBar.add(grayScale);
@@ -176,6 +184,7 @@ public class EditorGUI extends JFrame{
 		saveAs.addActionListener(ae);
 		
 		resizeWindow.addActionListener(ae);
+		zoom.addActionListener(ae);
 		
 		this.addWindowListener(wc);
 	}
@@ -317,6 +326,10 @@ public class EditorGUI extends JFrame{
 					paintImage(img);
 					windowResize(img.getHeight(), img.getWidth());
 					
+					
+					originalHeight = img.getHeight();
+					originalWidth = img.getWidth();
+					zoomAmount = 100.0;
 				}
 				else{
 					JOptionPane.showMessageDialog(null, "Image Location Not Properly Selected", "Oops", 
@@ -328,6 +341,10 @@ public class EditorGUI extends JFrame{
 				BufferedImage img = getImageFromFile("Images//crop.png");
 				paintImage(img);
 				windowResize(img.getHeight(), img.getWidth());
+				
+				originalHeight = img.getHeight();
+				originalWidth = img.getWidth();
+				zoomAmount = 100.0;
 			}
 			else if(action.getSource() == save) {
 				save(currentFilePath);
@@ -364,11 +381,21 @@ public class EditorGUI extends JFrame{
 					}
 			}
 			else if(action.getSource() == zoom) {
+				//TODO: THIS ZOOM IS DESTRUCTIVE UGGGGGGGGGGHHHHHHHHHH
 				
+				double zoomLevel = Double.parseDouble(JOptionPane.showInputDialog("Enter Zoom Amount: ", 0));
+				
+				int newImageWidth = (int) (originalWidth * zoomLevel);
+				int newImageHeight = (int) (originalHeight * zoomLevel);
+				
+				BufferedImage resizedImage = new BufferedImage(newImageWidth, newImageHeight, BufferedImage.TYPE_INT_ARGB);
+				Graphics g = resizedImage.createGraphics();
+				g.drawImage(image, 0, 0, newImageWidth, newImageHeight, null);
+				g.dispose();
+				
+				paintImage(resizedImage);
 			}
-			else if(action.getSource() == grayScale) {
-				//paintImage(getImageFromFile("Images//crop blue.png"));
-				
+			else if(action.getSource() == grayScale) {		
 				long startTime = System.nanoTime();
 				BufferedImage gray = Grayscale.grayScale(image);
 				long endTime = System.nanoTime();
@@ -379,7 +406,6 @@ public class EditorGUI extends JFrame{
 				JOptionPane.showMessageDialog(null, "Time Taken: " + miliSeconds + " (ms)");
 				
 				paintImage(gray);
-				//windowResize(gray.getHeight(), gray.getWidth());	
 			}
 		}
 	}
