@@ -21,6 +21,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSlider;
 import javax.swing.JToolBar;
 
 /**
@@ -109,10 +110,19 @@ public class EditorGUI extends JFrame{
 	 */
 	private String currentFilePath;
 	
+	/**
+	 * The original height of the image being displayed before any form of zooming is applied.
+	 */
 	private int originalHeight;
 	
+	/**
+	 * The original width of the image being displayed before any form of zooming is applied.
+	 */
 	private int originalWidth;
 	
+	/**
+	 * The current level of zoom being applied where 1.0 is the original amount.
+	 */
 	private double zoomAmount;
 	
 	/**
@@ -166,7 +176,7 @@ public class EditorGUI extends JFrame{
 		
 		originalHeight = defaultImage.getHeight();
 		originalWidth = defaultImage.getWidth();
-		zoomAmount = 100.0;
+		zoomAmount = 1;
 		
 		
 		toolBar.add(grayScale);
@@ -200,8 +210,8 @@ public class EditorGUI extends JFrame{
 		try {
 			ri = ImageIO.read(currentPicture);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			JOptionPane.showMessageDialog(null, "The Image Could Not Be Read From A File At The Given Path", "Oops", 
+					JOptionPane.ERROR_MESSAGE);
 		}
 		
 		currentFilePath = filePath;
@@ -237,11 +247,6 @@ public class EditorGUI extends JFrame{
 		};
 		
 		canvas.setPreferredSize(new Dimension(image.getWidth(), image.getHeight()));
-		
-		
-		
-		//TODO: This line might make zooming hard...Modify resize private method and where it is called. Private method should handle the too big stuff.
-		//windowResize(ri.getHeight(), ri.getWidth());
 		
 		if(display != null) {
 			display.setVisible(false);
@@ -329,7 +334,7 @@ public class EditorGUI extends JFrame{
 					
 					originalHeight = img.getHeight();
 					originalWidth = img.getWidth();
-					zoomAmount = 100.0;
+					zoomAmount = 1;
 				}
 				else{
 					JOptionPane.showMessageDialog(null, "Image Location Not Properly Selected", "Oops", 
@@ -344,7 +349,7 @@ public class EditorGUI extends JFrame{
 				
 				originalHeight = img.getHeight();
 				originalWidth = img.getWidth();
-				zoomAmount = 100.0;
+				zoomAmount = 1;
 			}
 			else if(action.getSource() == save) {
 				save(currentFilePath);
@@ -380,20 +385,32 @@ public class EditorGUI extends JFrame{
 						JOptionPane.showMessageDialog(null, "Only Numeric Characters May Be Entered");
 					}
 			}
-			else if(action.getSource() == zoom) {
-				//TODO: THIS ZOOM IS DESTRUCTIVE UGGGGGGGGGGHHHHHHHHHH
+			else if(action.getSource() == zoom) {		
+				int intitalPos = (int) (zoomAmount * 100);
+				JSlider zoomSlider = new JSlider(JSlider.HORIZONTAL, 100, 500, intitalPos);
+				zoomSlider.setMajorTickSpacing(100);
+				zoomSlider.setMinorTickSpacing(10);
+				zoomSlider.setPaintTicks(true);
+				zoomSlider.setPaintLabels(true);
 				
-				double zoomLevel = Double.parseDouble(JOptionPane.showInputDialog("Enter Zoom Amount: ", 0));
-				
-				int newImageWidth = (int) (originalWidth * zoomLevel);
-				int newImageHeight = (int) (originalHeight * zoomLevel);
-				
-				BufferedImage resizedImage = new BufferedImage(newImageWidth, newImageHeight, BufferedImage.TYPE_INT_ARGB);
-				Graphics g = resizedImage.createGraphics();
-				g.drawImage(image, 0, 0, newImageWidth, newImageHeight, null);
-				g.dispose();
-				
-				paintImage(resizedImage);
+				try {
+					//TODO: How do I update the text box?
+					int zoomLevel = Integer.parseInt(JOptionPane.showInputDialog(zoomSlider));
+					zoomAmount = zoomLevel / 100;
+
+					int newImageWidth = (int) (originalWidth * zoomAmount);
+					int newImageHeight = (int) (originalHeight * zoomAmount);
+
+					BufferedImage resizedImage = new BufferedImage(newImageWidth, newImageHeight, BufferedImage.TYPE_INT_ARGB);
+					Graphics g = resizedImage.createGraphics();
+					g.drawImage(image, 0, 0, newImageWidth, newImageHeight, null);
+					g.dispose();
+
+					paintImage(resizedImage);
+				}
+				catch(NumberFormatException e){
+					JOptionPane.showMessageDialog(null, "Only Numeric Characters May Be Entered");
+				}
 			}
 			else if(action.getSource() == grayScale) {		
 				long startTime = System.nanoTime();
