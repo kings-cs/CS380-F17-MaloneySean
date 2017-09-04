@@ -55,6 +55,21 @@ public class EditorGUI extends JFrame{
 	private JMenuItem close;
 	
 	/**
+	 * Menu Item that contains various functions relevant to the User's view.
+	 */
+	private JMenuItem view;
+	
+	/**
+	 * Menu Item that lets the user change the size of the window.
+	 */
+	private JMenuItem resizeWindow;
+	
+	/**
+	 * Menu Item that lets the user zoom in on an image.
+	 */
+	private JMenuItem zoom;
+	
+	/**
 	 * Menu Item used to save the image currently being edited.
 	 */
 	private JMenuItem save;
@@ -111,6 +126,9 @@ public class EditorGUI extends JFrame{
 		save = new JMenuItem("Save");
 		saveAs = new JMenuItem("Save As...");
 		
+		view = new JMenu("View");
+		resizeWindow = new JMenuItem("Resize Window");
+		zoom = new JMenuItem("Zoom");
 		
 		menuBar.add(file);
 		file.add(exit);
@@ -118,6 +136,11 @@ public class EditorGUI extends JFrame{
 		file.add(close);
 		file.add(save);
 		file.add(saveAs);
+		
+		menuBar.add(view);
+		view.add(resizeWindow);
+		view.add(zoom);
+		
 		this.setJMenuBar(menuBar);
 		
 		toolBar = new JToolBar("Tool Bar");
@@ -133,7 +156,7 @@ public class EditorGUI extends JFrame{
 		//***************Image Displaying Starts Here**********
 		BufferedImage defaultImage = getImageFromFile("Images//crop.png");
 		paintImage(defaultImage);
-
+		windowResize(defaultImage.getHeight(), defaultImage.getWidth());
 		
 		
 		
@@ -151,6 +174,8 @@ public class EditorGUI extends JFrame{
 		close.addActionListener(ae);
 		save.addActionListener(ae);
 		saveAs.addActionListener(ae);
+		
+		resizeWindow.addActionListener(ae);
 		
 		this.addWindowListener(wc);
 	}
@@ -204,23 +229,10 @@ public class EditorGUI extends JFrame{
 		
 		canvas.setPreferredSize(new Dimension(image.getWidth(), image.getHeight()));
 		
-		//****************GUI Sizing********************************
-		int width = (int) (image.getWidth() + 150);
-		int height = (int) (image.getHeight() + 150);
 		
 		
-		int systemWidth = java.awt.GraphicsEnvironment.getLocalGraphicsEnvironment().getMaximumWindowBounds().width;
-		int systemHeight = java.awt.GraphicsEnvironment.getLocalGraphicsEnvironment().getMaximumWindowBounds().height;
-		
-		
-		if(width > systemWidth) {
-			width = systemWidth;
-		}
-		if(height > systemHeight) {
-			height = systemHeight;
-		}
-		
-		this.setSize(new Dimension(width, height));		
+		//TODO: This line might make zooming hard...Modify resize private method and where it is called. Private method should handle the too big stuff.
+		//windowResize(ri.getHeight(), ri.getWidth());
 		
 		if(display != null) {
 			display.setVisible(false);
@@ -246,6 +258,28 @@ public class EditorGUI extends JFrame{
 			JOptionPane.showMessageDialog(null, "The Location To Save The Image To Was Invalid", "Oops", 
 					JOptionPane.ERROR_MESSAGE);
 		}
+	}
+	
+	/**
+	 * Private helper method used to change the size of the GUI window.
+	 * @param height The new height of the GUI.
+	 * @param width The new width of the GUI.
+	 */
+	private void windowResize(int height, int width) {
+		int newWidth = width + 150;
+		int newHeight = height + 150;
+		
+		int systemWidth = java.awt.GraphicsEnvironment.getLocalGraphicsEnvironment().getMaximumWindowBounds().width;
+		int systemHeight = java.awt.GraphicsEnvironment.getLocalGraphicsEnvironment().getMaximumWindowBounds().height;
+		
+		if(width > systemWidth) {
+			newWidth = systemWidth;
+		}
+		if(height > systemHeight) {
+			newWidth = systemHeight;
+		}
+		
+		this.setSize(new Dimension(newWidth, newHeight));
 	}
 	
 	/**
@@ -279,8 +313,9 @@ public class EditorGUI extends JFrame{
 					
 					//TODO: Do something here with file types
 					
-					
-					paintImage(getImageFromFile(filePath));
+					BufferedImage img = getImageFromFile(filePath);
+					paintImage(img);
+					windowResize(img.getHeight(), img.getWidth());
 					
 				}
 				else{
@@ -289,7 +324,10 @@ public class EditorGUI extends JFrame{
 				}
 			}
 			else if(action.getSource() == close) {
-				paintImage(getImageFromFile("Images//crop.png"));
+				
+				BufferedImage img = getImageFromFile("Images//crop.png");
+				paintImage(img);
+				windowResize(img.getHeight(), img.getWidth());
 			}
 			else if(action.getSource() == save) {
 				save(currentFilePath);
@@ -312,6 +350,22 @@ public class EditorGUI extends JFrame{
 							JOptionPane.ERROR_MESSAGE);
 				}
 			}
+			else if(action.getSource() == resizeWindow) {
+				//TODO: MAKE ONE WINODW THAT CAN GET BOTH INPUTS
+				try{
+					int height = Integer.parseInt(JOptionPane.showInputDialog("Enter New Height: ", 0));
+					int width = Integer.parseInt(JOptionPane.showInputDialog("Enter New Width: ", 0));
+					
+					
+					windowResize(height, width);
+					}
+					catch(NumberFormatException e){
+						JOptionPane.showMessageDialog(null, "Only Numeric Characters May Be Entered");
+					}
+			}
+			else if(action.getSource() == zoom) {
+				
+			}
 			else if(action.getSource() == grayScale) {
 				//paintImage(getImageFromFile("Images//crop blue.png"));
 				
@@ -325,6 +379,7 @@ public class EditorGUI extends JFrame{
 				JOptionPane.showMessageDialog(null, "Time Taken: " + miliSeconds + " (ms)");
 				
 				paintImage(gray);
+				//windowResize(gray.getHeight(), gray.getWidth());	
 			}
 		}
 	}
