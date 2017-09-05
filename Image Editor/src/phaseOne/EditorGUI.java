@@ -32,6 +32,10 @@ import javax.swing.JToolBar;
  */
 public class EditorGUI extends JFrame{
 	//TODO: Talk to Jump about file handling & Close 
+	//TODO: JPG uses different coloring scheme, option in write to fix this
+	//TODO: Gotta make zoom bi-directional
+	//TODO: Need to make it so you can't over write my default image
+	//TODO: Something something pixel compression
 	
 	/**
 	 * Generated Serial ID.
@@ -300,8 +304,13 @@ public class EditorGUI extends JFrame{
 	 */
 	private void save(String filePath){
 		File outputFile = new File(filePath);
+		
 		try {
-			ImageIO.write(image, "png", outputFile);
+			//TODO: Something here will fix the writing problem
+			String extension = filePath.substring(filePath.length() - 3, filePath.length());
+			
+			ImageIO.write(image, extension, outputFile);
+
 		} catch (IOException e) {
 			JOptionPane.showMessageDialog(null, "The Location To Save The Image To Was Invalid", "Oops", 
 					JOptionPane.ERROR_MESSAGE);
