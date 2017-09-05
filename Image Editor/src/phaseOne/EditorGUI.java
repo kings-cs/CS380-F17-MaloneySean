@@ -287,7 +287,6 @@ public class EditorGUI extends JFrame{
 		
 		display = new JScrollPane(canvas);	
 		
-		
 		this.add(display, BorderLayout.CENTER);
 		revalidate();
 	}
@@ -336,10 +335,6 @@ public class EditorGUI extends JFrame{
 	private void setZoom(double zoomLevel) {
 			double nextZoom = zoomLevel;
 			
-			
-			//System.out.println(zoomLevel);
-			//System.out.println(zoomSlider.getValue());
-			
 			if(nextZoom < 100) {
 				nextZoom = 100;
 			}
@@ -356,16 +351,55 @@ public class EditorGUI extends JFrame{
 			zoomAmount = nextZoom / 100;
 			
 			
-			int newImageWidth = (int) (originalWidth * zoomAmount);
-			int newImageHeight = (int) (originalHeight * zoomAmount);
+			int targetWidth = (int) (originalWidth * zoomAmount);
+			int targetHeight = (int) (originalHeight * zoomAmount);
+			
+			int newImageWidth = originalWidth;
+			int newImageHeight = originalHeight;
 
-			BufferedImage resizedImage = new BufferedImage(newImageWidth, newImageHeight, BufferedImage.TYPE_INT_ARGB);
-			Graphics g = resizedImage.createGraphics();
-			g.drawImage(image, 0, 0, newImageWidth, newImageHeight, null);
-			g.dispose();
+			BufferedImage resizedImage = null;
 
+			do {
+				if(originalWidth < targetWidth) {
+					newImageWidth *= 2;
+					
+					if(newImageWidth > targetWidth) {
+						newImageWidth = targetWidth;
+					}
+				}
+				else {
+					newImageWidth /= 2;
+					
+					if(newImageWidth < targetWidth) {
+						newImageWidth = targetWidth;
+					}
+				}
+				
+				if(originalHeight < targetHeight) {
+					newImageHeight *= 2;
+					
+					if(newImageHeight > targetHeight) {
+						newImageHeight = targetHeight;
+					}
+				}
+				else {
+					newImageHeight /= 2;
+					
+					if(newImageHeight < targetWidth) {
+						newImageHeight = targetHeight;
+					}
+				}
+				
+				resizedImage = new BufferedImage(newImageWidth, newImageHeight, BufferedImage.TYPE_INT_ARGB);
+				Graphics g = resizedImage.createGraphics();
+				g.drawImage(image, 0, 0, newImageWidth, newImageHeight, null);
+				g.dispose();
+			} while(newImageWidth != targetWidth && newImageHeight != targetHeight);
+			
+			
+
+			
 			paintImage(resizedImage);
-		
 	}
 	
 	/**
