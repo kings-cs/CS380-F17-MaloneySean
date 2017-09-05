@@ -309,7 +309,19 @@ public class EditorGUI extends JFrame{
 			//TODO: Something here will fix the writing problem
 			String extension = filePath.substring(filePath.length() - 3, filePath.length());
 			
-			ImageIO.write(image, extension, outputFile);
+			
+			if(extension.equals("jpg")) {
+				//BufferedImage save = new BufferedImage()
+				BufferedImage saveFormat = new BufferedImage(image.getWidth(), image.getHeight(),
+						BufferedImage.TYPE_INT_RGB);
+				Graphics g = saveFormat.getGraphics();
+				g.drawImage(image, 0, 0, null);
+				
+				ImageIO.write(saveFormat, extension, outputFile);
+			}
+			else {
+				ImageIO.write(image, extension, outputFile);
+			}
 
 		} catch (IOException e) {
 			JOptionPane.showMessageDialog(null, "The Location To Save The Image To Was Invalid", "Oops", 
