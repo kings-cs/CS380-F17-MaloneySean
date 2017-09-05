@@ -31,8 +31,6 @@ import javax.swing.JToolBar;
  * @author Sean Maloney
  */
 public class EditorGUI extends JFrame{
-	//TODO: Talk to Jump about file handling & Close 
-	//TODO: JPG uses different coloring scheme, option in write to fix this
 	//TODO: Gotta make zoom bi-directional
 	//TODO: Need to make it so you can't over write my default image
 	//TODO: Something something pixel compression
@@ -111,6 +109,11 @@ public class EditorGUI extends JFrame{
 	 * The image being displayed currently.
 	 */
 	private BufferedImage image;
+	
+	/**
+	 * The image being displayed currently independent of any zoom.
+	 */
+	private BufferedImage preZoomImage;
 	
 	/**
 	 * The path for the most recently opened image.
@@ -198,7 +201,6 @@ public class EditorGUI extends JFrame{
 		zoomOut = new JButton("-");
 		currentZoom = new JLabel("Current Zoom: 100%");
 		
-		zoomOut.setEnabled(false);
 		
 		bottomPanel.add(zoomIn);
 		bottomPanel.add(zoomOut);
@@ -213,7 +215,7 @@ public class EditorGUI extends JFrame{
 		originalHeight = defaultImage.getHeight();
 		originalWidth = defaultImage.getWidth();
 		zoomAmount = 1;
-		
+		preZoomImage = image;
 		
 		toolBar.add(grayScale);
 		this.add(toolBar, BorderLayout.NORTH);
@@ -262,7 +264,7 @@ public class EditorGUI extends JFrame{
 	 * @param ri The BufferedImage used to paint the screen.
 	 */
 	private void paintImage(BufferedImage ri) {
-		
+		//TODO: Preserve zoom
 		
 		image = new BufferedImage(ri.getWidth(), ri.getHeight(),
 				BufferedImage.TYPE_INT_ARGB);
@@ -303,29 +305,34 @@ public class EditorGUI extends JFrame{
 	 * @param filePath The destination for the image.
 	 */
 	private void save(String filePath){
-		File outputFile = new File(filePath);
 		
-		try {
-			//TODO: Something here will fix the writing problem
-			String extension = filePath.substring(filePath.length() - 3, filePath.length());
-			
-			
-			if(extension.equals("jpg")) {
-				//BufferedImage save = new BufferedImage()
-				BufferedImage saveFormat = new BufferedImage(image.getWidth(), image.getHeight(),
-						BufferedImage.TYPE_INT_RGB);
-				Graphics g = saveFormat.getGraphics();
-				g.drawImage(image, 0, 0, null);
-				
-				ImageIO.write(saveFormat, extension, outputFile);
-			}
-			else {
-				ImageIO.write(image, extension, outputFile);
-			}
+		if(currentFilePath.equals("Images//crop.png")){
+			JOptionPane.showMessageDialog(null, "You Can Not Save Over The Default Image");
+		}
+		else {
 
-		} catch (IOException e) {
-			JOptionPane.showMessageDialog(null, "The Location To Save The Image To Was Invalid", "Oops", 
-					JOptionPane.ERROR_MESSAGE);
+			File outputFile = new File(filePath);
+
+			try {
+				String extension = filePath.substring(filePath.length() - 3, filePath.length());
+
+
+				if(extension.equals("jpg")) {
+					BufferedImage saveFormat = new BufferedImage(image.getWidth(), image.getHeight(),
+							BufferedImage.TYPE_INT_RGB);
+					Graphics g = saveFormat.getGraphics();
+					g.drawImage(image, 0, 0, null);
+
+					ImageIO.write(saveFormat, extension, outputFile);
+				}
+				else {
+					ImageIO.write(image, extension, outputFile);
+				}
+
+			} catch (IOException e) {
+				JOptionPane.showMessageDialog(null, "The Location To Save The Image To Was Invalid", "Oops", 
+						JOptionPane.ERROR_MESSAGE);
+			}
 		}
 	}
 	
@@ -359,67 +366,71 @@ public class EditorGUI extends JFrame{
 			double nextZoom = zoomLevel;
 
 			currentZoom.setText("Current Zoom: " + (int) nextZoom + "%");
-			
-			if(nextZoom > 100) {
+		
+			if((int) nextZoom > 10) {
 				zoomOut.setEnabled(true);
 			}
-			else if((int) nextZoom == 100) {
-				//TODO: There's probably a better way to fix this then casting it to an int
+			
+			if((int) nextZoom == 20) {
 				zoomOut.setEnabled(false);
 			}
-			
-			zoomAmount = nextZoom / 100;
-			
-			
-			int targetWidth = (int) (originalWidth * zoomAmount);
-			int targetHeight = (int) (originalHeight * zoomAmount);
-			
-			int newImageWidth = originalWidth;
-			int newImageHeight = originalHeight;
-
-			BufferedImage resizedImage = null;
-
-			do {
-				if(originalWidth < targetWidth) {
-					newImageWidth *= 2;
-					
-					if(newImageWidth > targetWidth) {
-						newImageWidth = targetWidth;
-					}
-				}
-				else {
-					newImageWidth /= 2;
-					
-					if(newImageWidth < targetWidth) {
-						newImageWidth = targetWidth;
-					}
-				}
+			else if((int) nextZoom == 100) {
+				paintImage(preZoomImage);
+				zoomAmount = 1;
+			}
+			else {
+				zoomAmount = nextZoom / 100;
 				
-				if(originalHeight < targetHeight) {
-					newImageHeight *= 2;
-					
-					if(newImageHeight > targetHeight) {
-						newImageHeight = targetHeight;
-					}
-				}
-				else {
-					newImageHeight /= 2;
-					
-					if(newImageHeight < targetWidth) {
-						newImageHeight = targetHeight;
-					}
-				}
+				int targetWidth = (int) (originalWidth * zoomAmount);
+				int targetHeight = (int) (originalHeight * zoomAmount);
 				
-				resizedImage = new BufferedImage(newImageWidth, newImageHeight, BufferedImage.TYPE_INT_ARGB);
-				Graphics g = resizedImage.createGraphics();
-				g.drawImage(image, 0, 0, newImageWidth, newImageHeight, null);
-				g.dispose();
-			} while(newImageWidth != targetWidth && newImageHeight != targetHeight);
-			
-			
+				int newImageWidth = originalWidth;
+				int newImageHeight = originalHeight;
 
-			
-			paintImage(resizedImage);
+				BufferedImage resizedImage = null;
+
+				do {
+					if(originalWidth < targetWidth) {
+						newImageWidth *= 2;
+						
+						if(newImageWidth > targetWidth) {
+							newImageWidth = targetWidth;
+						}
+					}
+					else {
+						newImageWidth /= 2;
+						
+						if(newImageWidth < targetWidth) {
+							newImageWidth = targetWidth;
+						}
+					}
+					
+					if(originalHeight < targetHeight) {
+						newImageHeight *= 2;
+						
+						if(newImageHeight > targetHeight) {
+							newImageHeight = targetHeight;
+						}
+					}
+					else {
+						newImageHeight /= 2;
+						
+						if(newImageHeight < targetWidth) {
+							newImageHeight = targetHeight;
+						}
+					}
+					
+					resizedImage = new BufferedImage(newImageWidth, newImageHeight, BufferedImage.TYPE_INT_ARGB);
+					Graphics g = resizedImage.createGraphics();
+					g.drawImage(image, 0, 0, newImageWidth, newImageHeight, null);
+					g.dispose();
+				} while(newImageWidth != targetWidth && newImageHeight != targetHeight);
+				
+				
+
+				
+				paintImage(resizedImage);
+			}
 	}
 	
 	/**
@@ -461,6 +472,9 @@ public class EditorGUI extends JFrame{
 					originalHeight = img.getHeight();
 					originalWidth = img.getWidth();
 					zoomAmount = 1;
+					currentZoom.setText("Current Zoom: 100%");
+					
+					preZoomImage = image;
 				}
 				else{
 					JOptionPane.showMessageDialog(null, "Image Location Not Properly Selected", "Oops", 
@@ -485,15 +499,16 @@ public class EditorGUI extends JFrame{
 					originalHeight = img.getHeight();
 					originalWidth = img.getWidth();
 					zoomAmount = 1;
+					
+					preZoomImage = image;
 				}
 				
 			}
 			else if(action.getSource() == save) {
 				save(currentFilePath);
-				
 			}
 			else if(action.getSource() == saveAs) {
-				//TODO: The file format must be specified
+				//TODO: The file format must be specified, this is fine just write in the read me
 				
 				JFileChooser fileChooser = new JFileChooser();
 				int result = fileChooser.showOpenDialog(null);
@@ -510,7 +525,7 @@ public class EditorGUI extends JFrame{
 				}
 			}
 			else if(action.getSource() == resizeWindow) {
-				//TODO: MAKE ONE WINODW THAT CAN GET BOTH INPUTS
+				//TODO: Make one window for both inputs, don't need to finish for this phase
 				try{
 					int height = Integer.parseInt(JOptionPane.showInputDialog("Enter New Height: ", 0));
 					int width = Integer.parseInt(JOptionPane.showInputDialog("Enter New Width: ", 0));
@@ -523,38 +538,67 @@ public class EditorGUI extends JFrame{
 					}
 			}
 			else if(action.getSource() == zoom) {		
-				int intitalPos = (int) (zoomAmount * 100);
-				JSlider zoomSlider = new JSlider(JSlider.HORIZONTAL, 100, 500, intitalPos);
-				zoomSlider.setMajorTickSpacing(100);
-				zoomSlider.setMinorTickSpacing(10);
-				zoomSlider.setPaintTicks(true);
-				zoomSlider.setPaintLabels(true);
+//				int intitalPos = (int) (zoomAmount * 100);
+//				JSlider zoomSlider = new JSlider(JSlider.HORIZONTAL, 20, 200, intitalPos);
+//				zoomSlider.setMajorTickSpacing(100);
+//				zoomSlider.setMinorTickSpacing(10);
+//				zoomSlider.setPaintTicks(true);
+//				zoomSlider.setPaintLabels(true);
 				
 				//TODO: Probably need to instead create a different panel that can have a text box for custom amounts and updates according to the slider?
+//
+//				JOptionPane.showMessageDialog(null, zoomSlider);
+//				double zoomLevel = zoomSlider.getValue();
 
-				//double zoomLevel = Double.parseDouble(JOptionPane.showInputDialog(zoomSlider));
-				JOptionPane.showMessageDialog(null, zoomSlider);
-				double zoomLevel = zoomSlider.getValue();
+				double zoomLevel = 0;
+				try {
+					zoomLevel = Double.parseDouble(JOptionPane.showInputDialog("Enter Zoom %: "));
 
-				setZoom(zoomLevel);
+					if(zoomLevel < 20) {
+						JOptionPane.showMessageDialog(null, "Can not zoom below 20%");
+					}
+					else if(zoomLevel > 500) {
+						JOptionPane.showMessageDialog(null, "Can not zoom above 500%");
+					}
+					else {
+						setZoom(zoomLevel);
+					}
+				}
+				catch(IllegalArgumentException iae) {
+					JOptionPane.showMessageDialog(null, "You Must Enter Only Numeric Characters");
+				}
 
 				
 			}
 			else if(action.getSource() == zoomIn) {
-				setZoom((zoomAmount * 100) + 10);
+				double toZoom = (zoomAmount * 100) + 10;
+				
+				String number = (int) toZoom + "";
+				int subtract = Integer.parseInt(number.substring(number.length() - 1, number.length()));
+			
+				toZoom = toZoom - subtract;
+				
+				setZoom(toZoom);
 			}
 			else if(action.getSource() == zoomOut) {
 				double toZoom = (zoomAmount * 100) - 10;
 				
-				if(toZoom < 100) {
-					toZoom = 100;
-				}
+				String number = (int) toZoom + "";
+				int subtract = Integer.parseInt(number.substring(number.length() - 1, number.length()));
+				int add = 10 - subtract;
+
+				toZoom = toZoom + add;
+
 				
 				setZoom(toZoom);
+				
 			}
-			else if(action.getSource() == grayScale) {		
+			else if(action.getSource() == grayScale) {
+				
+				double preEditZoom = zoomAmount;
+				
 				long startTime = System.nanoTime();
-				BufferedImage gray = Grayscale.grayScale(image);
+				BufferedImage gray = Grayscale.grayScale(preZoomImage);
 				long endTime = System.nanoTime();
 				
 				long timeTaken = endTime - startTime;
@@ -562,7 +606,12 @@ public class EditorGUI extends JFrame{
 				double miliSeconds = timeTaken / 1000000.0;
 				JOptionPane.showMessageDialog(null, "Time Taken: " + miliSeconds + " (ms)");
 				
+				preZoomImage = gray;
+				
 				paintImage(gray);
+				
+				
+				setZoom(preEditZoom * 100);
 			}
 		}
 	}
