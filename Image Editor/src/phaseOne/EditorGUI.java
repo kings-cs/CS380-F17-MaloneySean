@@ -23,18 +23,14 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JSlider;
+//import javax.swing.JSlider;
 import javax.swing.JToolBar;
 
 /**
  * Main GUI window used in an Image Editor application that will allow the user to perform various modifications on a displayed image.
  * @author Sean Maloney
  */
-public class EditorGUI extends JFrame{
-	//TODO: Gotta make zoom bi-directional
-	//TODO: Need to make it so you can't over write my default image
-	//TODO: Something something pixel compression
-	
+public class EditorGUI extends JFrame{	
 	/**
 	 * Generated Serial ID.
 	 */
@@ -263,9 +259,7 @@ public class EditorGUI extends JFrame{
 	 * Paint the image at the file path onto the GUI.
 	 * @param ri The BufferedImage used to paint the screen.
 	 */
-	private void paintImage(BufferedImage ri) {
-		//TODO: Preserve zoom
-		
+	private void paintImage(BufferedImage ri) {	
 		image = new BufferedImage(ri.getWidth(), ri.getHeight(),
 				BufferedImage.TYPE_INT_ARGB);
 		Graphics g = image.getGraphics();
