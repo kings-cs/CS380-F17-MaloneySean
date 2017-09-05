@@ -2,6 +2,7 @@ package phaseOne;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -15,6 +16,7 @@ import javax.imageio.ImageIO;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
@@ -126,6 +128,21 @@ public class EditorGUI extends JFrame{
 	private double zoomAmount;
 	
 	/**
+	 * A label stating the current level of zoom.
+	 */
+	private JLabel currentZoom;
+	
+	/**
+	 * Button that will add 10% to the current level of zoom.
+	 */
+	private JButton zoomIn;
+	
+	/**
+	 * Button that will subtract 10% from the current level of zoom.
+	 */
+	private JButton zoomOut;
+	
+	/**
 	 * Constructor for the GUI.
 	 */
 	public EditorGUI() {
@@ -134,6 +151,7 @@ public class EditorGUI extends JFrame{
 		
 		this.setLayout(new BorderLayout());
 		
+		//****************Menu Bar*****************************
 		JMenuBar menuBar = new JMenuBar();
 		file = new JMenu("File");
 		exit = new JMenuItem("Exit");
@@ -159,16 +177,28 @@ public class EditorGUI extends JFrame{
 		
 		this.setJMenuBar(menuBar);
 		
+		//****************Tool Bar*****************************
 		toolBar = new JToolBar("Tool Bar");
 		toolBar.setFloatable(true);
-		
-		
 		//TODO: Come back to this section later to make buttons look better
 		grayScale = new JButton("Gray Scale");
 	
 		
-	
+		//****************Bottom Panel*****************************
+		JPanel bottomPanel = new JPanel();
+		bottomPanel.setLayout(new FlowLayout(FlowLayout.TRAILING));
 		
+		zoomIn = new JButton("+");
+		zoomOut = new JButton("-");
+		currentZoom = new JLabel("Current Zoom: 100%");
+		
+		zoomOut.setEnabled(false);
+		
+		bottomPanel.add(zoomIn);
+		bottomPanel.add(zoomOut);
+		bottomPanel.add(currentZoom);
+		
+		this.add(bottomPanel, BorderLayout.SOUTH);
 		//***************Image Displaying Starts Here**********
 		BufferedImage defaultImage = getImageFromFile("Images//crop.png");
 		paintImage(defaultImage);
@@ -195,6 +225,9 @@ public class EditorGUI extends JFrame{
 		
 		resizeWindow.addActionListener(ae);
 		zoom.addActionListener(ae);
+		
+		zoomIn.addActionListener(ae);
+		zoomOut.addActionListener(ae);
 		
 		this.addWindowListener(wc);
 	}
@@ -297,6 +330,45 @@ public class EditorGUI extends JFrame{
 	}
 	
 	/**
+	 * Private helper method to control zooming function.
+	 * @param zoomLevel The amount to zoom the image.
+	 */
+	private void setZoom(double zoomLevel) {
+			double nextZoom = zoomLevel;
+			
+			
+			//System.out.println(zoomLevel);
+			//System.out.println(zoomSlider.getValue());
+			
+			if(nextZoom < 100) {
+				nextZoom = 100;
+			}
+			
+			currentZoom.setText("Current Zoom: " + (int) nextZoom + "%");
+			
+			if(nextZoom > 100) {
+				zoomOut.setEnabled(true);
+			}
+			else if(nextZoom == 100) {
+				zoomOut.setEnabled(false);
+			}
+			
+			zoomAmount = nextZoom / 100;
+			
+			
+			int newImageWidth = (int) (originalWidth * zoomAmount);
+			int newImageHeight = (int) (originalHeight * zoomAmount);
+
+			BufferedImage resizedImage = new BufferedImage(newImageWidth, newImageHeight, BufferedImage.TYPE_INT_ARGB);
+			Graphics g = resizedImage.createGraphics();
+			g.drawImage(image, 0, 0, newImageWidth, newImageHeight, null);
+			g.dispose();
+
+			paintImage(resizedImage);
+		
+	}
+	
+	/**
 	 * Private helper method used to close the program.
 	 */
 	private void exit() {
@@ -393,41 +465,27 @@ public class EditorGUI extends JFrame{
 				zoomSlider.setPaintTicks(true);
 				zoomSlider.setPaintLabels(true);
 				
-				try {
-					//TODO: How do I update the text box?
-					//TODO: How am I supposed to get from the slider?
-					//TODO: Label in an option pane?
-					//TODO: Add a label to the bottom of the pane that depicts the current level of zoom...also put in and out by 10% buttons here
-					
-					//double zoomLevel = Double.parseDouble(JOptionPane.showInputDialog(zoomSlider));
+				//TODO: Probably need to instead create a different panel that can have a text box for custom amounts and updates according to the slider?
+
+				//double zoomLevel = Double.parseDouble(JOptionPane.showInputDialog(zoomSlider));
+				JOptionPane.showMessageDialog(null, zoomSlider);
+				double zoomLevel = zoomSlider.getValue();
+
+				setZoom(zoomLevel);
+
 				
-					JOptionPane.showMessageDialog(null, zoomSlider);
-					double zoomLevel = zoomSlider.getValue();
-					
-					//System.out.println(zoomLevel);
-					//System.out.println(zoomSlider.getValue());
-					
-					if(zoomLevel < 100) {
-						zoomLevel = 100;
-					}
-					
-					zoomAmount = zoomLevel / 100;
-					
-					
-					int newImageWidth = (int) (originalWidth * zoomAmount);
-					int newImageHeight = (int) (originalHeight * zoomAmount);
-
-					BufferedImage resizedImage = new BufferedImage(newImageWidth, newImageHeight, BufferedImage.TYPE_INT_ARGB);
-					Graphics g = resizedImage.createGraphics();
-					g.drawImage(image, 0, 0, newImageWidth, newImageHeight, null);
-					g.dispose();
-
-					paintImage(resizedImage);
-				}
-				catch(NumberFormatException e){
-					JOptionPane.showMessageDialog(null, "Only Numeric Characters May Be Entered");
+			}
+			else if(action.getSource() == zoomIn) {
+				setZoom((zoomAmount * 100) + 10);
+			}
+			else if(action.getSource() == zoomOut) {
+				double toZoom = (zoomAmount * 100) - 10;
+				
+				if(toZoom < 100) {
+					toZoom = 100;
 				}
 				
+				setZoom(toZoom);
 			}
 			else if(action.getSource() == grayScale) {		
 				long startTime = System.nanoTime();
