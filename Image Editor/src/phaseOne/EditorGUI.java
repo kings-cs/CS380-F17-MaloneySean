@@ -395,9 +395,23 @@ public class EditorGUI extends JFrame{
 				
 				try {
 					//TODO: How do I update the text box?
-					int zoomLevel = Integer.parseInt(JOptionPane.showInputDialog(zoomSlider));
+					//TODO: How am I supposed to get from the slider?
+					//TODO: Label in an option pane?
+					
+					//double zoomLevel = Double.parseDouble(JOptionPane.showInputDialog(zoomSlider));
+					JOptionPane.showMessageDialog(null, zoomSlider);
+					double zoomLevel = zoomSlider.getValue();
+					
+					//System.out.println(zoomLevel);
+					//System.out.println(zoomSlider.getValue());
+					
+					if(zoomLevel < 100) {
+						zoomLevel = 100;
+					}
+					
 					zoomAmount = zoomLevel / 100;
-
+					
+					
 					int newImageWidth = (int) (originalWidth * zoomAmount);
 					int newImageHeight = (int) (originalHeight * zoomAmount);
 
@@ -411,6 +425,7 @@ public class EditorGUI extends JFrame{
 				catch(NumberFormatException e){
 					JOptionPane.showMessageDialog(null, "Only Numeric Characters May Be Entered");
 				}
+				
 			}
 			else if(action.getSource() == grayScale) {		
 				long startTime = System.nanoTime();
