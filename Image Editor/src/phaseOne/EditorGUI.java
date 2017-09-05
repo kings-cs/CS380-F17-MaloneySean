@@ -334,17 +334,14 @@ public class EditorGUI extends JFrame{
 	 */
 	private void setZoom(double zoomLevel) {
 			double nextZoom = zoomLevel;
-			
-			if(nextZoom < 100) {
-				nextZoom = 100;
-			}
-			
+
 			currentZoom.setText("Current Zoom: " + (int) nextZoom + "%");
 			
 			if(nextZoom > 100) {
 				zoomOut.setEnabled(true);
 			}
-			else if(nextZoom == 100) {
+			else if((int) nextZoom == 100) {
+				//TODO: There's probably a better way to fix this then casting it to an int
 				zoomOut.setEnabled(false);
 			}
 			
