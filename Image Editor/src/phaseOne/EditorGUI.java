@@ -397,8 +397,10 @@ public class EditorGUI extends JFrame{
 					//TODO: How do I update the text box?
 					//TODO: How am I supposed to get from the slider?
 					//TODO: Label in an option pane?
+					//TODO: Add a label to the bottom of the pane that depicts the current level of zoom...also put in and out by 10% buttons here
 					
 					//double zoomLevel = Double.parseDouble(JOptionPane.showInputDialog(zoomSlider));
+				
 					JOptionPane.showMessageDialog(null, zoomSlider);
 					double zoomLevel = zoomSlider.getValue();
 					
