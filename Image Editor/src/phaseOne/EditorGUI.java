@@ -31,6 +31,7 @@ import javax.swing.JToolBar;
  * @author Sean Maloney
  */
 public class EditorGUI extends JFrame{
+	//TODO: Talk to Jump about file handling & Close 
 	
 	/**
 	 * Generated Serial ID.
@@ -154,11 +155,12 @@ public class EditorGUI extends JFrame{
 		//****************Menu Bar*****************************
 		JMenuBar menuBar = new JMenuBar();
 		file = new JMenu("File");
-		exit = new JMenuItem("Exit");
+		
 		open = new JMenuItem("Open");
 		close = new JMenuItem("Close");
 		save = new JMenuItem("Save");
 		saveAs = new JMenuItem("Save As...");
+		exit = new JMenuItem("Exit");
 		
 		view = new JMenu("View");
 		resizeWindow = new JMenuItem("Resize Window");
