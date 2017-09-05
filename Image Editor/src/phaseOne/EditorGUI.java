@@ -468,14 +468,25 @@ public class EditorGUI extends JFrame{
 				}
 			}
 			else if(action.getSource() == close) {
+
+				Object[] options = {"Yes", "No", "Cancel"};
+				int result = JOptionPane.showOptionDialog(null, "Would you like to save your current image?", "Saving...", JOptionPane.YES_NO_CANCEL_OPTION,
+						JOptionPane.QUESTION_MESSAGE, null,	options, options[2]);
+
+				if(result != JOptionPane.CANCEL_OPTION) {
+					if(result == JOptionPane.YES_OPTION) {
+						save(currentFilePath);
+					}
+
+					BufferedImage img = getImageFromFile("Images//crop.png");
+					paintImage(img);
+					windowResize(img.getHeight(), img.getWidth());
+
+					originalHeight = img.getHeight();
+					originalWidth = img.getWidth();
+					zoomAmount = 1;
+				}
 				
-				BufferedImage img = getImageFromFile("Images//crop.png");
-				paintImage(img);
-				windowResize(img.getHeight(), img.getWidth());
-				
-				originalHeight = img.getHeight();
-				originalWidth = img.getWidth();
-				zoomAmount = 1;
 			}
 			else if(action.getSource() == save) {
 				save(currentFilePath);
