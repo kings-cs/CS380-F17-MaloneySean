@@ -455,8 +455,6 @@ public class EditorGUI extends JFrame{
 				if(result == JFileChooser.APPROVE_OPTION){
 					String filePath = fileChooser.getSelectedFile().getPath();
 					
-					//TODO: Do something here with file types
-					
 					BufferedImage img = getImageFromFile(filePath);
 					paintImage(img);
 					windowResize(img.getHeight(), img.getWidth());
@@ -501,7 +499,6 @@ public class EditorGUI extends JFrame{
 				save(currentFilePath);
 			}
 			else if(action.getSource() == saveAs) {
-				//TODO: The file format must be specified, this is fine just write in the read me
 				
 				JFileChooser fileChooser = new JFileChooser();
 				int result = fileChooser.showOpenDialog(null);

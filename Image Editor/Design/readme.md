@@ -39,7 +39,7 @@ once the project has been imported into a workspace.
       -Save: Saves the image and any changes made to it to the location it was opened from or from the file path designated by 'save as' if
       that function has been used since opening the current image.
       -Save As...: Opens a JFileChooser dialog to prompt the user for a new save location. The currently open image and any changes made to it
-      will be saved to this new location. 
+      will be saved to this new location. The file extension MUST be typed in at the end of the file path when saving in this manner.
       
       
    Under View:
