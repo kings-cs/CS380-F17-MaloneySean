@@ -185,7 +185,6 @@ public class EditorGUI extends JFrame{
 		//****************Tool Bar*****************************
 		toolBar = new JToolBar("Tool Bar");
 		toolBar.setFloatable(true);
-		//TODO: Come back to this section later to make buttons look better
 		grayScale = new JButton("Gray Scale");
 	
 		
