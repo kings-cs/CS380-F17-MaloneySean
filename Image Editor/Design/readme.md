@@ -14,7 +14,7 @@ Last Updated: 09/05/2017
 
 **************************
 
-1. There are no special requirements for compilation/execution of this program. Simply hit run in eclipse
+1. There are no special requirements for compilation/execution of this program. Simply run the class 'EditorGUI' in eclipse
 once the project has been imported into a workspace.
 
 2. The following file formats for images are currently supported:
