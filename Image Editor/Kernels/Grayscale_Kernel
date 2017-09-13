@@ -1,0 +1,7 @@
+_kernel void grayscale_kernel(____global const int *sourceData,__global int *resultData){
+int i = get_global_id(0);
+
+int pixel = sourceData[index];
+
+resultData[index] = 0;
+}

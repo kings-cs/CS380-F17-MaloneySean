@@ -1,8 +1,5 @@
 package ohCrop.algorithms;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.util.Scanner;
 
 import org.jocl.CL;
 import org.jocl.Pointer;
@@ -47,7 +44,7 @@ public class ParallelAddition {
 		
 		//Create the program from the source code
 		//Create the OpenCL kernel from the program
-		String source = readFile("Kernels/Hello_Kernel");
+		String source = KernelReader.readFile("Kernels/Hello_Kernel");
 		cl_program program = CL.clCreateProgramWithSource(context, 1, new String[] {source}, null, null);
 		
 		
@@ -89,32 +86,6 @@ public class ParallelAddition {
 		return result;
 	}
 	
-	/**
-	 * Private helper to read a kernel from a file and convert it to a string.
-	 * @param filePath The location of the kernel.
-	 * @return The kernel as a string.
-	 */
-	private String readFile(String filePath) {
-		File helloKernel = new File(filePath);
-		StringBuffer kernelString = new StringBuffer();
-		
-		
-		try {
-			Scanner fileReader = new Scanner(helloKernel);
-			
-			while(fileReader.hasNextLine()) {
-				String current = fileReader.nextLine();
-				kernelString.append(current).append("\n");
-			}
-			
-			fileReader.close();
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-		return kernelString.toString();
-	}
 	
 	/**
 	 * TEST.
