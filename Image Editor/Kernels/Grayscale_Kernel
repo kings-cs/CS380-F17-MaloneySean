@@ -1,7 +1,7 @@
-_kernel void grayscale_kernel(____global const int *sourceData,__global int *resultData){
+__kernel void grayscale_kernel(__global const int *sourceData,__global int *resultData){
 int i = get_global_id(0);
 
-int pixel = sourceData[index];
+int pixel = sourceData[i];
 
-resultData[index] = 0;
+resultData[i] = -12105913;
 }

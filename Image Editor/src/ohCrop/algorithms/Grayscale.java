@@ -47,9 +47,12 @@ public class Grayscale extends ImageAlgorithm{
 						(newGreen << GREEN_OFFSET) | (newBlue << BLUE_OFFSET);
 			
 				
+				
 				resultData[index] = grayPixel;
 			}
 		}
+		
+		System.out.println(resultData[0]);
 		
 		BufferedImage result = wrapUp(resultData, original);
 		return result;

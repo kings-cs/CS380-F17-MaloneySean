@@ -29,7 +29,7 @@ public class ParallelGrayScale extends ImageAlgorithm{
 	 * 
 	 * @return The newly colored image.
 	 */
-	public BufferedImage parallelGrayScale(cl_context context, cl_command_queue commandQueue, BufferedImage original) {
+	public static BufferedImage parallelGrayScale(cl_context context, cl_command_queue commandQueue, BufferedImage original) {
 		
 		
 		
@@ -40,9 +40,9 @@ public class ParallelGrayScale extends ImageAlgorithm{
 		Pointer ptrResult = Pointer.to(resultData);
 		
 		cl_mem memRaster = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
-				Sizeof.cl_float * imageRaster.length, ptrRaster, null);
+				Sizeof.cl_int * imageRaster.length, ptrRaster, null);
 		cl_mem memResult = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
-				Sizeof.cl_float * resultData.length, ptrResult, null);
+				Sizeof.cl_int * resultData.length, ptrResult, null);
 		
 		//KERNEL EXECUTION, SHOULD PROBABLY SPLIT THESE UP
 		
@@ -50,7 +50,7 @@ public class ParallelGrayScale extends ImageAlgorithm{
 		//Create the OpenCL kernel from the program
 		String source = KernelReader.readFile("Kernels/Grayscale_Kernel");
 		
-		System.out.println(source);
+		//System.out.println(source);
 		
 		cl_program program = CL.clCreateProgramWithSource(context, 1, new String[] {source}, null, null);
 		
@@ -80,6 +80,7 @@ public class ParallelGrayScale extends ImageAlgorithm{
 				ptrResult, 0, null, null);
 		
 		
+		
 		BufferedImage result = wrapUp(resultData, original);
 		
 				
@@ -88,8 +89,7 @@ public class ParallelGrayScale extends ImageAlgorithm{
 		CL.clReleaseProgram(program);
 		CL.clReleaseMemObject(memRaster);
 		CL.clReleaseMemObject(memResult);
-		CL.clReleaseCommandQueue(commandQueue);
-		CL.clReleaseContext(context);
+		
 		
 		return result;
 	}

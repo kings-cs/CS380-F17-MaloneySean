@@ -26,7 +26,11 @@ import javax.swing.JScrollPane;
 //import javax.swing.JSlider;
 import javax.swing.JToolBar;
 
+import org.jocl.CL;
+
 import ohCrop.algorithms.Grayscale;
+import ohCrop.algorithms.ParallelGrayScale;
+import ohCrop.algorithms.ParallelSetUp;
 
 /**
  * Main GUI window used in an Image Editor application that will allow the user to perform various modifications on a displayed image.
@@ -99,6 +103,11 @@ public class EditorGUI extends JFrame{
 	private JButton grayScale;
 	
 	/**
+	 * Button used to convert the current image to be in Gray Scale that is generated using parallelisms.
+	 */
+	private JButton grayScaleParallel;
+	
+	/**
 	 * JPanel used to display an image.
 	 */
 	private JPanel canvas;
@@ -149,9 +158,17 @@ public class EditorGUI extends JFrame{
 	private JButton zoomOut;
 	
 	/**
+	 * Class that handles the necessary OpenCL to run parallelisms.
+	 */
+	private ParallelSetUp parallelControl;
+	
+	/**
 	 * Constructor for the GUI.
 	 */
 	public EditorGUI() {
+		CL.setExceptionsEnabled(true);
+		parallelControl = new ParallelSetUp();
+		
 		WindowAdapter wc = new WindowClosing();
 		ActionListener  ae = new ActionEvents();
 		
@@ -188,7 +205,7 @@ public class EditorGUI extends JFrame{
 		toolBar = new JToolBar("Tool Bar");
 		toolBar.setFloatable(true);
 		grayScale = new JButton("Gray Scale");
-	
+		grayScaleParallel = new JButton("Gray Scale (Parallel)");
 		
 		//****************Bottom Panel*****************************
 		JPanel bottomPanel = new JPanel();
@@ -215,6 +232,7 @@ public class EditorGUI extends JFrame{
 		preZoomImage = image;
 		
 		toolBar.add(grayScale);
+		toolBar.add(grayScaleParallel);
 		this.add(toolBar, BorderLayout.NORTH);
 		
 		
@@ -222,6 +240,7 @@ public class EditorGUI extends JFrame{
 		
 		//****************Adding Listeners********************************
 		grayScale.addActionListener(ae);
+		grayScaleParallel.addActionListener(ae);
 		exit.addActionListener(ae);
 		open.addActionListener(ae);
 		close.addActionListener(ae);
@@ -432,6 +451,9 @@ public class EditorGUI extends JFrame{
 	 * Private helper method used to close the program.
 	 */
 	private void exit() {
+		CL.clReleaseCommandQueue(parallelControl.getCommandQueue());
+		CL.clReleaseContext(parallelControl.getContext());
+		
 		setVisible(false);
 		System.exit(0);
 	}
@@ -604,6 +626,17 @@ public class EditorGUI extends JFrame{
 				
 				
 				setZoom(preEditZoom * 100);
+			}
+			else if(action.getSource() == grayScaleParallel) {
+				
+				
+				BufferedImage gray = ParallelGrayScale.parallelGrayScale(parallelControl.getContext(), 
+						parallelControl.getCommandQueue(), preZoomImage);
+				
+				
+				//preZoomImage = gray;
+				
+				paintImage(gray);
 			}
 		}
 	}
