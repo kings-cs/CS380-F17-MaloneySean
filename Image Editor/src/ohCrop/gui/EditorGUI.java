@@ -629,12 +629,17 @@ public class EditorGUI extends JFrame{
 			}
 			else if(action.getSource() == grayScaleParallel) {
 				
-				
+				long startTime = System.nanoTime();
 				BufferedImage gray = ParallelGrayScale.parallelGrayScale(parallelControl.getContext(), 
 						parallelControl.getCommandQueue(), preZoomImage);
+				long endTime = System.nanoTime();
 				
+				long timeTaken = endTime - startTime;
 				
-				//preZoomImage = gray;
+				double miliSeconds = timeTaken / 1000000.0;
+				JOptionPane.showMessageDialog(null, "Time Taken: " + miliSeconds + " (ms)");
+				
+				preZoomImage = gray;
 				
 				paintImage(gray);
 			}

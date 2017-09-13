@@ -51,8 +51,7 @@ public class Grayscale extends ImageAlgorithm{
 				resultData[index] = grayPixel;
 			}
 		}
-		
-		System.out.println(resultData[0]);
+
 		
 		BufferedImage result = wrapUp(resultData, original);
 		return result;
