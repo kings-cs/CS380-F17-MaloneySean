@@ -1,4 +1,4 @@
-package phaseOne;
+package ohCrop.algorithms;
 
 import java.awt.image.BufferedImage;
 
@@ -36,7 +36,7 @@ public class Grayscale extends ImageAlgorithm{
 				int red = (pixel & RED_MASK) >> RED_OFFSET;
 				int green = (pixel & GREEN_MASK) >> GREEN_OFFSET;
 				int blue = (pixel & BLUE_MASK) >> BLUE_OFFSET;
-				
+								
 				int gray = (int) ((red * 0.299) + (green * 0.587) + (blue * 0.114));
 				
 				int newRed = gray;
@@ -47,9 +47,11 @@ public class Grayscale extends ImageAlgorithm{
 						(newGreen << GREEN_OFFSET) | (newBlue << BLUE_OFFSET);
 			
 				
+				
 				resultData[index] = grayPixel;
 			}
 		}
+
 		
 		BufferedImage result = wrapUp(resultData, original);
 		return result;

@@ -1,4 +1,4 @@
-package phaseOne;
+package ohCrop.gui;
 
 import java.awt.BorderLayout;
 

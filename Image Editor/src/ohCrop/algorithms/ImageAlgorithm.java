@@ -1,4 +1,4 @@
-package phaseOne;
+package ohCrop.algorithms;
 
 import java.awt.Point;
 import java.awt.image.BufferedImage;
