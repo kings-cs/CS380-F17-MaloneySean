@@ -629,6 +629,7 @@ public class EditorGUI extends JFrame{
 			}
 			else if(action.getSource() == grayScaleParallel) {
 				//TODO: FINISH KERNEL AND PUT THE ZOOM SHIT INTO THIS
+				//Rebasing
 				
 				long startTime = System.nanoTime();
 				BufferedImage gray = ParallelGrayScale.parallelGrayScale(parallelControl.getContext(), 
