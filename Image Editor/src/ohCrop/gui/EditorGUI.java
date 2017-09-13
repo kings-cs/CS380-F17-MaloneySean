@@ -1,4 +1,4 @@
-package ohCrop;
+package ohCrop.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -25,6 +25,8 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 //import javax.swing.JSlider;
 import javax.swing.JToolBar;
+
+import ohCrop.algorithms.Grayscale;
 
 /**
  * Main GUI window used in an Image Editor application that will allow the user to perform various modifications on a displayed image.
