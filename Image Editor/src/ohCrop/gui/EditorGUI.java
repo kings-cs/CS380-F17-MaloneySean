@@ -282,6 +282,7 @@ public class EditorGUI extends JFrame{
 	private void paintImage(BufferedImage ri) {	
 		image = new BufferedImage(ri.getWidth(), ri.getHeight(),
 				BufferedImage.TYPE_INT_ARGB);
+		
 		Graphics g = image.getGraphics();
 		g.drawImage(ri, 0, 0, null);
 		

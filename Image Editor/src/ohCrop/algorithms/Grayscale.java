@@ -16,8 +16,8 @@ public class Grayscale extends ImageAlgorithm{
 	 */
 	public static BufferedImage grayScale(BufferedImage original) {
 		
-		int width = original.getHeight();
-		int height = original.getWidth();
+		int height = original.getHeight();
+		int width = original.getWidth();
 		
 		int[] sourceData = strip(original);
 		

@@ -77,7 +77,7 @@ public class ImageAlgorithm {
 	 * @return The new BufferedImage.
 	 */
 	public static BufferedImage wrapUp(int[] resultData, BufferedImage source) {
-		BufferedImage result = new BufferedImage(source.getHeight(), source.getWidth(),
+		BufferedImage result = new BufferedImage(source.getWidth(), source.getHeight(),
 				BufferedImage.TYPE_INT_ARGB);
 		
 		DataBufferInt resultDataBuffer = new DataBufferInt(resultData, resultData.length);
