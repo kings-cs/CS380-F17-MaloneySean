@@ -2,6 +2,8 @@ package ohCrop.algorithms;
 
 import java.awt.image.BufferedImage;
 
+import javax.swing.JOptionPane;
+
 import org.jocl.CL;
 import org.jocl.Pointer;
 import org.jocl.Sizeof;
@@ -69,10 +71,19 @@ public class ParallelGrayScale extends ImageAlgorithm{
 		long[] globalWorkSize = new long[] {resultData.length};
 		long[] localWorkSize = new long[] {1};
 		
+		
+		long startTime = System.nanoTime();
 		//Execute the kernel
 		CL.clEnqueueNDRangeKernel(commandQueue, kernel, 1, null,
 				globalWorkSize, localWorkSize, 
 				0, null, null);
+		long endTime = System.nanoTime();
+		
+		long timeTaken = endTime - startTime;
+		
+		double miliSeconds = timeTaken / 1000000.0;
+		JOptionPane.showMessageDialog(null, "Time Taken: " + miliSeconds + " (ms)");
+		
 		
 		//Read the output data
 		CL.clEnqueueReadBuffer(commandQueue, memResult, 

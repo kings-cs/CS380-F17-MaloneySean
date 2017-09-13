@@ -612,14 +612,9 @@ public class EditorGUI extends JFrame{
 				
 				double preEditZoom = zoomAmount;
 				
-				long startTime = System.nanoTime();
+				
 				BufferedImage gray = Grayscale.grayScale(preZoomImage);
-				long endTime = System.nanoTime();
 				
-				long timeTaken = endTime - startTime;
-				
-				double miliSeconds = timeTaken / 1000000.0;
-				JOptionPane.showMessageDialog(null, "Time Taken: " + miliSeconds + " (ms)");
 				
 				preZoomImage = gray;
 				
@@ -633,15 +628,10 @@ public class EditorGUI extends JFrame{
 				
 				double preEditZoom = zoomAmount;
 				
-				long startTime = System.nanoTime();
+				
 				BufferedImage gray = ParallelGrayScale.parallelGrayScale(parallelControl.getContext(), 
 						parallelControl.getCommandQueue(), preZoomImage);
-				long endTime = System.nanoTime();
 				
-				long timeTaken = endTime - startTime;
-				
-				double miliSeconds = timeTaken / 1000000.0;
-				JOptionPane.showMessageDialog(null, "Time Taken: " + miliSeconds + " (ms)");
 				
 				preZoomImage = gray;
 				

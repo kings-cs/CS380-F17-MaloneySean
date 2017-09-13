@@ -2,6 +2,8 @@ package ohCrop.algorithms;
 
 import java.awt.image.BufferedImage;
 
+import javax.swing.JOptionPane;
+
 /**
  * Control class used to handle the Gray Scale algorithm.
  * 
@@ -23,6 +25,8 @@ public class Grayscale extends ImageAlgorithm{
 		
 		int[] resultData = new int[sourceData.length];
 		
+		
+		long startTime = System.nanoTime();
 		for(int row = 0; row < height; row++) {
 			for(int col = 0; col < width; col++) {
 				int index = row * width + col;
@@ -52,6 +56,12 @@ public class Grayscale extends ImageAlgorithm{
 			}
 		}
 
+		long endTime = System.nanoTime();
+		
+		long timeTaken = endTime - startTime;
+		
+		double miliSeconds = timeTaken / 1000000.0;
+		JOptionPane.showMessageDialog(null, "Time Taken: " + miliSeconds + " (ms)");
 		
 		BufferedImage result = wrapUp(resultData, original);
 		return result;
