@@ -57,8 +57,6 @@ public class ParallelSetUp {
 	 */
 	private cl_platform_id[] platforms;
 	
-	private cl_device_id[] devices;
-	
 	/**
 	 * The number of platforms on this device.
 	 */
@@ -115,7 +113,7 @@ public class ParallelSetUp {
 		
 
 		//Obtain a device ID
-		devices = new cl_device_id[numDevices];
+		cl_device_id[] devices = new cl_device_id[numDevices];
 		CL.clGetDeviceIDs(platform, deviceType, numDevices, devices, null);
 
 		cl_device_id device = devices[deviceIndex];
@@ -129,33 +127,38 @@ public class ParallelSetUp {
 	 * @return The list of devices.
 	 */
 	public HashMap<String, cl_device_id> listDevices() {
+		//TODO: Need to find a way to make the device_ids to the platform_ids.
+		
 		HashMap<String, cl_device_id> deviceList = new HashMap<String, cl_device_id>();
+
 		
-		System.out.println(numPlatforms);
-		
-		for(int j = 0; j < numPlatforms; j++) {
+		for(cl_platform_id current  : platforms) {
 
 
 			int[] numDevicesArray = new int[1];
-			CL.clGetDeviceIDs(platforms[j], CL.CL_DEVICE_TYPE_ALL, 0, null, numDevicesArray);
+			CL.clGetDeviceIDs(current, CL.CL_DEVICE_TYPE_ALL, 0, null, numDevicesArray);
 			int numDevices = numDevicesArray[0];
 
 			cl_device_id[] devicesArray = new cl_device_id[numDevices];
-			CL.clGetDeviceIDs(platforms[j], CL.CL_DEVICE_TYPE_ALL, numDevices, devicesArray, null);
-
+			CL.clGetDeviceIDs(current, CL.CL_DEVICE_TYPE_ALL, numDevices, devicesArray, null);
+			
+			
 
 			for(int i = 0; i < devicesArray.length; i++) {
 
+				
+				
 				long[] size = new long[1];
-				CL.clGetDeviceInfo(devices[i], CL.CL_DEVICE_NAME, 0, 
+				CL.clGetDeviceInfo(devicesArray[i], CL.CL_DEVICE_NAME, 0, 
 						null, size);
 
 				byte[] buffer = new byte[(int)size[0]];
-				CL.clGetDeviceInfo(devices[i], CL.CL_DEVICE_NAME, 
+				CL.clGetDeviceInfo(devicesArray[i], CL.CL_DEVICE_NAME, 
 						buffer.length, Pointer.to(buffer), null);
 
 				String deviceName = new String(buffer, 0, buffer.length - 1);
-
+				
+				
 				deviceList.put(deviceName, devicesArray[i]);
 
 
