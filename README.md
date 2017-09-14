@@ -99,7 +99,7 @@ once the project has been imported into a workspace.
 		<th>GeForce GTX 745</th>
 	</tr>
 	<tr>
-		<th>Grayscale Sequential</th>
+		<th>Sepia Sequential</th>
 		<th>1920x1080p</th>
 		<th>04.34982 (ms)</th>
 		<th>GeForce GTX 745</th>
