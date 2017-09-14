@@ -69,5 +69,40 @@ once the project has been imported into a workspace.
    
    To the left of the zoom control, is a drop down box that lists all of the computation devices on the computer running the program that support parallelism via OpenCL. The user can use this drop box menu to change the device that the calculations are being made on.
   
-4. The follow is a table of the amount of time taken to run various image editing algorithms used in the program. Time is reported in Miliseconds (ms).
+4. Timing:
 
+	The follow is a table of the amount of time taken to run various image editing algorithms used in the program. Time is reported in Miliseconds (ms).
+
+<table style = "width50%">
+	<tr>
+		<th>Algorithm</th>
+		<th>Image Size</th>
+		<th>Time</th>
+		<th>Computational Device</th>
+	</tr>
+	<tr>
+		<th>Grayscale Sequential</th>
+		<th>1920x1080p</th>
+		<th>20.516101 (ms)</th>
+		<th>GeForce GTX 745</th>
+	</tr>
+	<tr>
+		<th>Grayscale Parallel</th>
+		<th>1920x1080p</th>
+		<th>02.611009 (ms)</th>
+		<th>GeForce GTX 745</th>
+	</tr>
+	<tr>
+		<th>Sepia Sequential</th>
+		<th>1920x1080p</th>
+		<th>25.81792 (ms)</th>
+		<th>GeForce GTX 745</th>
+	</tr>
+	<tr>
+		<th>Grayscale Sequential</th>
+		<th>1920x1080p</th>
+		<th>04.34982 (ms)</th>
+		<th>GeForce GTX 745</th>
+	</tr>
+</table>
+	
