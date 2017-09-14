@@ -1,6 +1,9 @@
 package ohCrop.algorithms;
 
+import java.util.HashMap;
+
 import org.jocl.CL;
+import org.jocl.Pointer;
 import org.jocl.cl_command_queue;
 import org.jocl.cl_context;
 import org.jocl.cl_context_properties;
@@ -60,6 +63,17 @@ public class ParallelSetUp {
 	}
 	
 	/**
+	 * Constructor to set up the fields of the class using various private methods and a specific device.
+	 * @param deviceID The index of the desired device.
+	 */
+	public ParallelSetUp(cl_device_id deviceID) {
+		platform = choosePlatform();
+		device = deviceID;
+		context = createContext();
+		commandQueue = createCommandQueue();
+	}
+	
+	/**
 	 * Private helper method used to choose the platform used.
 	 * @return The id of the platform.
 	 */
@@ -78,14 +92,15 @@ public class ParallelSetUp {
 	}
 	
 	/**
-	 * Private helper method used to find the id of the device to be used.
+	 * Private helper method used to set up a default device to be used.
 	 * @return The id of the device.
 	 */
 	private cl_device_id findDevice() {
 		//Obtain the number of devices for the platform
-		int numDevicesArray[] = new int[1];
+		int[] numDevicesArray = new int[1];
 		CL.clGetDeviceIDs(platform, deviceType, 0, null, numDevicesArray);
 		int numDevices = numDevicesArray[0];
+		
 
 		//Obtain a device ID
 		cl_device_id[] devices = new cl_device_id[numDevices];
@@ -94,6 +109,52 @@ public class ParallelSetUp {
 		cl_device_id device = devices[deviceIndex];
 		
 		return device;
+	}
+	
+	
+	/**
+	 * Public method used to generate a map used to allow the user select what computational device they would like to use.
+	 * @return The list of devices.
+	 */
+	public HashMap<String, cl_device_id> listDevices() {
+		HashMap<String, cl_device_id> deviceList = new HashMap<String, cl_device_id>();
+		
+		int[] numDevicesArray = new int[1];
+		CL.clGetDeviceIDs(platform, CL.CL_DEVICE_TYPE_ALL, 0, null, numDevicesArray);
+		int numDevices = numDevicesArray[0];
+		
+		cl_device_id[] devicesArray = new cl_device_id[numDevices];
+		CL.clGetDeviceIDs(platform, CL.CL_DEVICE_TYPE_ALL, numDevices, devicesArray, null);
+		
+		
+		for(int i = 0; i < devicesArray.length; i++) {
+			
+			long[] size = new long[1];
+			CL.clGetDeviceInfo(device, CL.CL_DEVICE_NAME, 0, 
+					null, size);
+			
+			byte[] buffer = new byte[(int)size[0]];
+			CL.clGetDeviceInfo(device, CL.CL_DEVICE_NAME, 
+					buffer.length, Pointer.to(buffer), null);
+			
+			String deviceName = new String(buffer, 0, buffer.length - 1);
+			System.out.println(deviceName);
+			
+			deviceList.put(deviceName, devicesArray[i]);
+			
+//			System.out.println(deviceName);		
+//			CL.clGetDeviceInfo(device, CL.CL_DEVICE_TYPE, 0, 
+//					null, size);
+//			
+//			byte[] typeBuffer = new byte[(int)size[0]];
+//			CL.clGetDeviceInfo(device, CL.CL_DEVICE_TYPE, 
+//					typeBuffer.length, Pointer.to(typeBuffer), null);
+//			
+//			String deviceType = new String(typeBuffer, 0, typeBuffer.length - 1);
+//			System.out.println(deviceType);
+		}
+		
+		return deviceList;
 	}
 	
 	/**
@@ -141,7 +202,14 @@ public class ParallelSetUp {
 	}
 
 
-	
+	/**
+	 * TEST.
+	 * @param args Not used.
+	 */
+	public static void main(String[] args) {
+		ParallelSetUp test = new ParallelSetUp();
+		test.listDevices();
+	}
 	
 	
 }

@@ -11,6 +11,7 @@ import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 
 import javax.imageio.ImageIO;
 import javax.swing.JButton;
@@ -27,6 +28,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
 
 import org.jocl.CL;
+import org.jocl.cl_device_id;
 
 import ohCrop.algorithms.Grayscale;
 import ohCrop.algorithms.ParallelGrayScale;
@@ -162,12 +164,17 @@ public class EditorGUI extends JFrame{
 	 */
 	private ParallelSetUp parallelControl;
 	
+	private HashMap<String, cl_device_id> deviceMap;
+	
+	private JMenuItem selectDevice;
+	
 	/**
 	 * Constructor for the GUI.
 	 */
 	public EditorGUI() {
 		CL.setExceptionsEnabled(true);
 		parallelControl = new ParallelSetUp();
+		deviceMap = parallelControl.listDevices();
 		
 		WindowAdapter wc = new WindowClosing();
 		ActionListener  ae = new ActionEvents();
@@ -183,6 +190,7 @@ public class EditorGUI extends JFrame{
 		save = new JMenuItem("Save");
 		saveAs = new JMenuItem("Save As...");
 		exit = new JMenuItem("Exit");
+		selectDevice = new JMenuItem("Select Device");
 		
 		view = new JMenu("View");
 		resizeWindow = new JMenuItem("Resize Window");
@@ -194,6 +202,7 @@ public class EditorGUI extends JFrame{
 		file.add(close);
 		file.add(save);
 		file.add(saveAs);
+		file.add(selectDevice);
 		
 		menuBar.add(view);
 		view.add(resizeWindow);
@@ -246,6 +255,7 @@ public class EditorGUI extends JFrame{
 		close.addActionListener(ae);
 		save.addActionListener(ae);
 		saveAs.addActionListener(ae);
+		selectDevice.addActionListener(ae);
 		
 		resizeWindow.addActionListener(ae);
 		zoom.addActionListener(ae);
@@ -638,6 +648,12 @@ public class EditorGUI extends JFrame{
 				paintImage(gray);
 				
 				setZoom(preEditZoom * 100);
+			}
+			else if(action.getSource() == selectDevice) {
+				String result = "";
+				cl_device_id newDevice = deviceMap.get(result);
+				parallelControl = new ParallelSetUp(newDevice);
+				
 			}
 		}
 	}
