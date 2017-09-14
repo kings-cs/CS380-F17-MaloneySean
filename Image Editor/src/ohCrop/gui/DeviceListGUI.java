@@ -69,6 +69,15 @@ public class DeviceListGUI extends JFrame{
 		this.addWindowListener(wc);
 	}
 	
+	public String getResult() {
+		return result;
+	}
+	
+	public void popUp() {
+		this.setVisible(true);
+		this.setSize(250, 250);
+	}
+	
 	/**
 	 * Private inner class used to listen for Action Events such as button clicks.
 	 * @author Sean Maloney
@@ -79,6 +88,7 @@ public class DeviceListGUI extends JFrame{
 		public void actionPerformed(ActionEvent e) {
 			if(e.getSource() == okay) {
 				result = (String) deviceList.getSelectedItem();
+				exit();
 			}
 			else if(e.getSource() == cancel) {
 				exit();
@@ -111,15 +121,6 @@ public class DeviceListGUI extends JFrame{
 		//System.exit(0);
 	}
 	
-	public static void main(String[] args) {
-		HashMap<String, cl_device_id> deviceMap = new HashMap<String, cl_device_id> ();
-		deviceMap.put("A", null);
-		deviceMap.put("B", null);
-		
-		DeviceListGUI mainFrame = new DeviceListGUI(deviceMap);
-		mainFrame.setVisible(true);
-		mainFrame.setSize(250, 250);
-		
-	}
+	
 	
 }

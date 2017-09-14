@@ -651,6 +651,14 @@ public class EditorGUI extends JFrame{
 			}
 			else if(action.getSource() == selectDevice) {
 				String result = "";
+				
+				deviceMap.put("Test", null);
+				DeviceListGUI deviceGUI = new DeviceListGUI(deviceMap);
+				deviceGUI.popUp();
+				
+				result = deviceGUI.getResult();
+				
+				System.out.println(result);
 				cl_device_id newDevice = deviceMap.get(result);
 				parallelControl = new ParallelSetUp(newDevice);
 				
