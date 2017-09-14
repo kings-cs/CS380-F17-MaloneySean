@@ -75,9 +75,10 @@ public class ParallelSetUp {
 	/**
 	 * Constructor to set up the fields of the class using various private methods and a specific device.
 	 * @param deviceID The index of the desired device.
+	 * @param platformID The id of the platform associated to the device.
 	 */
-	public ParallelSetUp(cl_device_id deviceID) {
-		platform = choosePlatform();
+	public ParallelSetUp(cl_device_id deviceID, cl_platform_id platformID) {
+		platform = platformID;
 		device = deviceID;
 		context = createContext();
 		commandQueue = createCommandQueue();
@@ -126,10 +127,10 @@ public class ParallelSetUp {
 	 * Public method used to generate a map used to allow the user select what computational device they would like to use.
 	 * @return The list of devices.
 	 */
-	public HashMap<String, cl_device_id> listDevices() {
+	public HashMap<String,SetUpObject> listDevices() {
 		//TODO: Need to find a way to make the device_ids to the platform_ids.
 		
-		HashMap<String, cl_device_id> deviceList = new HashMap<String, cl_device_id>();
+		HashMap<String, SetUpObject> deviceList = new HashMap<String, SetUpObject>();
 
 		
 		for(cl_platform_id current  : platforms) {
@@ -159,7 +160,8 @@ public class ParallelSetUp {
 				String deviceName = new String(buffer, 0, buffer.length - 1);
 				
 				
-				deviceList.put(deviceName, devicesArray[i]);
+				SetUpObject nextObject = new SetUpObject(devicesArray[i], current);
+				deviceList.put(deviceName, nextObject);
 
 
 				//TODO: ASK JUMP ABOUT THIS

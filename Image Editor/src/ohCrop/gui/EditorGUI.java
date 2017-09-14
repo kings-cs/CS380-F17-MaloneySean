@@ -30,10 +30,12 @@ import javax.swing.JToolBar;
 
 import org.jocl.CL;
 import org.jocl.cl_device_id;
+import org.jocl.cl_platform_id;
 
 import ohCrop.algorithms.Grayscale;
 import ohCrop.algorithms.ParallelGrayScale;
 import ohCrop.algorithms.ParallelSetUp;
+import ohCrop.algorithms.SetUpObject;
 
 /**
  * Main GUI window used in an Image Editor application that will allow the user to perform various modifications on a displayed image.
@@ -168,7 +170,7 @@ public class EditorGUI extends JFrame{
 	/**
 	 * HashMap mapping Device names to their OpenCL id's.
 	 */
-	private HashMap<String, cl_device_id> deviceMap;
+	private HashMap<String, SetUpObject> deviceMap;
 	
 	
 	/**
@@ -675,8 +677,10 @@ public class EditorGUI extends JFrame{
 				String result = (String) deviceList.getSelectedItem();
 		
 				
-				cl_device_id newDevice = deviceMap.get(result);
-				parallelControl = new ParallelSetUp(newDevice);
+				cl_device_id newDevice = deviceMap.get(result).getDeviceId();
+				cl_platform_id newPlatform = deviceMap.get(result).getPlatformId();
+				
+				parallelControl = new ParallelSetUp(newDevice, newPlatform);
 				
 			}
 		}
