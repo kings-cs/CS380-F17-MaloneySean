@@ -15,6 +15,7 @@ import java.util.HashMap;
 
 import javax.imageio.ImageIO;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -164,9 +165,16 @@ public class EditorGUI extends JFrame{
 	 */
 	private ParallelSetUp parallelControl;
 	
+	/**
+	 * HashMap mapping Device names to their OpenCL id's.
+	 */
 	private HashMap<String, cl_device_id> deviceMap;
 	
-	private JMenuItem selectDevice;
+	
+	/**
+	 * A combo box containing the name of all the computational devices.
+	 */
+	private JComboBox<String> deviceList;
 	
 	/**
 	 * Constructor for the GUI.
@@ -181,16 +189,23 @@ public class EditorGUI extends JFrame{
 		
 		this.setLayout(new BorderLayout());
 		
+		deviceList = new JComboBox<String>();
+		
+		for(String current : deviceMap.keySet()) {
+			deviceList.addItem(current);
+		}
+		
 		//****************Menu Bar*****************************
 		JMenuBar menuBar = new JMenuBar();
 		file = new JMenu("File");
+		
 		
 		open = new JMenuItem("Open");
 		close = new JMenuItem("Close");
 		save = new JMenuItem("Save");
 		saveAs = new JMenuItem("Save As...");
 		exit = new JMenuItem("Exit");
-		selectDevice = new JMenuItem("Select Device");
+		
 		
 		view = new JMenu("View");
 		resizeWindow = new JMenuItem("Resize Window");
@@ -202,11 +217,14 @@ public class EditorGUI extends JFrame{
 		file.add(close);
 		file.add(save);
 		file.add(saveAs);
-		file.add(selectDevice);
+	
 		
 		menuBar.add(view);
 		view.add(resizeWindow);
 		view.add(zoom);
+		
+		
+		//selectDevice.add(deviceList);
 		
 		this.setJMenuBar(menuBar);
 		
@@ -228,6 +246,8 @@ public class EditorGUI extends JFrame{
 		bottomPanel.add(zoomIn);
 		bottomPanel.add(zoomOut);
 		bottomPanel.add(currentZoom);
+		
+		bottomPanel.add(deviceList, FlowLayout.LEFT);
 		
 		this.add(bottomPanel, BorderLayout.SOUTH);
 		//***************Image Displaying Starts Here**********
@@ -255,13 +275,15 @@ public class EditorGUI extends JFrame{
 		close.addActionListener(ae);
 		save.addActionListener(ae);
 		saveAs.addActionListener(ae);
-		selectDevice.addActionListener(ae);
+
 		
 		resizeWindow.addActionListener(ae);
 		zoom.addActionListener(ae);
 		
 		zoomIn.addActionListener(ae);
 		zoomOut.addActionListener(ae);
+		
+		deviceList.addActionListener(ae);
 		
 		this.addWindowListener(wc);
 	}
@@ -649,18 +671,9 @@ public class EditorGUI extends JFrame{
 				
 				setZoom(preEditZoom * 100);
 			}
-			else if(action.getSource() == selectDevice) {
-				String result = "";
-				
-				deviceMap.put("Test", null);
-				DeviceListGUI deviceGUI = new DeviceListGUI(deviceMap);
-				deviceGUI.popUp();
-				
-				result = deviceGUI.getResult();
-				
-				//TODO: I DONT FUCKING NOW
-				
-				System.out.println(result);
+			else if(action.getSource() == deviceList) {
+				String result = (String) deviceList.getSelectedItem();
+		
 				
 				cl_device_id newDevice = deviceMap.get(result);
 				parallelControl = new ParallelSetUp(newDevice);

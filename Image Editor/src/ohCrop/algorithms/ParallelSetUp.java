@@ -138,10 +138,11 @@ public class ParallelSetUp {
 					buffer.length, Pointer.to(buffer), null);
 			
 			String deviceName = new String(buffer, 0, buffer.length - 1);
-			System.out.println(deviceName);
 			
 			deviceList.put(deviceName, devicesArray[i]);
 			
+			
+			//TODO: ASK JUMP ABOUT THIS
 //			System.out.println(deviceName);		
 //			CL.clGetDeviceInfo(device, CL.CL_DEVICE_TYPE, 0, 
 //					null, size);
