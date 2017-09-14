@@ -573,7 +573,23 @@ public class EditorGUI extends JFrame{
 				
 			}
 			else if(action.getSource() == save) {
-				save(currentFilePath);
+				
+			
+				
+				Object[] options = {"Yes", "No"};
+				int result = JOptionPane.showOptionDialog(null, "This Is Going To Modify The Save Location Of The Current File" + 
+						" Are You Sure You'd Like To Continue?", "Saving...", JOptionPane.YES_NO_OPTION,
+						JOptionPane.QUESTION_MESSAGE, null,	options, options[1]);
+				
+				if(result == JOptionPane.YES_OPTION) {
+					save(currentFilePath);
+				}
+				else {
+					JOptionPane.showMessageDialog(null, "File Not Saved");
+				}
+				
+				
+				
 			}
 			else if(action.getSource() == saveAs) {
 				
