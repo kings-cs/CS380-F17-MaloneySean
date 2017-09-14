@@ -2,7 +2,7 @@
 Oh Crop Image Editor
 
 Author: Sean Maloney
-Last Updated: 09/05/2017
+Last Updated: 09/14/2017
 
 
    *Table Of Contents*
@@ -10,7 +10,7 @@ Last Updated: 09/05/2017
 1. Running The Program
 2. Supported File Types
 3. Features
-
+4. Timing
 
 
 **************************
@@ -56,10 +56,77 @@ once the project has been imported into a workspace.
    The Tool Bar also contains several buttons with various features:
    
    Gray Scale: Recolors all pixels of the current image to be a shade of a gray.
+   Gray Scale (Parallel): Recolors all pixels of the current image to be a shade of a gray but is computer via parallelism making it much faster.
+   Sepia Tone: Recolors all pixels of the current image to be in Sepia Tone.
+   Sepia Tone: Recolors all pixels of the current image to be in Sepia Tone but is computer via parallelism making it much faster.
+			  
          
-   A separate panel at the bottom of the main window contains additional zoom controls. Here, the current level of zoom is displayed and to the 
+   A separate panel at the bottom of the main window contains additional zoom controls and a device selector. Here, the current level of zoom is displayed and to the 
    left of this text are buttons labeled as + and -. The + will zoom in the picture by 10% and the - will zoom out by 10%. If the current level of
    zoom is not divisible of 10, these buttons will move to the nearest divisible number by 10 in the desired direction.
    
    If an image is too large to be displayed on the main window, scroll bars will accomodate the image.
+   
+   To the left of the zoom control, is a drop down box that lists all of the computation devices on the computer running the program that support parallelism via OpenCL. The user can use this drop box menu to change the device that the calculations are being made on.
   
+4. Timing:
+
+	The follow is a table of the amount of time taken to run various image editing algorithms used in the program. Time is reported in Miliseconds (ms).
+
+<table style = "width50%">
+	<tr>
+		<th>Algorithm</th>
+		<th>Image Size</th>
+		<th>Time</th>
+		<th>Computational Device</th>
+	</tr>
+	<tr>
+		<th>Grayscale Sequential</th>
+		<th>1920x1080p</th>
+		<th>20.516101 (ms)</th>
+		<th>GeForce GTX 745</th>
+	</tr>
+	<tr>
+		<th>Grayscale Parallel</th>
+		<th>1920x1080p</th>
+		<th>02.611009 (ms)</th>
+		<th>GeForce GTX 745</th>
+	</tr>
+	<tr>
+		<th>Sepia Sequential</th>
+		<th>1920x1080p</th>
+		<th>25.81792 (ms)</th>
+		<th>GeForce GTX 745</th>
+	</tr>
+	<tr>
+		<th>Sepia Sequential</th>
+		<th>1920x1080p</th>
+		<th>04.34982 (ms)</th>
+		<th>GeForce GTX 745</th>
+	</tr>
+	<tr>
+		<th>Grayscale Sequential</th>
+		<th>1280x791</th>
+		<th>15.688924 (ms)</th>
+		<th>GeForce GTX 745</th>
+	</tr>
+	<tr>
+		<th>Grayscale Parallel</th>
+		<th>1280x791</th>
+		<th>01.563283 (ms)</th>
+		<th>GeForce GTX 745</th>
+	</tr>
+	<tr>
+		<th>Sepia Sequential</th>
+		<th>1280x791</th>
+		<th>20.99364 (ms)</th>
+		<th>GeForce GTX 745</th>
+	</tr>
+	<tr>
+		<th>Sepia Sequential</th>
+		<th>1280x791</th>
+		<th>06.704361 (ms)</th>
+		<th>GeForce GTX 745</th>
+	</tr>
+</table>
+	
