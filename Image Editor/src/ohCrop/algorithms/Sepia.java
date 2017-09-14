@@ -4,6 +4,7 @@ import java.awt.image.BufferedImage;
 
 import javax.swing.JOptionPane;
 
+
 /**
  * Control class used to handle the Sepia tone algorithm.
  * 
@@ -11,6 +12,18 @@ import javax.swing.JOptionPane;
  */
 public class Sepia extends ImageAlgorithm{
 
+	/**
+	 * Sepia Depth constant.
+	 */
+	private static final int SEPIA_DEPTH = 20;
+	
+	
+	/**
+	 * Sepia Intensity constant.
+	 */
+	private static final int SEPIA_INTENSITY = 30;
+	
+	
 	/**
 	 * Converts an the colors of a given image to be in Sepia tone.
 	 * @param original The original image.
@@ -40,9 +53,17 @@ public class Sepia extends ImageAlgorithm{
 				int red = (pixel & RED_MASK) >> RED_OFFSET;
 				int green = (pixel & GREEN_MASK) >> GREEN_OFFSET;
 				int blue = (pixel & BLUE_MASK) >> BLUE_OFFSET;
-								
-				int sepiaPixel = 0xDEADBEEF;
+				
+				int average = (red + green + blue) / 3;
+				
+				int newRed = average + (SEPIA_DEPTH * 2);
+				int newBlue = average - SEPIA_INTENSITY;
+				int newGreen = average + SEPIA_DEPTH;
+				
+				
 			
+				int sepiaPixel = (alpha << ALPHA_OFFSET) | (newRed << RED_OFFSET) |
+						(newGreen << GREEN_OFFSET) | (newBlue << BLUE_OFFSET);
 				
 				
 				resultData[index] = sepiaPixel;
