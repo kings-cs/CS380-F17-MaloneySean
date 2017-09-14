@@ -116,8 +116,33 @@ public class ParallelSetUp {
 		//Obtain a device ID
 		cl_device_id[] devices = new cl_device_id[numDevices];
 		CL.clGetDeviceIDs(platform, deviceType, numDevices, devices, null);
-
+		
+		
 		cl_device_id device = devices[deviceIndex];
+		
+		int index = 0;
+		boolean foundGPU = false;
+		while(!foundGPU && index < devices.length) {
+			cl_device_id currentDevice = devices[index];
+			
+			long[] size = new long[1];
+			CL.clGetDeviceInfo(currentDevice, CL.CL_DEVICE_TYPE, 0, 
+					null, size);
+
+			long[] typeBuffer = new long[(int)size[0]];
+			CL.clGetDeviceInfo(currentDevice, CL.CL_DEVICE_TYPE, 
+					typeBuffer.length, Pointer.to(typeBuffer), null);
+			
+			if(typeBuffer[0] == CL.CL_DEVICE_TYPE_GPU) {
+				device = currentDevice;
+				
+				foundGPU = true;
+			}
+			
+			index++;
+		}
+		
+		
 		
 		return device;
 	}
