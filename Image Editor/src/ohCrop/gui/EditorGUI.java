@@ -654,11 +654,15 @@ public class EditorGUI extends JFrame{
 			else if(action.getSource() == zoomOut) {
 				double toZoom = (zoomAmount * 100) - 10;
 				
+				
 				String number = (int) toZoom + "";
 				int subtract = Integer.parseInt(number.substring(number.length() - 1, number.length()));
 				int add = 10 - subtract;
 
-				toZoom = toZoom + add;
+				if(add != 10) {
+					toZoom = toZoom + add;
+				}
+			
 
 				
 				setZoom(toZoom);
