@@ -587,18 +587,6 @@ public class EditorGUI extends JFrame{
 					}
 			}
 			else if(action.getSource() == zoom) {		
-//				int intitalPos = (int) (zoomAmount * 100);
-//				JSlider zoomSlider = new JSlider(JSlider.HORIZONTAL, 20, 200, intitalPos);
-//				zoomSlider.setMajorTickSpacing(100);
-//				zoomSlider.setMinorTickSpacing(10);
-//				zoomSlider.setPaintTicks(true);
-//				zoomSlider.setPaintLabels(true);
-				
-				//TODO: Probably need to instead create a different panel that can have a text box for custom amounts and updates according to the slider?
-//
-//				JOptionPane.showMessageDialog(null, zoomSlider);
-//				double zoomLevel = zoomSlider.getValue();
-
 				double zoomLevel = 0;
 				try {
 					zoomLevel = Double.parseDouble(JOptionPane.showInputDialog("Enter Zoom %: "));
@@ -657,9 +645,7 @@ public class EditorGUI extends JFrame{
 				
 				setZoom(preEditZoom * 100);
 			}
-			else if(action.getSource() == grayScaleParallel) {
-				//TODO: Gotta make this do the zoom zoom
-				
+			else if(action.getSource() == grayScaleParallel) {				
 				double preEditZoom = zoomAmount;
 				
 				

@@ -128,8 +128,7 @@ public class ParallelSetUp {
 	 * @return The list of devices.
 	 */
 	public HashMap<String,SetUpObject> listDevices() {
-		//TODO: Need to find a way to make the device_ids to the platform_ids.
-		
+		//TODO: Need to ensure that a GPU is defaultly selected.
 		HashMap<String, SetUpObject> deviceList = new HashMap<String, SetUpObject>();
 
 		
