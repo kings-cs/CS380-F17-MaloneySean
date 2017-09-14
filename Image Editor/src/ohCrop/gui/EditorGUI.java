@@ -658,7 +658,10 @@ public class EditorGUI extends JFrame{
 				
 				result = deviceGUI.getResult();
 				
+				//TODO: I DONT FUCKING NOW
+				
 				System.out.println(result);
+				
 				cl_device_id newDevice = deviceMap.get(result);
 				parallelControl = new ParallelSetUp(newDevice);
 				
