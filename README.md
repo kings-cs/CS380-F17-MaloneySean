@@ -104,5 +104,35 @@ once the project has been imported into a workspace.
 		<th>04.34982 (ms)</th>
 		<th>GeForce GTX 745</th>
 	</tr>
+		<tr>
+		<th>Algorithm</th>
+		<th>Image Size</th>
+		<th>Time</th>
+		<th>Computational Device</th>
+	</tr>
+	<tr>
+		<th>Grayscale Sequential</th>
+		<th>1280x791</th>
+		<th>20.516101 (ms)</th>
+		<th>GeForce GTX 745</th>
+	</tr>
+	<tr>
+		<th>Grayscale Parallel</th>
+		<th>1280x791</th>
+		<th>02.611009 (ms)</th>
+		<th>GeForce GTX 745</th>
+	</tr>
+	<tr>
+		<th>Sepia Sequential</th>
+		<th>1280x791</th>
+		<th>25.81792 (ms)</th>
+		<th>GeForce GTX 745</th>
+	</tr>
+	<tr>
+		<th>Sepia Sequential</th>
+		<th>1280x791</th>
+		<th>04.34982 (ms)</th>
+		<th>GeForce GTX 745</th>
+	</tr>
 </table>
 	
