@@ -272,7 +272,7 @@ public class EditorGUI extends JFrame{
 		bottomPanel.add(deviceList, FlowLayout.LEFT);
 		
 		this.add(bottomPanel, BorderLayout.SOUTH);
-		//***************Image Displaying Starts Here**********
+		//***************Image Displaying Starts Here***********
 		BufferedImage defaultImage = getImageFromFile("Images//crop.png");
 		paintImage(defaultImage);
 		windowResize(defaultImage.getHeight(), defaultImage.getWidth());
