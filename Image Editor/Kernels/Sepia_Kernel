@@ -23,11 +23,15 @@ int blue = (pixel & BLUE_MASK) >> BLUE_OFFSET;
 				
 float average = (red + green + blue) / 3;
 				
+
+				
 int newRed = average + (SEPIA_DEPTH * 2);
 int newBlue = average - SEPIA_INTENSITY;
 int newGreen = average + SEPIA_DEPTH;
-				
-				
+
+newRed = clamp(newRed, 0, 255);
+newBlue = clamp(newBlue, 0, 255);
+newGreen = clamp(newGreen, 0, 255);		
 			
 int sepiaPixel = (alpha << ALPHA_OFFSET) | (newRed << RED_OFFSET) |(newGreen << GREEN_OFFSET) | (newBlue << BLUE_OFFSET);
 				

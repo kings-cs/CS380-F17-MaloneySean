@@ -60,6 +60,27 @@ public class Sepia extends ImageAlgorithm{
 				int newBlue = average - SEPIA_INTENSITY;
 				int newGreen = average + SEPIA_DEPTH;
 				
+				if(newRed > 255) {
+					newRed = 255;
+				}
+				else if(newRed < 0) {
+					newRed = 0;
+				}
+				
+				if(newBlue > 255) {
+					newBlue = 255;
+				}
+				else if(newBlue < 0) {
+					newBlue = 0;
+				}
+				
+				
+				if(newGreen > 255) {
+					newGreen = 255;
+				}
+				else if(newGreen < 0) {
+					newGreen = 0;
+				}
 				
 			
 				int sepiaPixel = (alpha << ALPHA_OFFSET) | (newRed << RED_OFFSET) |
