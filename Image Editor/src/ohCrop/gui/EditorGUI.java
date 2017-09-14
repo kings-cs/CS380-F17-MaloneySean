@@ -184,6 +184,10 @@ public class EditorGUI extends JFrame{
 	 */
 	private HashMap<String, SetUpObject> deviceMap;
 	
+	/**
+	 * Whether or not a change was made to the image.
+	 */
+	private boolean changeMade;
 	
 	/**
 	 * A combo box containing the name of all the computational devices.
@@ -194,6 +198,8 @@ public class EditorGUI extends JFrame{
 	 * Constructor for the GUI.
 	 */
 	public EditorGUI() {
+		changeMade = false;
+		
 		CL.setExceptionsEnabled(true);
 		parallelControl = new ParallelSetUp();
 		deviceMap = parallelControl.listDevices();
@@ -550,15 +556,17 @@ public class EditorGUI extends JFrame{
 				}
 			}
 			else if(action.getSource() == close) {
+				if(changeMade == true) {
+					Object[] options = {"Yes", "No", "Cancel"};
+					int result = JOptionPane.showOptionDialog(null, "Would you like to save your current image?", "Saving...", JOptionPane.YES_NO_CANCEL_OPTION,
+							JOptionPane.QUESTION_MESSAGE, null,	options, options[2]);
 
-				Object[] options = {"Yes", "No", "Cancel"};
-				int result = JOptionPane.showOptionDialog(null, "Would you like to save your current image?", "Saving...", JOptionPane.YES_NO_CANCEL_OPTION,
-						JOptionPane.QUESTION_MESSAGE, null,	options, options[2]);
-
-				if(result != JOptionPane.CANCEL_OPTION) {
-					if(result == JOptionPane.YES_OPTION) {
-						save(currentFilePath);
+					if(result != JOptionPane.CANCEL_OPTION) {
+						if(result == JOptionPane.YES_OPTION) {
+							save(currentFilePath);
+						}
 					}
+
 
 					BufferedImage img = getImageFromFile("Images//crop.png");
 					paintImage(img);
@@ -567,10 +575,10 @@ public class EditorGUI extends JFrame{
 					originalHeight = img.getHeight();
 					originalWidth = img.getWidth();
 					zoomAmount = 1;
-					
+
 					preZoomImage = image;
 				}
-				
+				changeMade = false;
 			}
 			else if(action.getSource() == save) {
 				
@@ -608,7 +616,6 @@ public class EditorGUI extends JFrame{
 				}
 			}
 			else if(action.getSource() == resizeWindow) {
-				//TODO: Make one window for both inputs, don't need to finish for this phase
 				try{
 					int height = Integer.parseInt(JOptionPane.showInputDialog("Enter New Height: ", 0));
 					int width = Integer.parseInt(JOptionPane.showInputDialog("Enter New Width: ", 0));
@@ -669,7 +676,7 @@ public class EditorGUI extends JFrame{
 				
 			}
 			else if(action.getSource() == grayScale) {
-				
+				changeMade = true;
 				double preEditZoom = zoomAmount;
 				
 				
@@ -683,7 +690,8 @@ public class EditorGUI extends JFrame{
 				
 				setZoom(preEditZoom * 100);
 			}
-			else if(action.getSource() == grayScaleParallel) {				
+			else if(action.getSource() == grayScaleParallel) {	
+				changeMade = true;
 				double preEditZoom = zoomAmount;
 				
 				
@@ -698,6 +706,7 @@ public class EditorGUI extends JFrame{
 				setZoom(preEditZoom * 100);
 			}
 			else if(action.getSource() == sepiaTone) {
+				changeMade = true;
 				double preEditZoom = zoomAmount;
 				
 				
@@ -712,6 +721,7 @@ public class EditorGUI extends JFrame{
 				setZoom(preEditZoom * 100);
 			}
 			else if(action.getSource() == sepiaToneParallel) {
+				changeMade = true;
 				double preEditZoom = zoomAmount;
 				
 				
