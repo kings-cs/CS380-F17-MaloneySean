@@ -46,7 +46,7 @@ public class Sepia extends ImageAlgorithm{
 				
 				int pixel = sourceData[index];
 				
-				//**************Gray Scale Specific Implementation begins here********
+				//**************Sepia Specific Implementation begins here********
 				
 				int alpha = (pixel & ALPHA_MASK) >> ALPHA_OFFSET;
 				

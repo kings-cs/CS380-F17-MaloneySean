@@ -34,6 +34,7 @@ import org.jocl.cl_platform_id;
 
 import ohCrop.algorithms.Grayscale;
 import ohCrop.algorithms.ParallelGrayScale;
+import ohCrop.algorithms.ParallelSepia;
 import ohCrop.algorithms.ParallelSetUp;
 import ohCrop.algorithms.Sepia;
 import ohCrop.algorithms.SetUpObject;
@@ -114,9 +115,14 @@ public class EditorGUI extends JFrame{
 	private JButton grayScaleParallel;
 	
 	/**
-	 * Button used to convert the current image to in Sepia tone.
+	 * Button used to convert the current image into Sepia tone.
 	 */
 	private JButton sepiaTone;
+	
+	/**
+	 * Button used to convert the current image into Sepia Tone, generated through parallelisms.
+	 */
+	private JButton sepiaToneParallel;
 	
 	/**
 	 * JPanel used to display an image.
@@ -242,6 +248,7 @@ public class EditorGUI extends JFrame{
 		grayScale = new JButton("Gray Scale");
 		grayScaleParallel = new JButton("Gray Scale (Parallel)");
 		sepiaTone = new JButton("Sepia Tone");
+		sepiaToneParallel = new JButton("Sepia Tone (Parallel)");
 		
 		//****************Bottom Panel*****************************
 		JPanel bottomPanel = new JPanel();
@@ -272,6 +279,7 @@ public class EditorGUI extends JFrame{
 		toolBar.add(grayScale);
 		toolBar.add(grayScaleParallel);
 		toolBar.add(sepiaTone);
+		toolBar.add(sepiaToneParallel);
 		this.add(toolBar, BorderLayout.NORTH);
 		
 		
@@ -281,6 +289,7 @@ public class EditorGUI extends JFrame{
 		grayScale.addActionListener(ae);
 		grayScaleParallel.addActionListener(ae);
 		sepiaTone.addActionListener(ae);
+		sepiaToneParallel.addActionListener(ae);
 		exit.addActionListener(ae);
 		open.addActionListener(ae);
 		close.addActionListener(ae);
@@ -679,6 +688,20 @@ public class EditorGUI extends JFrame{
 				
 				paintImage(sepia);
 				
+				
+				setZoom(preEditZoom * 100);
+			}
+			else if(action.getSource() == sepiaToneParallel) {
+				double preEditZoom = zoomAmount;
+				
+				
+				BufferedImage sepia = ParallelSepia.parallelSepia(parallelControl.getContext(), 
+						parallelControl.getCommandQueue(), preZoomImage);
+				
+				
+				preZoomImage = sepia;
+				
+				paintImage(sepia);
 				
 				setZoom(preEditZoom * 100);
 			}
