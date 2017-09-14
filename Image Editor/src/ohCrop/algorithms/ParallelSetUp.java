@@ -57,6 +57,8 @@ public class ParallelSetUp {
 	 */
 	private cl_platform_id[] platforms;
 	
+	private cl_device_id[] devices;
+	
 	/**
 	 * The number of platforms on this device.
 	 */
@@ -113,7 +115,7 @@ public class ParallelSetUp {
 		
 
 		//Obtain a device ID
-		cl_device_id[] devices = new cl_device_id[numDevices];
+		devices = new cl_device_id[numDevices];
 		CL.clGetDeviceIDs(platform, deviceType, numDevices, devices, null);
 
 		cl_device_id device = devices[deviceIndex];
@@ -129,6 +131,7 @@ public class ParallelSetUp {
 	public HashMap<String, cl_device_id> listDevices() {
 		HashMap<String, cl_device_id> deviceList = new HashMap<String, cl_device_id>();
 		
+		System.out.println(numPlatforms);
 		
 		for(int j = 0; j < numPlatforms; j++) {
 
@@ -144,11 +147,11 @@ public class ParallelSetUp {
 			for(int i = 0; i < devicesArray.length; i++) {
 
 				long[] size = new long[1];
-				CL.clGetDeviceInfo(device, CL.CL_DEVICE_NAME, 0, 
+				CL.clGetDeviceInfo(devices[i], CL.CL_DEVICE_NAME, 0, 
 						null, size);
 
 				byte[] buffer = new byte[(int)size[0]];
-				CL.clGetDeviceInfo(device, CL.CL_DEVICE_NAME, 
+				CL.clGetDeviceInfo(devices[i], CL.CL_DEVICE_NAME, 
 						buffer.length, Pointer.to(buffer), null);
 
 				String deviceName = new String(buffer, 0, buffer.length - 1);
