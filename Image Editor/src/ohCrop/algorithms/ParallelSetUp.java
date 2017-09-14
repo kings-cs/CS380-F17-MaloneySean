@@ -53,6 +53,16 @@ public class ParallelSetUp {
 	private cl_command_queue commandQueue;
 	
 	/**
+	 * The list of platforms on this device.
+	 */
+	private cl_platform_id[] platforms;
+	
+	/**
+	 * The number of platforms on this device.
+	 */
+	private int numPlatforms;
+	
+	/**
 	 * Constructor to set up the fields of the class using various private methods.
 	 */
 	public ParallelSetUp() {
@@ -81,10 +91,10 @@ public class ParallelSetUp {
 		//Obtain the number of platforms
 		int[] numPlatformsArray = new int[1];
 		CL.clGetPlatformIDs(0, null, numPlatformsArray);
-		int numPlatforms = numPlatformsArray[0];
+		numPlatforms = numPlatformsArray[0];
 
 		//Obtain a platform ID
-		cl_platform_id[] platforms = new cl_platform_id[numPlatforms];
+		platforms = new cl_platform_id[numPlatforms];
 		CL.clGetPlatformIDs(platforms.length, platforms, null);
 		cl_platform_id platform = platforms[platformIndex];
 
@@ -119,42 +129,46 @@ public class ParallelSetUp {
 	public HashMap<String, cl_device_id> listDevices() {
 		HashMap<String, cl_device_id> deviceList = new HashMap<String, cl_device_id>();
 		
-		int[] numDevicesArray = new int[1];
-		CL.clGetDeviceIDs(platform, CL.CL_DEVICE_TYPE_ALL, 0, null, numDevicesArray);
-		int numDevices = numDevicesArray[0];
 		
-		cl_device_id[] devicesArray = new cl_device_id[numDevices];
-		CL.clGetDeviceIDs(platform, CL.CL_DEVICE_TYPE_ALL, numDevices, devicesArray, null);
-		
-		
-		for(int i = 0; i < devicesArray.length; i++) {
-			
-			long[] size = new long[1];
-			CL.clGetDeviceInfo(device, CL.CL_DEVICE_NAME, 0, 
-					null, size);
-			
-			byte[] buffer = new byte[(int)size[0]];
-			CL.clGetDeviceInfo(device, CL.CL_DEVICE_NAME, 
-					buffer.length, Pointer.to(buffer), null);
-			
-			String deviceName = new String(buffer, 0, buffer.length - 1);
-			
-			deviceList.put(deviceName, devicesArray[i]);
-			
-			
-			//TODO: ASK JUMP ABOUT THIS
-//			System.out.println(deviceName);		
-//			CL.clGetDeviceInfo(device, CL.CL_DEVICE_TYPE, 0, 
-//					null, size);
-//			
-//			byte[] typeBuffer = new byte[(int)size[0]];
-//			CL.clGetDeviceInfo(device, CL.CL_DEVICE_TYPE, 
-//					typeBuffer.length, Pointer.to(typeBuffer), null);
-//			
-//			String deviceType = new String(typeBuffer, 0, typeBuffer.length - 1);
-//			System.out.println(deviceType);
+		for(int j = 0; j < numPlatforms; j++) {
+
+
+			int[] numDevicesArray = new int[1];
+			CL.clGetDeviceIDs(platforms[j], CL.CL_DEVICE_TYPE_ALL, 0, null, numDevicesArray);
+			int numDevices = numDevicesArray[0];
+
+			cl_device_id[] devicesArray = new cl_device_id[numDevices];
+			CL.clGetDeviceIDs(platforms[j], CL.CL_DEVICE_TYPE_ALL, numDevices, devicesArray, null);
+
+
+			for(int i = 0; i < devicesArray.length; i++) {
+
+				long[] size = new long[1];
+				CL.clGetDeviceInfo(device, CL.CL_DEVICE_NAME, 0, 
+						null, size);
+
+				byte[] buffer = new byte[(int)size[0]];
+				CL.clGetDeviceInfo(device, CL.CL_DEVICE_NAME, 
+						buffer.length, Pointer.to(buffer), null);
+
+				String deviceName = new String(buffer, 0, buffer.length - 1);
+
+				deviceList.put(deviceName, devicesArray[i]);
+
+
+				//TODO: ASK JUMP ABOUT THIS
+				//			System.out.println(deviceName);		
+				//			CL.clGetDeviceInfo(device, CL.CL_DEVICE_TYPE, 0, 
+				//					null, size);
+				//			
+				//			byte[] typeBuffer = new byte[(int)size[0]];
+				//			CL.clGetDeviceInfo(device, CL.CL_DEVICE_TYPE, 
+				//					typeBuffer.length, Pointer.to(typeBuffer), null);
+				//			
+				//			String deviceType = new String(typeBuffer, 0, typeBuffer.length - 1);
+				//			System.out.println(deviceType);
+			}
 		}
-		
 		return deviceList;
 	}
 	
