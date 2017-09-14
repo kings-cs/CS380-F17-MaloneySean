@@ -1,0 +1,64 @@
+package ohCrop.algorithms;
+
+import java.awt.image.BufferedImage;
+
+import javax.swing.JOptionPane;
+
+/**
+ * Control class used to handle the Sepia tone algorithm.
+ * 
+ * @author Sean Maloney
+ */
+public class Sepia extends ImageAlgorithm{
+
+	/**
+	 * Converts an the colors of a given image to be in Sepia tone.
+	 * @param original The original image.
+	 * @return The newly re-colored image.
+	 */
+	public static BufferedImage sepia(BufferedImage original) {
+		
+		int height = original.getHeight();
+		int width = original.getWidth();
+		
+		int[] sourceData = strip(original);
+		
+		int[] resultData = new int[sourceData.length];
+		
+		
+		long startTime = System.nanoTime();
+		for(int row = 0; row < height; row++) {
+			for(int col = 0; col < width; col++) {
+				int index = row * width + col;
+				
+				int pixel = sourceData[index];
+				
+				//**************Gray Scale Specific Implementation begins here********
+				
+				int alpha = (pixel & ALPHA_MASK) >> ALPHA_OFFSET;
+				
+				int red = (pixel & RED_MASK) >> RED_OFFSET;
+				int green = (pixel & GREEN_MASK) >> GREEN_OFFSET;
+				int blue = (pixel & BLUE_MASK) >> BLUE_OFFSET;
+								
+				int sepiaPixel = 0xDEADBEEF;
+			
+				
+				
+				resultData[index] = sepiaPixel;
+			}
+		}
+
+		long endTime = System.nanoTime();
+		
+		long timeTaken = endTime - startTime;
+		
+		double miliSeconds = timeTaken / 1000000.0;
+		JOptionPane.showMessageDialog(null, "Time Taken: " + miliSeconds + " (ms)");
+		
+		BufferedImage result = wrapUp(resultData, original);
+		return result;
+	}
+	
+	
+}

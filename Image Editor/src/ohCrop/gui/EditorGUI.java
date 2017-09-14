@@ -35,6 +35,7 @@ import org.jocl.cl_platform_id;
 import ohCrop.algorithms.Grayscale;
 import ohCrop.algorithms.ParallelGrayScale;
 import ohCrop.algorithms.ParallelSetUp;
+import ohCrop.algorithms.Sepia;
 import ohCrop.algorithms.SetUpObject;
 
 /**
@@ -111,6 +112,11 @@ public class EditorGUI extends JFrame{
 	 * Button used to convert the current image to be in Gray Scale that is generated using parallelisms.
 	 */
 	private JButton grayScaleParallel;
+	
+	/**
+	 * Button used to convert the current image to in Sepia tone.
+	 */
+	private JButton sepiaTone;
 	
 	/**
 	 * JPanel used to display an image.
@@ -235,6 +241,7 @@ public class EditorGUI extends JFrame{
 		toolBar.setFloatable(true);
 		grayScale = new JButton("Gray Scale");
 		grayScaleParallel = new JButton("Gray Scale (Parallel)");
+		sepiaTone = new JButton("Sepia Tone");
 		
 		//****************Bottom Panel*****************************
 		JPanel bottomPanel = new JPanel();
@@ -264,6 +271,7 @@ public class EditorGUI extends JFrame{
 		
 		toolBar.add(grayScale);
 		toolBar.add(grayScaleParallel);
+		toolBar.add(sepiaTone);
 		this.add(toolBar, BorderLayout.NORTH);
 		
 		
@@ -272,6 +280,7 @@ public class EditorGUI extends JFrame{
 		//****************Adding Listeners********************************
 		grayScale.addActionListener(ae);
 		grayScaleParallel.addActionListener(ae);
+		sepiaTone.addActionListener(ae);
 		exit.addActionListener(ae);
 		open.addActionListener(ae);
 		close.addActionListener(ae);
@@ -499,7 +508,7 @@ public class EditorGUI extends JFrame{
 	 */
 	private class ActionEvents implements ActionListener {
 		
-		/**
+		/**Gray Scale
 		 * Performs the appropriate action for a certain button press.
 		 */
 		@Override
@@ -656,6 +665,20 @@ public class EditorGUI extends JFrame{
 				preZoomImage = gray;
 				
 				paintImage(gray);
+				
+				setZoom(preEditZoom * 100);
+			}
+			else if(action.getSource() == sepiaTone) {
+				double preEditZoom = zoomAmount;
+				
+				
+				BufferedImage sepia = Sepia.sepia(preZoomImage);
+				
+				
+				preZoomImage = sepia;
+				
+				paintImage(sepia);
+				
 				
 				setZoom(preEditZoom * 100);
 			}
