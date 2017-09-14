@@ -104,12 +104,6 @@ once the project has been imported into a workspace.
 		<th>04.34982 (ms)</th>
 		<th>GeForce GTX 745</th>
 	</tr>
-		<tr>
-		<th>Algorithm</th>
-		<th>Image Size</th>
-		<th>Time</th>
-		<th>Computational Device</th>
-	</tr>
 	<tr>
 		<th>Grayscale Sequential</th>
 		<th>1280x791</th>
