@@ -160,20 +160,33 @@ public class ParallelSetUp {
 				
 				
 				SetUpObject nextObject = new SetUpObject(devicesArray[i], current);
-				deviceList.put(deviceName, nextObject);
+				
 
 
 				//TODO: ASK JUMP ABOUT THIS
-				//			System.out.println(deviceName);		
-				//			CL.clGetDeviceInfo(device, CL.CL_DEVICE_TYPE, 0, 
-				//					null, size);
-				//			
-				//			byte[] typeBuffer = new byte[(int)size[0]];
-				//			CL.clGetDeviceInfo(device, CL.CL_DEVICE_TYPE, 
-				//					typeBuffer.length, Pointer.to(typeBuffer), null);
-				//			
-				//			String deviceType = new String(typeBuffer, 0, typeBuffer.length - 1);
-				//			System.out.println(deviceType);
+						
+				CL.clGetDeviceInfo(device, CL.CL_DEVICE_TYPE, 0, 
+						null, size);
+
+				long[] typeBuffer = new long[(int)size[0]];
+				CL.clGetDeviceInfo(device, CL.CL_DEVICE_TYPE, 
+						typeBuffer.length, Pointer.to(typeBuffer), null);
+				
+				if(typeBuffer[0] == CL.CL_DEVICE_TYPE_GPU) {
+					deviceName = "(GPU) " + deviceName;
+				}
+				else if(typeBuffer[0] == CL.CL_DEVICE_TYPE_CPU) {
+					deviceName = "(CPU) " + deviceName;
+				}
+				else {
+					deviceName = "(X) " + deviceName;
+				}
+				
+				
+				//System.out.println(deviceName);
+				deviceList.put(deviceName, nextObject);
+				//String deviceType = new String(typeBuffer, 0, typeBuffer.length - 1);
+				//System.out.println(deviceType);
 			}
 		}
 		return deviceList;
