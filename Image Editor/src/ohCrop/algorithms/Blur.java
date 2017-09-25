@@ -44,4 +44,24 @@ public class Blur extends ImageAlgorithm{
 		BufferedImage result = wrapUp(resultData, original);
 		return result;
 	}
+	
+	/**
+	 * Private helper method used to create a stencil.
+	 * @param x X component of center pixel.
+	 * @param y Y component of center pixel.
+	 * @param length The length of the stencil.
+	 * @param width The width of the image raster.
+	 * @return The stencil.
+	 */
+	private int[] createStencil(int x, int y, int length, int width){
+		int[] result = new int[length];
+		for(int row = 0; row < 3; row++) {
+			for(int col = 0; col < 3; col++) {
+				int index = row * width + col;
+				//There's some sort of math here...i just dont know what
+			}
+		}
+		
+		return null;
+	}
 }
