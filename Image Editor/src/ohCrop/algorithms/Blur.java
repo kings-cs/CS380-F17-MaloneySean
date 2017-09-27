@@ -15,13 +15,14 @@ public class Blur extends ImageAlgorithm{
 	 * @param original The original image.
 	 * @return The newly blurred image.
 	 */
-	public static BufferedImage grayScale(BufferedImage original) {
+	public static BufferedImage blur(BufferedImage original) {
 
 		double[] filter = {0.0232468, 0.0338240, 0.0383276, 0.0338240, 0.0232468,
 				0.0338240, 0.0492136, 0.0557663, 0.0492136, 0.0338240,
 				0.0383276, 0.0557663, 0.0631915, 0.0557663, 0.0383276,
 				0.0338240, 0.0492136, 0.0557663, 0.0492136, 0.0338240,
 				0.0232468, 0.0338240, 0.0383276, 0.0338240, 0.0232468};
+		
 		
 		
 		int height = original.getHeight();
@@ -61,8 +62,8 @@ public class Blur extends ImageAlgorithm{
 					//stencil[count] = sourceData[i];
 					int currentIndex = i;
 					
-					if(currentIndex > sourceData.length) {
-						currentIndex = sourceData.length;
+					if(currentIndex > sourceData.length - 1) {
+						currentIndex = sourceData.length - 1;
 					}
 					else if(currentIndex < 0) {
 						currentIndex = 0;

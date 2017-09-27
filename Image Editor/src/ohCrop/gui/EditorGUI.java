@@ -32,6 +32,7 @@ import org.jocl.CL;
 import org.jocl.cl_device_id;
 import org.jocl.cl_platform_id;
 
+import ohCrop.algorithms.Blur;
 import ohCrop.algorithms.Grayscale;
 import ohCrop.algorithms.ParallelGrayScale;
 import ohCrop.algorithms.ParallelSepia;
@@ -110,7 +111,7 @@ public class EditorGUI extends JFrame{
 	private JButton grayScale;
 	
 	/**
-	 * Button used to convert the current image to be in Gray Scale that is generated using parallelisms.
+	 * Button used to convert the current image to be in Gray Scale that is computed in parallel.
 	 */
 	private JButton grayScaleParallel;
 	
@@ -120,9 +121,19 @@ public class EditorGUI extends JFrame{
 	private JButton sepiaTone;
 	
 	/**
-	 * Button used to convert the current image into Sepia Tone, generated through parallelisms.
+	 * Button used to convert the current image into Sepia Tone, computed in parallel.
 	 */
 	private JButton sepiaToneParallel;
+	
+	/**
+	 * Button used to blur the current image.
+	 */
+	private JButton blur;
+	
+	/**
+	 * Button used to blur the current image, computed in parallel.
+	 */
+	private JButton blurParallel;
 	
 	/**
 	 * JPanel used to display an image.
@@ -255,6 +266,8 @@ public class EditorGUI extends JFrame{
 		grayScaleParallel = new JButton("Gray Scale (Parallel)");
 		sepiaTone = new JButton("Sepia Tone");
 		sepiaToneParallel = new JButton("Sepia Tone (Parallel)");
+		blur = new JButton("Blur");
+		blurParallel = new JButton("Blur (Parallel)");
 		
 		//****************Bottom Panel*****************************
 		JPanel bottomPanel = new JPanel();
@@ -286,6 +299,8 @@ public class EditorGUI extends JFrame{
 		toolBar.add(grayScaleParallel);
 		toolBar.add(sepiaTone);
 		toolBar.add(sepiaToneParallel);
+		toolBar.add(blur);
+		toolBar.add(blurParallel);
 		this.add(toolBar, BorderLayout.NORTH);
 		
 		
@@ -296,6 +311,8 @@ public class EditorGUI extends JFrame{
 		grayScaleParallel.addActionListener(ae);
 		sepiaTone.addActionListener(ae);
 		sepiaToneParallel.addActionListener(ae);
+		blur.addActionListener(ae);
+		blurParallel.addActionListener(ae);
 		exit.addActionListener(ae);
 		open.addActionListener(ae);
 		close.addActionListener(ae);
@@ -732,6 +749,21 @@ public class EditorGUI extends JFrame{
 				preZoomImage = sepia;
 				
 				paintImage(sepia);
+				
+				setZoom(preEditZoom * 100);
+			}
+			else if(action.getSource() == blur) {
+				changeMade = true;
+				double preEditZoom = zoomAmount;
+				
+				
+				BufferedImage blur = Blur.blur(preZoomImage);
+				
+				
+				preZoomImage = blur;
+				
+				paintImage(blur);
+				
 				
 				setZoom(preEditZoom * 100);
 			}
