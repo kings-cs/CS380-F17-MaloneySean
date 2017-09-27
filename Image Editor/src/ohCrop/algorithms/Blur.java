@@ -40,9 +40,9 @@ public class Blur extends ImageAlgorithm{
 		int[] greenArray = new int[sourceData.length];
 		int[] alphaArray = new int[sourceData.length];
 		
-		double[] redAvg = new double[sourceData.length];
-		double[] greenAvg = new double[sourceData.length];
-		double[] blueAvg = new double[sourceData.length];
+		int[] redAvg = new int[sourceData.length];
+		int[] greenAvg = new int[sourceData.length];
+		int[] blueAvg = new int[sourceData.length];
 		
 		for(int row = 0; row < height; row++) {
 			for(int col = 0; col < width; col++) {
@@ -96,9 +96,9 @@ public class Blur extends ImageAlgorithm{
 					count++;
 				}
 				
-				redAvg[index] = newRed;
-				greenAvg[index] = newGreen;
-				blueAvg[index] = newBlue;
+				redAvg[index] = (int) newRed;
+				greenAvg[index] = (int) newGreen;
+				blueAvg[index] = (int) newBlue;
 			}
 		}
 		
@@ -107,8 +107,8 @@ public class Blur extends ImageAlgorithm{
 			for(int col = 0; col < width; col++) {
 				int index = row * width + col;
 				
-				int blurPixel = (alphaArray[index] << ALPHA_OFFSET) | ((int) redAvg[index] << RED_OFFSET) |
-						((int) greenAvg[index] << GREEN_OFFSET) | ((int) blueAvg[index] << BLUE_OFFSET);
+				int blurPixel = (alphaArray[index] << ALPHA_OFFSET) | (redAvg[index] << RED_OFFSET) |
+						(greenAvg[index] << GREEN_OFFSET) | (blueAvg[index] << BLUE_OFFSET);
 				
 				resultData[index] = blurPixel;
 			}
