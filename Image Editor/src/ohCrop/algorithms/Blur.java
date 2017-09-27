@@ -34,30 +34,50 @@ public class Blur extends ImageAlgorithm{
 		int filterLength = 24;
 
 		long startTime = System.nanoTime();
+		
+		int[] redArray = new int[sourceData.length];
+		int[] blueArray = new int[sourceData.length];
+		int[] greenArray = new int[sourceData.length];
+		int[] alphaArray = new int[sourceData.length];
+		
+		double[] redAvg = new double[sourceData.length];
+		double[] greenAvg = new double[sourceData.length];
+		double[] blueAvg = new double[sourceData.length];
+		
 		for(int row = 0; row < height; row++) {
 			for(int col = 0; col < width; col++) {
 				int index = row * width + col;
-
-				int targetAlpha = (sourceData[index] & ALPHA_MASK) >> ALPHA_OFFSET;
-
-				int[] stencil = new int[filterLength];
-
-				int[] redArray = new int[stencil.length];
-				int[] blueArray = new int[stencil.length];
-				int[] greenArray = new int[stencil.length];
-				int[] alphaArray = new int[stencil.length];
-
+				
+				int pixel = sourceData[index];
+				
+				int alpha = (pixel & ALPHA_MASK) >> ALPHA_OFFSET;
+				int red = (pixel & RED_MASK) >> RED_OFFSET;
+				int green = (pixel & GREEN_MASK) >> GREEN_OFFSET;
+				int blue = (pixel & BLUE_MASK) >> BLUE_OFFSET;
+				
+				redArray[index] = red;
+				blueArray[index] = blue;
+				greenArray[index] = green;
+				alphaArray[index] = alpha;
+			}
+		}
+		
+		
+		
+		for(int row = 0; row < height; row++) {
+			for(int col = 0; col < width; col++) {
+				int index = row * width + col;
+				
+				//int[] stencil = new int[filterLength];
 				int end = index + (filterLength / 2);
 				int start = index - (filterLength / 2);
-
-//				if(end > sourceData.length) {
-//					end = sourceData.length;
-//				}
-//				if(start < 0) {
-//					start = 0;
-//				}
 				
 				int count = 0;
+				
+				double newRed = 0;
+				double newBlue = 0;
+				double newGreen = 0;
+				
 				for(int i = start; i < end; i++) {
 					//stencil[count] = sourceData[i];
 					int currentIndex = i;
@@ -69,40 +89,27 @@ public class Blur extends ImageAlgorithm{
 						currentIndex = 0;
 					}
 					
-					int pixel = sourceData[currentIndex];
+					newRed += redArray[currentIndex] * filter[count];
+					newGreen += greenArray[currentIndex] * filter[count];
+					newBlue += blueArray[currentIndex] * filter[count];
 					
-					int alpha = (pixel & ALPHA_MASK) >> ALPHA_OFFSET;
-					int red = (pixel & RED_MASK) >> RED_OFFSET;
-					int green = (pixel & GREEN_MASK) >> GREEN_OFFSET;
-					int blue = (pixel & BLUE_MASK) >> BLUE_OFFSET;
-
-					redArray[count] = red;
-					blueArray[count] = blue;
-					greenArray[count] = green;
-					alphaArray[count] = alpha;
-				
 					count++;
 				}
 				
-				double redWeight = 0;
-				double greenWeight = 0;
-				double blueWeight = 0;
+				redAvg[index] = newRed;
+				greenAvg[index] = newGreen;
+				blueAvg[index] = newBlue;
+			}
+		}
+		
+		
+		for(int row = 0; row < height; row++) {
+			for(int col = 0; col < width; col++) {
+				int index = row * width + col;
 				
-				for(int i = 0; i < redArray.length; i++) {
-					int currentRed = redArray[i];
-					int currentGreen = greenArray[i];
-					int currentBlue = blueArray[i];
-					
-					double filterWeight = filter[i];
-					
-					redWeight += currentRed + filterWeight;
-					greenWeight += currentGreen + filterWeight;
-					blueWeight += currentBlue + filterWeight;
-				}
+				int blurPixel = (alphaArray[index] << ALPHA_OFFSET) | ((int) redAvg[index] << RED_OFFSET) |
+						((int) greenAvg[index] << GREEN_OFFSET) | ((int) blueAvg[index] << BLUE_OFFSET);
 				
-				int blurPixel = (targetAlpha << ALPHA_OFFSET) | ((int) redWeight << RED_OFFSET) |
-						((int) greenWeight << GREEN_OFFSET) | ((int) blueWeight << BLUE_OFFSET);
-			
 				resultData[index] = blurPixel;
 			}
 		}
