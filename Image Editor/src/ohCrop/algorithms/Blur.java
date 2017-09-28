@@ -31,7 +31,7 @@ public class Blur extends ImageAlgorithm{
 		int[] sourceData = strip(original);
 
 		int[] resultData = new int[sourceData.length];
-		int filterLength = 24;
+		
 
 		long startTime = System.nanoTime();
 		
@@ -68,33 +68,49 @@ public class Blur extends ImageAlgorithm{
 			for(int col = 0; col < width; col++) {
 				int index = row * width + col;
 				
-				//int[] stencil = new int[filterLength];
-				int end = index + (filterLength / 2);
-				int start = index - (filterLength / 2);
-				
+	
 				int count = 0;
 				
 				double newRed = 0;
 				double newBlue = 0;
 				double newGreen = 0;
 				
-				for(int i = start; i < end; i++) {
-					//stencil[count] = sourceData[i];
-					int currentIndex = i;
-					
-					if(currentIndex > sourceData.length - 1) {
-						currentIndex = sourceData.length - 1;
+				
+				int maxTrav = 2;
+				
+				for(int i = row - maxTrav; i <= row + maxTrav; i++) {
+					for(int j = col - maxTrav; j <= col + maxTrav; j++) {
+						
+						int newRow = i;
+						int newCol = j;
+						
+						
+						
+						if(newRow < 0) {
+							newRow = 0;
+						}
+						else if(newRow > height - 1) {
+							newRow = height - 1;
+						}
+						
+						if(newCol < 0) {
+							newCol = 0;
+						}
+						else if(newCol > width - 1) {
+							newCol = width - 1;
+						}
+						
+						int currentIndex = newRow * width + newCol;
+						
+						newRed += redArray[currentIndex] * filter[count];
+						newGreen += greenArray[currentIndex] * filter[count];
+						newBlue += blueArray[currentIndex] * filter[count];
+						
+						count++;
 					}
-					else if(currentIndex < 0) {
-						currentIndex = 0;
-					}
-					
-					newRed += redArray[currentIndex] * filter[count];
-					newGreen += greenArray[currentIndex] * filter[count];
-					newBlue += blueArray[currentIndex] * filter[count];
-					
-					count++;
 				}
+				
+
 				
 				redAvg[index] = (int) newRed;
 				greenAvg[index] = (int) newGreen;
