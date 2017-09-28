@@ -45,7 +45,7 @@ public class BlurParallel extends ImageAlgorithm{
 		float[] greenAvg = new float[imageRaster.length];
 		float[] blueAvg = new float[imageRaster.length];
 		
-		int[] width = {original.getWidth()};
+		int[] dimension = {original.getWidth(), original.getHeight()};
 		
 		Pointer ptrRaster = Pointer.to(imageRaster);
 		Pointer ptrResult = Pointer.to(resultData);
@@ -59,7 +59,7 @@ public class BlurParallel extends ImageAlgorithm{
 		Pointer ptrGreenAvg = Pointer.to(greenAvg);
 		Pointer ptrBlueAvg = Pointer.to(blueAvg);
 		
-		Pointer ptrWidth = Pointer.to(width);
+		Pointer ptrDimension = Pointer.to(dimension);
 		
 		cl_mem memRaster = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
 				Sizeof.cl_int * imageRaster.length, ptrRaster, null);
@@ -83,26 +83,25 @@ public class BlurParallel extends ImageAlgorithm{
 		cl_mem memBlueAvg = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
 				Sizeof.cl_int * blueAvg.length, ptrBlueAvg, null);
 		
-		cl_mem memWidth = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
-				Sizeof.cl_int * width.length, ptrWidth, null);
+		cl_mem memDimension = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
+				Sizeof.cl_int * dimension.length, ptrDimension, null);
 		
 		//KERNEL EXECUTION, SHOULD PROBABLY SPLIT THESE UP
 		
 		//Create the program from the source code
 		//Create the OpenCL kernel from the program
-		String seperateSource = KernelReader.readFile("Kernels/SeperateChannel_Kernel");
-		String stencilSource = KernelReader.readFile("Kernels/StencilChannels_Kernel");
+		String source = KernelReader.readFile("Kernels/Blur_Kernel");
+		
 		//TODO: String ... String ...
 		
 		
 		//System.out.println(source);
 		
-		cl_program program = CL.clCreateProgramWithSource(context, 1, new String[] {seperateSource}, null, null);
-		cl_program stencilProgram = CL.clCreateProgramWithSource(context, 1, new String[] {stencilSource}, null, null);
+		cl_program program = CL.clCreateProgramWithSource(context, 1, new String[] {source}, null, null);
 		
 		//Build the program
 		CL.clBuildProgram(program, 0, null, null, null, null);
-		CL.clBuildProgram(stencilProgram, 0, null, null, null, null);
+		
 		//Create the kernel
 		cl_kernel seperateKernel = CL.clCreateKernel(program, "seperateChannel_Kernel", null);
 		cl_kernel stencilKernel = CL.clCreateKernel(program, "stencilChannel_Kernel", null);
@@ -122,7 +121,7 @@ public class BlurParallel extends ImageAlgorithm{
 		CL.clSetKernelArg(stencilKernel, 4, Sizeof.cl_mem, Pointer.to(memRedAvg));
 		CL.clSetKernelArg(stencilKernel, 5, Sizeof.cl_mem, Pointer.to(memGreenAvg));
 		CL.clSetKernelArg(stencilKernel, 6, Sizeof.cl_mem, Pointer.to(memBlueAvg));
-		CL.clSetKernelArg(stencilKernel, 7, Sizeof.cl_mem, Pointer.to(memWidth));
+		CL.clSetKernelArg(stencilKernel, 7, Sizeof.cl_mem, Pointer.to(memDimension));
 		
 		//Set the work-item dimensions
 		long[] globalWorkSize = new long[] {resultData.length};
@@ -159,6 +158,7 @@ public class BlurParallel extends ImageAlgorithm{
 				
 		//Release kernel, program, 
 		CL.clReleaseKernel(seperateKernel);
+		CL.clReleaseKernel(stencilKernel);
 		CL.clReleaseProgram(program);
 		CL.clReleaseMemObject(memRaster);
 		CL.clReleaseMemObject(memResult);

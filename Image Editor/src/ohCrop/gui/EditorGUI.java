@@ -33,6 +33,7 @@ import org.jocl.cl_device_id;
 import org.jocl.cl_platform_id;
 
 import ohCrop.algorithms.Blur;
+import ohCrop.algorithms.BlurParallel;
 import ohCrop.algorithms.Grayscale;
 import ohCrop.algorithms.ParallelGrayScale;
 import ohCrop.algorithms.ParallelSepia;
@@ -758,6 +759,22 @@ public class EditorGUI extends JFrame{
 				
 				
 				BufferedImage blur = Blur.blur(preZoomImage);
+				
+				
+				preZoomImage = blur;
+				
+				paintImage(blur);
+				
+				
+				setZoom(preEditZoom * 100);
+			}
+			else if(action.getSource() == blurParallel) {
+				changeMade = true;
+				double preEditZoom = zoomAmount;
+				
+				
+				BufferedImage blur = BlurParallel.parallelBlur(parallelControl.getContext(), 
+						parallelControl.getCommandQueue(), preZoomImage);
 				
 				
 				preZoomImage = blur;
