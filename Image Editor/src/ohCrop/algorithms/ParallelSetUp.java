@@ -260,6 +260,14 @@ public class ParallelSetUp {
 	public cl_command_queue getCommandQueue() {
 		return commandQueue;
 	}
+	
+	/**
+	 * Getter for the device.
+	 * @return device.
+	 */
+	public cl_device_id getDevice() {
+		return device;
+	}
 
 
 	/**

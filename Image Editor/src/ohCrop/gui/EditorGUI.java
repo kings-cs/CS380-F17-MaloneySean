@@ -774,7 +774,7 @@ public class EditorGUI extends JFrame{
 				
 				
 				BufferedImage blur = BlurParallel.parallelBlur(parallelControl.getContext(), 
-						parallelControl.getCommandQueue(), preZoomImage);
+						parallelControl.getCommandQueue(), parallelControl.getDevice(), preZoomImage);
 				
 				
 				preZoomImage = blur;
