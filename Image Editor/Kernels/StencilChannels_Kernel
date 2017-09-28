@@ -1,0 +1,57 @@
+__kernel void stencilChannel_Kernel(__global const int *sourceData, __global int * redArray, __global int * greenArray, 
+__global int * blueArray, __global float * redAvg, __global float * greenAvg, __global float * blueAvg, __global int * width){
+
+
+int i = get_global_id(0);
+
+int count = 0;
+				
+float newRed = 0;
+float newBlue = 0;
+float newGreen = 0;
+				
+int maxTrav = 2;
+
+int width = width[0];
+
+int row = i / width;
+int col = i % width;
+				
+for(int i = row - maxTrav; i <= row + maxTrav; i++) {
+	for(int j = col - maxTrav; j <= col + maxTrav; j++) {
+					
+		int newRow = i;
+		int newCol = j;
+						
+						
+						
+		if(newRow < 0) {
+			newRow = 0;
+		}
+		else if(newRow > height - 1) {
+			newRow = height - 1;
+		}
+						
+		if(newCol < 0) {
+			newCol = 0;
+		}
+		else if(newCol > width - 1) {
+			newCol = width - 1;
+		}
+						
+		int currentIndex = newRow * width + newCol;
+					
+		newRed += redArray[currentIndex] * filter[count];
+		newGreen += greenArray[currentIndex] * filter[count];
+		newBlue += blueArray[currentIndex] * filter[count];
+						
+		count++;
+	}
+}
+				
+
+				
+redAvg[i] = (int) newRed;
+greenAvg[i] = (int) newGreen;
+blueAvg[i] = (int) newBlue;
+}
