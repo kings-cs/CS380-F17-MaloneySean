@@ -91,7 +91,6 @@ public class ParallelGrayScale extends ImageAlgorithm{
 				ptrResult, 0, null, null);
 		
 		
-		
 		BufferedImage result = wrapUp(resultData, original);
 		
 				

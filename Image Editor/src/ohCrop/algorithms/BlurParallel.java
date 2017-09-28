@@ -41,9 +41,9 @@ public class BlurParallel extends ImageAlgorithm{
 		int[] blueArray = new int[imageRaster.length];
 		int[] alphaArray = new int[imageRaster.length];
 		
-		float[] redAvg = new float[imageRaster.length];
-		float[] greenAvg = new float[imageRaster.length];
-		float[] blueAvg = new float[imageRaster.length];
+		int[] redAvg = new int[imageRaster.length];
+		int[] greenAvg = new int[imageRaster.length];
+		int[] blueAvg = new int[imageRaster.length];
 		
 		int[] dimension = {original.getWidth(), original.getHeight()};
 		
@@ -105,6 +105,7 @@ public class BlurParallel extends ImageAlgorithm{
 		//Create the kernel
 		cl_kernel seperateKernel = CL.clCreateKernel(program, "seperateChannel_Kernel", null);
 		cl_kernel stencilKernel = CL.clCreateKernel(program, "stencilChannel_Kernel", null);
+		cl_kernel recombineKernel = CL.clCreateKernel(program, "recombineChannel_Kernel", null);
 		
 		//Set the arguments for the kernel
 		//TODO: Doesnt need memResult
@@ -123,19 +124,61 @@ public class BlurParallel extends ImageAlgorithm{
 		CL.clSetKernelArg(stencilKernel, 6, Sizeof.cl_mem, Pointer.to(memBlueAvg));
 		CL.clSetKernelArg(stencilKernel, 7, Sizeof.cl_mem, Pointer.to(memDimension));
 		
+		
+		CL.clSetKernelArg(recombineKernel, 0, Sizeof.cl_mem, Pointer.to(memResult));
+		CL.clSetKernelArg(recombineKernel, 1, Sizeof.cl_mem, Pointer.to(memAlpha));
+		CL.clSetKernelArg(recombineKernel, 2, Sizeof.cl_mem, Pointer.to(memRedAvg));
+		CL.clSetKernelArg(recombineKernel, 3, Sizeof.cl_mem, Pointer.to(memGreenAvg));
+		CL.clSetKernelArg(recombineKernel, 4, Sizeof.cl_mem, Pointer.to(memBlueAvg));
+		
 		//Set the work-item dimensions
 		long[] globalWorkSize = new long[] {resultData.length};
 		long[] localWorkSize = new long[] {1};
 		
 		
+		
 		long startTime = System.nanoTime();
-		//Execute the kernel
+		//Execute the First kernel, outputs red, green, blue, alpha
 		CL.clEnqueueNDRangeKernel(commandQueue, seperateKernel, 1, null,
 				globalWorkSize, localWorkSize, 
 				0, null, null);
+		
+		CL.clEnqueueReadBuffer(commandQueue, memRed, 
+				CL.CL_TRUE, 0, redArray.length * Sizeof.cl_int,
+				ptrRed, 0, null, null);
+		CL.clEnqueueReadBuffer(commandQueue, memGreen, 
+				CL.CL_TRUE, 0, redArray.length * Sizeof.cl_int,
+				ptrGreen, 0, null, null);
+		CL.clEnqueueReadBuffer(commandQueue, memBlue, 
+				CL.CL_TRUE, 0, redArray.length * Sizeof.cl_int,
+				ptrBlue, 0, null, null);
+		CL.clEnqueueReadBuffer(commandQueue, memAlpha, 
+				CL.CL_TRUE, 0, alphaArray.length * Sizeof.cl_int,
+				ptrAlpha, 0, null, null);
+		
+		
+		//Execute the second kernel, outputs redAvg, greenAvg, blueAvg.
 		CL.clEnqueueNDRangeKernel(commandQueue, stencilKernel, 1, null,
 				globalWorkSize, localWorkSize, 
 				0, null, null);
+		CL.clEnqueueReadBuffer(commandQueue, memRedAvg, 
+				CL.CL_TRUE, 0, redAvg.length * Sizeof.cl_int,
+				ptrRedAvg, 0, null, null);
+		CL.clEnqueueReadBuffer(commandQueue, memGreenAvg, 
+				CL.CL_TRUE, 0, greenAvg.length * Sizeof.cl_int,
+				ptrGreenAvg, 0, null, null);
+		CL.clEnqueueReadBuffer(commandQueue, memBlueAvg, 
+				CL.CL_TRUE, 0, blueAvg.length * Sizeof.cl_int,
+				ptrBlueAvg, 0, null, null);
+	
+		
+		
+		
+		//Execute the third kernel, outputs result
+		CL.clEnqueueNDRangeKernel(commandQueue, recombineKernel, 1, null,
+				globalWorkSize, localWorkSize, 
+				0, null, null);
+			
 		
 		
 		long endTime = System.nanoTime();
@@ -148,10 +191,10 @@ public class BlurParallel extends ImageAlgorithm{
 		
 		//Read the output data
 		CL.clEnqueueReadBuffer(commandQueue, memResult, 
-				CL.CL_TRUE, 0, resultData.length * Sizeof.cl_float,
+				CL.CL_TRUE, 0, resultData.length * Sizeof.cl_int,
 				ptrResult, 0, null, null);
 		
-		
+
 		
 		BufferedImage result = wrapUp(resultData, original);
 		
@@ -159,6 +202,7 @@ public class BlurParallel extends ImageAlgorithm{
 		//Release kernel, program, 
 		CL.clReleaseKernel(seperateKernel);
 		CL.clReleaseKernel(stencilKernel);
+		CL.clReleaseKernel(recombineKernel);
 		CL.clReleaseProgram(program);
 		CL.clReleaseMemObject(memRaster);
 		CL.clReleaseMemObject(memResult);

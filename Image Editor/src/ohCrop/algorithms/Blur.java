@@ -122,6 +122,10 @@ public class Blur extends ImageAlgorithm{
 		for(int row = 0; row < height; row++) {
 			for(int col = 0; col < width; col++) {
 				int index = row * width + col;
+				//System.out.println("RED AVG: " + redAvg[index]);
+				
+				
+			
 				
 				int blurPixel = (alphaArray[index] << ALPHA_OFFSET) | (redAvg[index] << RED_OFFSET) |
 						(greenAvg[index] << GREEN_OFFSET) | (blueAvg[index] << BLUE_OFFSET);

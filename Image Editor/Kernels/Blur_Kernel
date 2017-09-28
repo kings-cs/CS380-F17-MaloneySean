@@ -29,7 +29,7 @@ alphaArray[i] = alpha;
 
 
 __kernel void stencilChannel_Kernel(__global const int *sourceData, __global int * redArray, __global int * greenArray, 
-__global int * blueArray, __global float * redAvg, __global float * greenAvg, __global float * blueAvg, __global int * dimArray){
+__global int * blueArray, __global int * redAvg, __global int * greenAvg, __global int * blueAvg, __global int * dimArray){
 
 float filter[] = {0.0232468, 0.0338240, 0.0383276, 0.0338240, 0.0232468,
 				0.0338240, 0.0492136, 0.0557663, 0.0492136, 0.0338240,
@@ -90,4 +90,26 @@ for(int i = row - maxTrav; i <= row + maxTrav; i++) {
 redAvg[i] = (int) newRed;
 greenAvg[i] = (int) newGreen;
 blueAvg[i] = (int) newBlue;
+}
+
+
+
+__kernel void recombineChannel_Kernel(__global int *resultData, __global int * alphaArray, __global int * redAvg, __global int * greenAvg, __global int * blueAvg){
+
+int ALPHA_MASK = 0xff000000;
+int ALPHA_OFFSET = 24;
+int RED_MASK = 0x00ff0000;
+int RED_OFFSET = 16;
+int GREEN_MASK = 0x0000ff00;
+int GREEN_OFFSET = 8;
+int BLUE_MASK = 0x000000ff;
+int BLUE_OFFSET = 0;
+
+
+int i = get_global_id(0);
+
+int blurPixel = (alphaArray[i] << ALPHA_OFFSET) | (redAvg[i] << RED_OFFSET) |
+						(greenAvg[i] << GREEN_OFFSET) | (blueAvg[i] << BLUE_OFFSET);
+				
+resultData[i] = blurPixel;
 }
