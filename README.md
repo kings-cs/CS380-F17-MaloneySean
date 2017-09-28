@@ -55,12 +55,17 @@ once the project has been imported into a workspace.
    
    The Tool Bar also contains several buttons with various features:
    
-   Gray Scale: Recolors all pixels of the current image to be a shade of a gray. \br
-   Gray Scale (Parallel): Recolors all pixels of the current image to be a shade of a gray but is computer via parallelism making it much faster. \br
+   Gray Scale: Recolors all pixels of the current image to be a shade of a gray. 
+   
+   Gray Scale (Parallel): Recolors all pixels of the current image to be a shade of a gray but is computer via parallelism making it much faster. 
+   
    Sepia Tone: Recolors all pixels of the current image to be in Sepia Tone.
-   Sepia Tone (Parallel): Recolors all pixels of the current image to be in Sepia Tone but is computer via parallelism making it much faster. \br
-   Blur: Blurs all pixels of the current image. \br				  
-   Blur (Parallel): Blurs all pixels of the current image, computed via parallel. \br     
+   
+   Sepia Tone (Parallel): Recolors all pixels of the current image to be in Sepia Tone but is computer via parallelism making it much faster. 
+   
+   Blur: Blurs all pixels of the current image. 
+   
+   Blur (Parallel): Blurs all pixels of the current image, computed via parallel.      
        
    A separate panel at the bottom of the main window contains additional zoom controls and a device selector. Here, the current level of zoom is displayed and to the 
    left of this text are buttons labeled as + and -. The + will zoom in the picture by 10% and the - will zoom out by 10%. If the current level of
