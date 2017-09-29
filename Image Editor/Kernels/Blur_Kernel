@@ -11,7 +11,7 @@ int BLUE_MASK = 0x000000ff;
 int BLUE_OFFSET = 0;
 
 
-int i = get_group_id(0) * (get_local_size(0) + get_local_id(0));
+int i = (get_group_id(0) * get_local_size(0)) + get_local_id(0);
 
 int pixel = sourceData[i];
 
@@ -38,7 +38,7 @@ float filter[] = {0.0232468, 0.0338240, 0.0383276, 0.0338240, 0.0232468,
 				0.0232468, 0.0338240, 0.0383276, 0.0338240, 0.0232468};
 
 //Change back to get_global_id(0) if need be
-int i = get_group_id(0) * (get_local_size(0) + get_local_id(0));
+int i = (get_group_id(0) * get_local_size(0)) + get_local_id(0);
 
 int count = 0;
 				
@@ -107,7 +107,7 @@ int BLUE_MASK = 0x000000ff;
 int BLUE_OFFSET = 0;
 
 
-int i = get_group_id(0) * (get_local_size(0) + get_local_id(0));
+int i = (get_group_id(0) * get_local_size(0)) + get_local_id(0);
 
 int blurPixel = (alphaArray[i] << ALPHA_OFFSET) | (redAvg[i] << RED_OFFSET) |
 						(greenAvg[i] << GREEN_OFFSET) | (blueAvg[i] << BLUE_OFFSET);

@@ -147,8 +147,8 @@ public class BlurParallel extends ImageAlgorithm{
 
 
 		//Set the work-item dimensions
-				long[] globalWorkSize = new long[] {resultData.length};
-				long[] localWorkSize = new long[] {1};
+//				long[] globalWorkSize = new long[] {resultData.length};
+//				long[] localWorkSize = new long[] {1};
 		 //Uncomment this and comment out work group stuff below to undo 		
 
 
@@ -156,32 +156,32 @@ public class BlurParallel extends ImageAlgorithm{
 //WORK GROUP STUFF		
 		
 
-//		long[] size = new long[1];
-//		CL.clGetDeviceInfo(device, CL.CL_DEVICE_MAX_WORK_GROUP_SIZE, 0, 
-//				null, size);
-//
-//		int[] sizeBuffer = new int[(int) size[0]];
-//		CL.clGetDeviceInfo(device, CL.CL_DEVICE_MAX_WORK_GROUP_SIZE, 
-//				sizeBuffer.length, Pointer.to(sizeBuffer), null);
-//
-//
-//		
-//		int maxGroupSize = sizeBuffer[0];
-//		int globalSize = imageRaster.length;
-//		int localSize = maxGroupSize;
-//
-//		boolean divisible = false;
-//			
-//		while(!divisible) {
-//			int mod = globalSize % localSize;
-//			if(mod == 0) {
-//				divisible = true;
-//			}
-//			else {
-//				localSize--;
-//			}
-//		}
-//		
+		long[] size = new long[1];
+		CL.clGetDeviceInfo(device, CL.CL_DEVICE_MAX_WORK_GROUP_SIZE, 0, 
+				null, size);
+
+		int[] sizeBuffer = new int[(int) size[0]];
+		CL.clGetDeviceInfo(device, CL.CL_DEVICE_MAX_WORK_GROUP_SIZE, 
+				sizeBuffer.length, Pointer.to(sizeBuffer), null);
+
+
+		
+		int maxGroupSize = sizeBuffer[0];
+		int globalSize = imageRaster.length;
+		int localSize = maxGroupSize;
+
+		boolean divisible = false;
+			
+		while(!divisible) {
+			int mod = globalSize % localSize;
+			if(mod == 0) {
+				divisible = true;
+			}
+			else {
+				localSize--;
+			}
+		}
+		
 		
 //		System.out.println(globalGroupSize % localGroupSize);
 //		System.out.println(1500 - globalGroupSize);
@@ -199,9 +199,9 @@ public class BlurParallel extends ImageAlgorithm{
 //			}
 //		}
 		
-//		long[] globalWorkSize = new long[] {groups};
-//		long[] localWorkSize = new long[] {localSize};
-//		
+		long[] globalWorkSize = new long[] {imageRaster.length};
+		long[] localWorkSize = new long[] {localSize};
+		
 		
 		//long[] globalWorkSize = new long[] {imageRaster.length};
 		
@@ -218,7 +218,7 @@ public class BlurParallel extends ImageAlgorithm{
 //		System.out.println("IMAGE: " + imageRaster.length);
 //		System.out.println("LOCAL: " + localSize);
 //		System.out.println("GROUP: " + groups);
-		
+//		
 		
 		
 		
