@@ -198,7 +198,7 @@ public class BlurParallel extends ImageAlgorithm{
 //				groups++;
 //			}
 //		}
-		
+//		
 		long[] globalWorkSize = new long[] {imageRaster.length};
 		long[] localWorkSize = new long[] {localSize};
 		
