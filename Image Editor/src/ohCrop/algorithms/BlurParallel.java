@@ -262,7 +262,7 @@ public class BlurParallel extends ImageAlgorithm{
 		
 		
 		
-		//Execute the third kernel, outputs result
+		//Execute the third kernel, outputs result 
 		CL.clEnqueueNDRangeKernel(commandQueue, recombineKernel, 1, null,
 				globalWorkSize, localWorkSize, 
 				0, null, null);
