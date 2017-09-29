@@ -119,7 +119,7 @@ once the project has been imported into a workspace.
 	<tr>
 		<th>Blur Parallel</th>
 		<th>1920x1080p</th>
-		<th>231.510509 (ms)</th>
+		<th>25.222637 (ms)</th>
 		<th>GeForce GTX 745</th>
 	</tr>
 	<tr>
@@ -155,7 +155,7 @@ once the project has been imported into a workspace.
 	<tr>
 		<th>Blur Parallel</th>
 		<th>1280x791p</th>
-		<th>115.193381 (ms)</th>
+		<th>13.250703 (ms)</th>
 		<th>GeForce GTX 745</th>
 	</tr>
 </table>
