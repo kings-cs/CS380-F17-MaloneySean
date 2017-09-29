@@ -55,12 +55,18 @@ once the project has been imported into a workspace.
    
    The Tool Bar also contains several buttons with various features:
    
-   Gray Scale: Recolors all pixels of the current image to be a shade of a gray.
-   Gray Scale (Parallel): Recolors all pixels of the current image to be a shade of a gray but is computer via parallelism making it much faster.
+   Gray Scale: Recolors all pixels of the current image to be a shade of a gray. 
+   
+   Gray Scale (Parallel): Recolors all pixels of the current image to be a shade of a gray but is computer via parallelism making it much faster. 
+   
    Sepia Tone: Recolors all pixels of the current image to be in Sepia Tone.
-   Sepia Tone: Recolors all pixels of the current image to be in Sepia Tone but is computer via parallelism making it much faster.
-			  
-         
+   
+   Sepia Tone (Parallel): Recolors all pixels of the current image to be in Sepia Tone but is computer via parallelism making it much faster. 
+   
+   Blur: Blurs all pixels of the current image. 
+   
+   Blur (Parallel): Blurs all pixels of the current image, computed via parallel.      
+       
    A separate panel at the bottom of the main window contains additional zoom controls and a device selector. Here, the current level of zoom is displayed and to the 
    left of this text are buttons labeled as + and -. The + will zoom in the picture by 10% and the - will zoom out by 10%. If the current level of
    zoom is not divisible of 10, these buttons will move to the nearest divisible number by 10 in the desired direction.
@@ -99,33 +105,57 @@ once the project has been imported into a workspace.
 		<th>GeForce GTX 745</th>
 	</tr>
 	<tr>
-		<th>Sepia Sequential</th>
+		<th>Sepia Parallel</th>
 		<th>1920x1080p</th>
 		<th>04.34982 (ms)</th>
 		<th>GeForce GTX 745</th>
 	</tr>
 	<tr>
+		<th>Blur Sequential</th>
+		<th>1920x1080p</th>
+		<th>371.913135(ms)</th>
+		<th>GeForce GTX 745</th>
+	</tr>
+	<tr>
+		<th>Blur Parallel</th>
+		<th>1920x1080p</th>
+		<th>25.222637 (ms)</th>
+		<th>GeForce GTX 745</th>
+	</tr>
+	<tr>
 		<th>Grayscale Sequential</th>
-		<th>1280x791</th>
+		<th>1280x791p</th>
 		<th>15.688924 (ms)</th>
 		<th>GeForce GTX 745</th>
 	</tr>
 	<tr>
 		<th>Grayscale Parallel</th>
-		<th>1280x791</th>
+		<th>1280x791p</th>
 		<th>01.563283 (ms)</th>
 		<th>GeForce GTX 745</th>
 	</tr>
 	<tr>
 		<th>Sepia Sequential</th>
-		<th>1280x791</th>
+		<th>1280x791p</th>
 		<th>20.99364 (ms)</th>
 		<th>GeForce GTX 745</th>
 	</tr>
 	<tr>
-		<th>Sepia Sequential</th>
-		<th>1280x791</th>
+		<th>Sepia Parallel</th>
+		<th>1280x791p</th>
 		<th>06.704361 (ms)</th>
+		<th>GeForce GTX 745</th>
+	</tr>
+	<tr>
+		<th>Blur Sequential</th>
+		<th>1280x791p</th>
+		<th>194.004677(ms)</th>
+		<th>GeForce GTX 745</th>
+	</tr>
+	<tr>
+		<th>Blur Parallel</th>
+		<th>1280x791p</th>
+		<th>13.250703 (ms)</th>
 		<th>GeForce GTX 745</th>
 	</tr>
 </table>
