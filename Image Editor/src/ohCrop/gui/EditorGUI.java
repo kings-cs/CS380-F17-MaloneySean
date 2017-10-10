@@ -43,7 +43,7 @@ import ohCrop.algorithms.SetUpObject;
 
 /**
  * Main GUI window used in an Image Editor application that will allow the user to perform various modifications on a displayed image.
- * @author Sean Maloney
+ * @author Sean Maloney 
  */
 public class EditorGUI extends JFrame{	
 	/**
@@ -60,6 +60,11 @@ public class EditorGUI extends JFrame{
 	 * Menu Item that can be used to exit the program.
 	 */
 	private JMenuItem exit;
+	
+	/**
+	 * Menu Item that can be used to transform an image rotationally.
+	 */
+	private JMenuItem transform;
 	
 	/**
 	 * Menu Item used to open image files.
@@ -105,6 +110,26 @@ public class EditorGUI extends JFrame{
 	 * Tool bar used to perform various functions on the displayed image.
 	 */
 	private JToolBar toolBar;
+	
+	/**
+	 * Menu Item used to flip an image horizontally.
+	 */
+	private JMenuItem flipHorizontal;
+	
+	/**
+	 * Menu Item used to flip an image vertically.
+	 */
+	private JMenuItem flipVertical;
+	
+	/**
+	 * Menu Item used to rotate an image 90 degree to the right.
+	 */
+	private JMenuItem rotateRight;
+	
+	/**
+	 * Menu Item used to rotate an image 90 degrees to the left.
+	 */
+	private JMenuItem rotateLeft;
 	
 	/**
 	 * Button used to convert the current image to be in Gray Scale.
@@ -230,7 +255,7 @@ public class EditorGUI extends JFrame{
 		//****************Menu Bar*****************************
 		JMenuBar menuBar = new JMenuBar();
 		file = new JMenu("File");
-		
+		transform = new JMenu("Transform");
 		
 		open = new JMenuItem("Open");
 		close = new JMenuItem("Close");
@@ -242,6 +267,11 @@ public class EditorGUI extends JFrame{
 		view = new JMenu("View");
 		resizeWindow = new JMenuItem("Resize Window");
 		zoom = new JMenuItem("Zoom");
+		
+		flipHorizontal = new JMenuItem("Horizontal Flip");
+		flipVertical = new JMenuItem("Vertical Flip");
+		rotateRight = new JMenuItem("Rotate Right");
+		rotateLeft = new JMenuItem("Rotate Left");
 		
 		menuBar.add(file);
 		file.add(exit);
@@ -255,6 +285,11 @@ public class EditorGUI extends JFrame{
 		view.add(resizeWindow);
 		view.add(zoom);
 		
+		menuBar.add(transform);
+		transform.add(flipHorizontal);
+		transform.add(flipVertical);
+		transform.add(rotateRight);
+		transform.add(rotateLeft);
 		
 		//selectDevice.add(deviceList);
 		
@@ -319,6 +354,10 @@ public class EditorGUI extends JFrame{
 		close.addActionListener(ae);
 		save.addActionListener(ae);
 		saveAs.addActionListener(ae);
+		flipHorizontal.addActionListener(ae);
+		flipVertical.addActionListener(ae);
+		rotateRight.addActionListener(ae);
+		rotateLeft.addActionListener(ae);
 
 		
 		resizeWindow.addActionListener(ae);

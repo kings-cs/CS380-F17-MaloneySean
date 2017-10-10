@@ -14,24 +14,21 @@ import org.jocl.cl_mem;
 import org.jocl.cl_program;
 
 /**
- * Control class used to handle the Gray Scale algorithm.
- * 
- * @author Sean Maloney 
+ * Class used to rotate an image 90 degrees to the left.
+ * @author Sean Maloney
+ *
  */
-public class ParallelGrayScale extends ImageAlgorithm{
-	
-	
-	
+public class ParallelLeftRotation extends ImageAlgorithm{
 	/**
-	 * Converts the individual pixels of an image t be in shades of gray computed using parallelism.
+	 * Rotates an image 90 degrees to the left.
 	 * 
 	 * @param context The OpenCL context used for the parallel computing.
 	 * @param commandQueue The OpenCL commandQueue used for the parallel computing.
 	 * @param original The image to be colored.
 	 * 
-	 * @return The newly colored image.
+	 * @return The rotated image.
 	 */
-	public static BufferedImage parallelGrayScale(cl_context context, cl_command_queue commandQueue, BufferedImage original) {
+	public static BufferedImage verticalFlip(cl_context context, cl_command_queue commandQueue, BufferedImage original) {
 		
 		
 		
@@ -50,7 +47,7 @@ public class ParallelGrayScale extends ImageAlgorithm{
 		
 		//Create the program from the source code
 		//Create the OpenCL kernel from the program
-		String source = KernelReader.readFile("Kernels/Grayscale_Kernel");
+		String source = KernelReader.readFile("Kernels/Left_Kernel");
 		
 		//System.out.println(source);
 		
@@ -61,7 +58,7 @@ public class ParallelGrayScale extends ImageAlgorithm{
 		CL.clBuildProgram(program, 0, null, null, null, null);
 		
 		//Create the kernel
-		cl_kernel kernel = CL.clCreateKernel(program, "grayscale_kernel", null);
+		cl_kernel kernel = CL.clCreateKernel(program, "left_Kernel", null);
 		
 		//Set the arguments for the kernel
 		CL.clSetKernelArg(kernel, 0, Sizeof.cl_mem, Pointer.to(memRaster));
@@ -103,6 +100,6 @@ public class ParallelGrayScale extends ImageAlgorithm{
 		
 		return result;
 	}
-	
-	
+
+
 }

@@ -8,7 +8,7 @@ import javax.swing.JTextField;
 
 /**
  * GUI frame that appears to prompt the user for the dimensions to change the GUI to.
- * @author Sean Maloney
+ * @author Sean Maloney 
  */
 public class ResizeGUI extends JFrame{
 	
