@@ -28,7 +28,7 @@ public class ParallelRightRotation extends ImageAlgorithm{
 	 * 
 	 * @return The rotated image.
 	 */
-	public static BufferedImage verticalFlip(cl_context context, cl_command_queue commandQueue, BufferedImage original) {
+	public static BufferedImage rotateRight(cl_context context, cl_command_queue commandQueue, BufferedImage original) {
 		
 		
 		

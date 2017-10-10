@@ -36,8 +36,12 @@ import ohCrop.algorithms.Blur;
 import ohCrop.algorithms.BlurParallel;
 import ohCrop.algorithms.Grayscale;
 import ohCrop.algorithms.ParallelGrayScale;
+import ohCrop.algorithms.ParallelHorizontal;
+import ohCrop.algorithms.ParallelLeftRotation;
+import ohCrop.algorithms.ParallelRightRotation;
 import ohCrop.algorithms.ParallelSepia;
 import ohCrop.algorithms.ParallelSetUp;
+import ohCrop.algorithms.ParallelVertical;
 import ohCrop.algorithms.Sepia;
 import ohCrop.algorithms.SetUpObject;
 
@@ -820,6 +824,68 @@ public class EditorGUI extends JFrame{
 				
 				paintImage(blur);
 				
+				
+				setZoom(preEditZoom * 100);
+			}
+			else if(action.getSource() == flipHorizontal) {
+				changeMade = true;
+				double preEditZoom = zoomAmount;
+				
+				
+				BufferedImage horizontal = ParallelHorizontal.horizontalFlip(parallelControl.getContext(), 
+						parallelControl.getCommandQueue(), preZoomImage);
+				
+				
+				preZoomImage = horizontal;
+				
+				paintImage(horizontal);
+				
+				setZoom(preEditZoom * 100);
+			}
+			else if(action.getSource() == flipVertical) {
+				changeMade = true;
+				double preEditZoom = zoomAmount;
+				
+				
+				BufferedImage vertical = ParallelVertical.verticalFlip(parallelControl.getContext(), 
+						parallelControl.getCommandQueue(), preZoomImage);
+				
+				
+				preZoomImage = vertical;
+				
+				paintImage(vertical);
+				
+				setZoom(preEditZoom * 100);
+				
+			}
+			else if(action.getSource() == rotateLeft) {
+				changeMade = true;
+				double preEditZoom = zoomAmount;
+				
+				
+				BufferedImage left = ParallelLeftRotation.rotateLeft(parallelControl.getContext(), 
+						parallelControl.getCommandQueue(), preZoomImage);
+				
+				
+				preZoomImage = left;
+				
+				paintImage(left);
+				
+				setZoom(preEditZoom * 100);
+
+			}
+			else if(action.getSource() == rotateRight) {
+				changeMade = true;
+				double preEditZoom = zoomAmount;
+				
+				
+				BufferedImage right = ParallelRightRotation.rotateRight(parallelControl.getContext(), 
+						parallelControl.getCommandQueue(), preZoomImage);
+				
+				
+				preZoomImage = right;
+				
+				paintImage(right);
 				
 				setZoom(preEditZoom * 100);
 			}
