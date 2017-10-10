@@ -1,7 +1,7 @@
-__kernel void grayscale_kernel(__global const int *sourceData,__global int *resultData, __global int * dimensions){
-int i = get_global_id(0);
+__kernel void vertical_kernel(__global const int *sourceData,__global int *resultData, __global int * dimensions){
+int i = (get_group_id(0) * get_local_size(0)) + get_local_id(0);
 
-int pixel = sourceData[i];
+int trav = sourceData[i];
 
 
 
