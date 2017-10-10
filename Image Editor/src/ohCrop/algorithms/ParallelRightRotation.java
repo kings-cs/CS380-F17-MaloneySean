@@ -34,14 +34,18 @@ public class ParallelRightRotation extends ImageAlgorithm{
 		
 		int[] imageRaster = strip(original);
 		int[] resultData = new int[imageRaster.length];
+		int[] dimensions = {original.getWidth(), original.getHeight()};
 		
 		Pointer ptrRaster = Pointer.to(imageRaster);
 		Pointer ptrResult = Pointer.to(resultData);
+		Pointer ptrDimensions = Pointer.to(dimensions);
 		
 		cl_mem memRaster = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
 				Sizeof.cl_int * imageRaster.length, ptrRaster, null);
 		cl_mem memResult = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
 				Sizeof.cl_int * resultData.length, ptrResult, null);
+		cl_mem memDimensions = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
+				Sizeof.cl_int * dimensions.length, ptrDimensions, null);
 		
 		//KERNEL EXECUTION, SHOULD PROBABLY SPLIT THESE UP
 		
@@ -58,11 +62,12 @@ public class ParallelRightRotation extends ImageAlgorithm{
 		CL.clBuildProgram(program, 0, null, null, null, null);
 		
 		//Create the kernel
-		cl_kernel kernel = CL.clCreateKernel(program, "right_Kernel", null);
+		cl_kernel kernel = CL.clCreateKernel(program, "right_kernel", null);
 		
 		//Set the arguments for the kernel
 		CL.clSetKernelArg(kernel, 0, Sizeof.cl_mem, Pointer.to(memRaster));
 		CL.clSetKernelArg(kernel, 1, Sizeof.cl_mem, Pointer.to(memResult));
+		CL.clSetKernelArg(kernel, 2, Sizeof.cl_mem, Pointer.to(memDimensions));
 	
 		//Set the work-item dimensions
 		long[] globalWorkSize = new long[] {resultData.length};
@@ -96,7 +101,7 @@ public class ParallelRightRotation extends ImageAlgorithm{
 		CL.clReleaseProgram(program);
 		CL.clReleaseMemObject(memRaster);
 		CL.clReleaseMemObject(memResult);
-		
+		CL.clReleaseMemObject(memDimensions);
 		
 		return result;
 	}
