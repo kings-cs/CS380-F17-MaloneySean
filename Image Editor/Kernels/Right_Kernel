@@ -12,5 +12,5 @@ int newRow = col;
 int newCol = width - row;
 int newIndex = newRow * width + newCol;
 
-resultData[i] = trav;
+resultData[newIndex] = trav;
 }
