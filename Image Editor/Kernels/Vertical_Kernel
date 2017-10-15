@@ -4,5 +4,15 @@ int i = (get_group_id(0) * get_local_size(0)) + get_local_id(0);
 int trav = sourceData[i];
 
 
+int width = dimensions[0];
+int height = dimensions[1];
+
+int row = i / width;
+int col = i % width;
+
+int newRow = height - row;
+int newIndex = newRow * width + col;
+
+resultData[newIndex] = trav;
 
 }
