@@ -35,6 +35,7 @@ import org.jocl.cl_platform_id;
 import ohCrop.algorithms.Blur;
 import ohCrop.algorithms.BlurParallel;
 import ohCrop.algorithms.Grayscale;
+import ohCrop.algorithms.Mosaic;
 import ohCrop.algorithms.ParallelGrayScale;
 import ohCrop.algorithms.ParallelHorizontal;
 import ohCrop.algorithms.ParallelLeftRotation;
@@ -164,6 +165,16 @@ public class EditorGUI extends JFrame{
 	 * Button used to blur the current image, computed in parallel.
 	 */
 	private JButton blurParallel;
+	
+	/**
+	 * Button used to convert an image to a mosaic.
+	 */
+	private JButton mosaic;
+	
+	/**
+	 * Buttons used to convert an image to a mosaic, computed in parallel.
+	 */
+	private JButton mosaicParallel;
 	
 	/**
 	 * JPanel used to display an image.
@@ -308,6 +319,8 @@ public class EditorGUI extends JFrame{
 		sepiaToneParallel = new JButton("Sepia Tone (Parallel)");
 		blur = new JButton("Blur");
 		blurParallel = new JButton("Blur (Parallel)");
+		mosaic = new JButton("Mosaic");
+		mosaicParallel = new JButton("Mosaic (Parallel)");
 		
 		//****************Bottom Panel*****************************
 		JPanel bottomPanel = new JPanel();
@@ -341,6 +354,8 @@ public class EditorGUI extends JFrame{
 		toolBar.add(sepiaToneParallel);
 		toolBar.add(blur);
 		toolBar.add(blurParallel);
+		toolBar.add(mosaic);
+		toolBar.add(mosaicParallel);
 		this.add(toolBar, BorderLayout.NORTH);
 		
 		
@@ -353,6 +368,8 @@ public class EditorGUI extends JFrame{
 		sepiaToneParallel.addActionListener(ae);
 		blur.addActionListener(ae);
 		blurParallel.addActionListener(ae);
+		mosaic.addActionListener(ae);
+		mosaicParallel.addActionListener(ae);
 		exit.addActionListener(ae);
 		open.addActionListener(ae);
 		close.addActionListener(ae);
@@ -823,6 +840,36 @@ public class EditorGUI extends JFrame{
 				preZoomImage = blur;
 				
 				paintImage(blur);
+				
+				
+				setZoom(preEditZoom * 100);
+			}
+			else if(action.getSource() == mosaic) {
+				changeMade = true;
+				double preEditZoom = zoomAmount;
+				
+				
+				BufferedImage mosaic = Mosaic.mosaic(preZoomImage);
+				
+				
+				preZoomImage = mosaic;
+				
+				paintImage(mosaic);
+				
+				
+				setZoom(preEditZoom * 100);
+			}
+			else if(action.getSource() == mosaicParallel) {
+				changeMade = true;
+				double preEditZoom = zoomAmount;
+				
+				//TODO: CHANGE THIS LINE
+				BufferedImage mosaic = null;
+				
+				
+				preZoomImage = mosaic;
+				
+				paintImage(mosaic);
 				
 				
 				setZoom(preEditZoom * 100);
