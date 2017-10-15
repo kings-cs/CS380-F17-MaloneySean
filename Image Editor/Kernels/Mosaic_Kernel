@@ -1,16 +1,16 @@
 __kernel void mosaic_kernel(__global const int *sourceData,__global int *resultData, __global int * dimensions, __global int * tilePoints){
-int i = (get_group_id(0) * get_local_size(0)) + get_local_id(0);
+int index = (get_group_id(0) * get_local_size(0)) + get_local_id(0);
 
 
 
 int width = dimensions[0];
 int tileCount = dimensions[2];
 
-int row = i / width;
-int col = i % width;
+int row = index / width;
+int col = index % width;
 
 int closestCenter = 0;
-float currentDistance = INFINITY;
+float currentDistance = MAXFLOAT;
 
 for(int i = 0; i < tileCount; i++){
 	int currentIndex = tilePoints[i];
@@ -18,8 +18,8 @@ for(int i = 0; i < tileCount; i++){
 	int rowTwo = currentIndex / width;
 	int colTwo = currentIndex % width;	
 	
-	float rowDif = rowTwo - row;
-	float colDif = colTwo - col;
+	int rowDif = rowTwo - row;
+	int colDif = colTwo - col;
 	
 	float distance = hypot(rowDif, colDif);
 	
@@ -33,5 +33,5 @@ for(int i = 0; i < tileCount; i++){
 
 int mosaicPixel = sourceData[closestCenter];
 
-resultData[i] = mosaicPixel;
+resultData[index] = mosaicPixel;
 }
