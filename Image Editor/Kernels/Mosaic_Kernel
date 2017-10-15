@@ -1,0 +1,17 @@
+__kernel void mosaic_kernel(__global const int *sourceData,__global int *resultData, __global int * dimensions, __global int * centerPoints){
+int i = (get_group_id(0) * get_local_size(0)) + get_local_id(0);
+
+int trav = sourceData[i];
+
+int width = dimensions[0];
+int height = dimensions[1];
+
+int row = i / width;
+int col = i % width;
+
+int newRow = col;
+int newCol = width - row;
+int newIndex = newRow * width + newCol;
+
+resultData[newIndex] = trav;
+}

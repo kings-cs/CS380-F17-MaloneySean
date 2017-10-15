@@ -39,6 +39,7 @@ import ohCrop.algorithms.Mosaic;
 import ohCrop.algorithms.ParallelGrayScale;
 import ohCrop.algorithms.ParallelHorizontal;
 import ohCrop.algorithms.ParallelLeftRotation;
+import ohCrop.algorithms.ParallelMosaic;
 import ohCrop.algorithms.ParallelRightRotation;
 import ohCrop.algorithms.ParallelSepia;
 import ohCrop.algorithms.ParallelSetUp;
@@ -864,7 +865,8 @@ public class EditorGUI extends JFrame{
 				double preEditZoom = zoomAmount;
 				
 				//TODO: CHANGE THIS LINE
-				BufferedImage mosaic = null;
+				BufferedImage mosaic =  ParallelMosaic.parallelMosaic(parallelControl.getContext(), 
+						parallelControl.getCommandQueue(), preZoomImage);
 				
 				
 				preZoomImage = mosaic;
