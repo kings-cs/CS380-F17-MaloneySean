@@ -18,8 +18,8 @@ for(int i = 0; i < tileCount; i++){
 	int rowTwo = currentIndex / width;
 	int colTwo = currentIndex % width;	
 	
-	float rowDif = rowTwo - row;
-	float colDif = colTwo - col;
+	//float rowDif = rowTwo - row;
+	//float colDif = colTwo - col;
 	
 	//float rowDifSqed = pow(rowDif, 2);
 	//float colDifSqed = pow(colDif, 2);
