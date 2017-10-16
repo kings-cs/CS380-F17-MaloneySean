@@ -45,8 +45,10 @@ public class ParallelMosaic extends ImageAlgorithm{
 		
 		int[] imageRaster = strip(original);
 		int[] resultData = new int[imageRaster.length];
+		int[] dimensions = {original.getWidth(), original.getHeight(), tileCount};
 		int[] tilePoints = generateAnchors(tileCount, imageRaster.length);
-		int[] dimensions = {original.getWidth(), original.getHeight(), tilePoints.length};
+		
+		
 		
 		Pointer ptrRaster = Pointer.to(imageRaster);
 		Pointer ptrResult = Pointer.to(resultData);

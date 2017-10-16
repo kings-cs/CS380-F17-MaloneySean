@@ -10,7 +10,7 @@ int row = index / width;
 int col = index % width;
 
 int closestIndex = 0;
-float currentDistance = MAXFLOAT;
+float currentDistance = INFINITY;
 
 for(int i = 0; i < tileCount; i++){
 	int currentIndex = tilePoints[i];
