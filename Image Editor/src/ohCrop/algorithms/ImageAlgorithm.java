@@ -8,7 +8,7 @@ import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
 
 /**
- * Super class to handle stripping away and reassembling image data needed for image processing algorithms.
+ * Super class to handle stripping away and reassembling image data needed for image processing algorithms. 
  * @author Sean Maloney
  */
 public class ImageAlgorithm {

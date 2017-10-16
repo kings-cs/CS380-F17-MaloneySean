@@ -27,7 +27,7 @@ public class ParallelSepia extends ImageAlgorithm{
 	 * @param commandQueue The OpenCL commandQueue used for the parallel computing.
 	 * @param original The image to be colored.
 	 * 
-	 * @return The newly colored image.
+	 * @return The newly colored image.  
 	 */
 	public static BufferedImage parallelSepia(cl_context context, cl_command_queue commandQueue, BufferedImage original) {
 		

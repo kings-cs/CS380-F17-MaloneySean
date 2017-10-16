@@ -18,7 +18,7 @@ public class Sepia extends ImageAlgorithm{
 	private static final int SEPIA_DEPTH = 20;
 	
 	
-	/**
+	/** 
 	 * Sepia Intensity constant.
 	 */
 	private static final int SEPIA_INTENSITY = 30;

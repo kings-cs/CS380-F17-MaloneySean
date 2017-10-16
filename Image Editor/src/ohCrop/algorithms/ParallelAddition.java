@@ -23,7 +23,7 @@ public class ParallelAddition {
 	 * @param commandQueue The OpenCL commandQueue used for the parallel computing.
 	 * 
 	 * @return An array containing the added entries.
-	 */
+	 */ 
 	public float[] parallelAddition(cl_context context, cl_command_queue commandQueue) {
 		float[] arrayA = {3, 6 , 4};
 		float[] arrayB = {9, 1, 4};

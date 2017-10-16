@@ -1,5 +1,5 @@
 package ohCrop.algorithms;
-
+ 
 import java.awt.image.BufferedImage;
 
 import javax.swing.JOptionPane;

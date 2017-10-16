@@ -20,7 +20,7 @@ public class ParallelSetUp {
 	/**
 	 * Final field stating the index of the platform used.
 	 */
-	private final int platformIndex = 0;
+	private final int platformIndex = 0; 
 	
 	/**
 	 * Controls what kinds of devices can be used.

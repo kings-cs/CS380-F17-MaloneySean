@@ -10,7 +10,7 @@ import java.util.Scanner;
  */
 public class KernelReader {
 	/**
-	 * Private helper to read a kernel from a file and convert it to a string.
+	 * Private helper to read a kernel from a file and convert it to a string. 
 	 * @param filePath The location of the kernel.
 	 * @return The kernel as a string.
 	 */

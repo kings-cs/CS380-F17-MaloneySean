@@ -20,7 +20,7 @@ public class SetUpObject {
 	 */
 	private cl_platform_id platformId;
 
-	/**
+	/** 
 	 * Constructor to intialize the two fields.
 	 * @param device The id of the device.
 	 * @param platform The id of the assocaited platform.
