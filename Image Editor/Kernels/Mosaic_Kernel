@@ -9,7 +9,7 @@ int tileCount = dimensions[2];
 int row = index / width;
 int col = index % width;
 
-int closestCenter = 0;
+int closestIndex = 0;
 float currentDistance = MAXFLOAT;
 
 for(int i = 0; i < tileCount; i++){
@@ -18,20 +18,28 @@ for(int i = 0; i < tileCount; i++){
 	int rowTwo = currentIndex / width;
 	int colTwo = currentIndex % width;	
 	
-	int rowDif = rowTwo - row;
-	int colDif = colTwo - col;
+	float rowDif = rowTwo - row;
+	float colDif = colTwo - col;
+	
+	//float rowDifSqed = pow(rowDif, 2);
+	//float colDifSqed = pow(colDif, 2);
+	//float distance = sqrt(rowDifSqed + colDifSqed);
+	
+	
+	float rowDif = rowTwo - row;
+	float colDif = colTwo - col;
 	
 	float distance = hypot(rowDif, colDif);
 	
 	if (distance < currentDistance) {
 		currentDistance = distance;
-		closestCenter = currentIndex;
+		closestIndex = currentIndex;
 	}
 }
 
 
 
-int mosaicPixel = sourceData[closestCenter];
+int mosaicPixel = sourceData[closestIndex];
 
 resultData[index] = mosaicPixel;
 }
