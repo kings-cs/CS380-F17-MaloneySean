@@ -90,7 +90,7 @@ public class Mosaic extends ImageAlgorithm {
 
 	/**
 	 * Private helper method used to find the closest tile center to the pixel at
-	 * (row, col).
+	 * (row, col). 
 	 * 
 	 * @param row
 	 *            The x coordinate of the current pixel.
