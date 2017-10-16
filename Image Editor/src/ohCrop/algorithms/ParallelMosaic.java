@@ -118,6 +118,7 @@ public class ParallelMosaic extends ImageAlgorithm{
 		CL.clReleaseMemObject(memRaster);
 		CL.clReleaseMemObject(memResult);
 		CL.clReleaseMemObject(memDimensions);
+		CL.clReleaseMemObject(memTiles);
 		
 		
 		return result;
