@@ -93,7 +93,9 @@ public class ParallelRightRotation extends ImageAlgorithm{
 				ptrResult, 0, null, null);
 		
 		
-		BufferedImage result = wrapUp(resultData, original);
+		BufferedImage rotate = new BufferedImage(original.getHeight(), original.getWidth(),
+				BufferedImage.TYPE_INT_ARGB);
+		BufferedImage result = wrapUp(resultData, rotate);
 		
 				
 		//Release kernel, program, 
