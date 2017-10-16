@@ -11,7 +11,7 @@ int col = i % width;
 
 int newRow = width - col;
 int newCol = row;
-int newIndex = newRow * width + newCol;
+int newIndex = (newRow * height + newCol) - width;
 
 resultData[newIndex] = trav;
 }
