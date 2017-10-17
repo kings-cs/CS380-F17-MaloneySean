@@ -864,7 +864,6 @@ public class EditorGUI extends JFrame{
 				changeMade = true;
 				double preEditZoom = zoomAmount;
 				
-				//TODO: CHANGE THIS LINE
 				BufferedImage mosaic =  ParallelMosaic.parallelMosaic(parallelControl.getContext(), 
 						parallelControl.getCommandQueue(), parallelControl.getDevice(), preZoomImage);
 				
