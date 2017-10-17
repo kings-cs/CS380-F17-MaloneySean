@@ -11,6 +11,7 @@ Last Updated: 09/14/2017
 2. Supported File Types
 3. Features
 4. Timing
+5. Limitations
 
 
 **************************
@@ -160,3 +161,4 @@ once the project has been imported into a workspace.
 	</tr>
 </table>
 	
+5. The program currently has no limitations other than the possibly that file formats not explicitly said to be supported may not function.
