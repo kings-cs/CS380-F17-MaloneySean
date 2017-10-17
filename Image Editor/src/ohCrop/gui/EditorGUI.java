@@ -882,7 +882,7 @@ public class EditorGUI extends JFrame{
 				
 				
 				BufferedImage horizontal = ParallelHorizontal.horizontalFlip(parallelControl.getContext(), 
-						parallelControl.getCommandQueue(), preZoomImage);
+						parallelControl.getCommandQueue(), parallelControl.getDevice(), preZoomImage);
 				
 				
 				preZoomImage = horizontal;
@@ -913,7 +913,7 @@ public class EditorGUI extends JFrame{
 				
 				
 				BufferedImage left = ParallelLeftRotation.rotateLeft(parallelControl.getContext(), 
-						parallelControl.getCommandQueue(), preZoomImage);
+						parallelControl.getCommandQueue(), parallelControl.getDevice(), preZoomImage);
 				
 				
 				preZoomImage = left;
@@ -929,7 +929,7 @@ public class EditorGUI extends JFrame{
 				
 				
 				BufferedImage right = ParallelRightRotation.rotateRight(parallelControl.getContext(), 
-						parallelControl.getCommandQueue(), preZoomImage);
+						parallelControl.getCommandQueue(), parallelControl.getDevice(), preZoomImage);
 				
 				
 				preZoomImage = right;
