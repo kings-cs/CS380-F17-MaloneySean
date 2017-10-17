@@ -10,6 +10,7 @@ import org.jocl.Pointer;
 import org.jocl.Sizeof;
 import org.jocl.cl_command_queue;
 import org.jocl.cl_context;
+import org.jocl.cl_device_id;
 import org.jocl.cl_kernel;
 import org.jocl.cl_mem;
 import org.jocl.cl_program;
@@ -26,10 +27,11 @@ public class ParallelMosaic extends ImageAlgorithm{
 	 * @param context The OpenCL context used for the parallel computing.
 	 * @param commandQueue The OpenCL commandQueue used for the parallel computing.
 	 * @param original The image to be colored.
+	 * @param device The device used by OpenCL.
 	 * 
 	 * @return The newly colored image.
 	 */
-	public static BufferedImage parallelMosaic(cl_context context, cl_command_queue commandQueue, BufferedImage original) {
+	public static BufferedImage parallelMosaic(cl_context context, cl_command_queue commandQueue, cl_device_id device, BufferedImage original) {
 		int tileCount = 1024;
 		try {
 			tileCount = Integer.parseInt(JOptionPane.showInputDialog("Enter Number of Mosaic Center Points: ", 0));
@@ -87,11 +89,40 @@ public class ParallelMosaic extends ImageAlgorithm{
 		CL.clSetKernelArg(kernel, 2, Sizeof.cl_mem, Pointer.to(memDimensions));
 		CL.clSetKernelArg(kernel, 3, Sizeof.cl_mem, Pointer.to(memTiles));
 	
+		//WORK GROUP STUFF		
+		
+
+		long[] size = new long[1];
+		CL.clGetDeviceInfo(device, CL.CL_DEVICE_MAX_WORK_GROUP_SIZE, 0, 
+				null, size);
+
+		int[] sizeBuffer = new int[(int) size[0]];
+		CL.clGetDeviceInfo(device, CL.CL_DEVICE_MAX_WORK_GROUP_SIZE, 
+				sizeBuffer.length, Pointer.to(sizeBuffer), null);
+
+
+
+		int maxGroupSize = sizeBuffer[0];
+		int globalSize = imageRaster.length;
+		int localSize = maxGroupSize;
+
+		boolean divisible = false;
+
+		while(!divisible) {
+			int mod = globalSize % localSize;
+			if(mod == 0) {
+				divisible = true;
+			}
+			else {
+				localSize--;
+			}
+		}
+
+
 		//Set the work-item dimensions
-		long[] globalWorkSize = new long[] {resultData.length};
-		long[] localWorkSize = new long[] {1};
-		
-		
+		long[] globalWorkSize = new long[] {imageRaster.length};
+		long[] localWorkSize = new long[] {localSize};
+
 		long startTime = System.nanoTime();
 		//Execute the kernel
 		CL.clEnqueueNDRangeKernel(commandQueue, kernel, 1, null,

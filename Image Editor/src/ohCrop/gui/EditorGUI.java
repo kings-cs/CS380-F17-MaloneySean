@@ -866,7 +866,7 @@ public class EditorGUI extends JFrame{
 				
 				//TODO: CHANGE THIS LINE
 				BufferedImage mosaic =  ParallelMosaic.parallelMosaic(parallelControl.getContext(), 
-						parallelControl.getCommandQueue(), preZoomImage);
+						parallelControl.getCommandQueue(), parallelControl.getDevice(), preZoomImage);
 				
 				
 				preZoomImage = mosaic;
