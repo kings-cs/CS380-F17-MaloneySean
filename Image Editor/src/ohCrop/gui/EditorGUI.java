@@ -897,7 +897,7 @@ public class EditorGUI extends JFrame{
 				
 				
 				BufferedImage vertical = ParallelVertical.verticalFlip(parallelControl.getContext(), 
-						parallelControl.getCommandQueue(), preZoomImage);
+						parallelControl.getCommandQueue(), parallelControl.getDevice(), preZoomImage);
 				
 				
 				preZoomImage = vertical;
