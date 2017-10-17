@@ -11,6 +11,7 @@ Last Updated: 09/14/2017
 2. Supported File Types
 3. Features
 4. Timing
+5. Limitations
 
 
 **************************
@@ -123,6 +124,42 @@ once the project has been imported into a workspace.
 		<th>GeForce GTX 745</th>
 	</tr>
 	<tr>
+		<th>Mosaic Sequential</th>
+		<th>1920x1080p</th>
+		<th>10810.747899(ms)</th>
+		<th>GeForce GTX 745</th>
+	</tr>
+	<tr>
+		<th>Mosaic Parallel</th>
+		<th>1920x1080p</th>
+		<th>4.634023 (ms)</th>
+		<th>GeForce GTX 745</th>
+	</tr>
+		<tr>
+		<th>Horizontal Flip Parallel</th>
+		<th>1920x1080p</th>
+		<th>2.431387 (ms)</th>
+		<th>GeForce GTX 745</th>
+	</tr>
+	<tr>
+		<th>Vertical Flip Parallel</th>
+		<th>1920x1080p</th>
+		<th>2.40289 (ms)</th>
+		<th>GeForce GTX 745</th>
+	</tr>
+	<tr>
+		<th>Rotate Right Parallel</th>
+		<th>1920x1080p</th>
+		<th>2.483131 (ms)</th>
+		<th>GeForce GTX 745</th>
+	</tr>
+	<tr>
+		<th>Rotate Left Parallel</th>
+		<th>1920x1080p</th>
+		<th>2.385131 (ms)</th>
+		<th>GeForce GTX 745</th>
+	</tr>
+	<tr>
 		<th>Grayscale Sequential</th>
 		<th>1280x791p</th>
 		<th>15.688924 (ms)</th>
@@ -158,5 +195,43 @@ once the project has been imported into a workspace.
 		<th>13.250703 (ms)</th>
 		<th>GeForce GTX 745</th>
 	</tr>
+		<tr>
+		<th>Mosaic Sequential</th>
+		<th>1280x791p</th>
+		<th>5452.02955(ms)</th>
+		<th>GeForce GTX 745</th>
+	</tr>
+	<tr>
+		<th>Mosaic Parallel</th>
+		<th>1280x791p</th>
+		<th>3.134753 (ms)</th>
+		<th>GeForce GTX 745</th>
+	</tr>
+	<tr>
+		<th>Horizontal Flip Parallel</th>
+		<th>1280x791p</th>
+		<th>1.768885 (ms)</th>
+		<th>GeForce GTX 745</th>
+	</tr>
+	<tr>
+		<th>Vertical Flip Parallel</th>
+		<th>1280x791p</th>
+		<th>1.744453 (ms)</th>
+		<th>GeForce GTX 745</th>
+	</tr>
+	<tr>
+		<th>Rotate Right Parallel</th>
+		<th>1280x791p</th>
+		<th>1.78382 (ms)</th>
+		<th>GeForce GTX 745</th>
+	</tr>
+	<tr>
+		<th>Rotate Left Parallel</th>
+		<th>1280x791p</th>
+		<th>1.754335 (ms)</th>
+		<th>GeForce GTX 745</th>
+	</tr>
+	
 </table>
 	
+5. The program currently has no limitations other than the possibly that file formats not explicitly said to be supported may not function.
