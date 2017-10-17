@@ -62,7 +62,7 @@ public class ParallelMosaic extends ImageAlgorithm{
 		cl_mem memDimensions = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
 				Sizeof.cl_int * dimensions.length, ptrDimensions, null);
 		cl_mem memTiles = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
-				Sizeof.cl_int * dimensions.length, ptrTiles, null);
+				Sizeof.cl_int * tilePoints.length, ptrTiles, null);
 		
 		//KERNEL EXECUTION, SHOULD PROBABLY SPLIT THESE UP
 		
