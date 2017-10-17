@@ -124,6 +124,18 @@ once the project has been imported into a workspace.
 		<th>GeForce GTX 745</th>
 	</tr>
 	<tr>
+		<th>Mosaic Sequential</th>
+		<th>1920x1080p</th>
+		<th>10810.747899(ms)</th>
+		<th>GeForce GTX 745</th>
+	</tr>
+	<tr>
+		<th>Mosaic Parallel</th>
+		<th>1920x1080p</th>
+		<th>4.634023 (ms)</th>
+		<th>GeForce GTX 745</th>
+	</tr>
+	<tr>
 		<th>Grayscale Sequential</th>
 		<th>1280x791p</th>
 		<th>15.688924 (ms)</th>
