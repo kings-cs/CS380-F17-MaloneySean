@@ -1,0 +1,30 @@
+__kernel void hillis_steele_scan(__global const float * data, __global float * result,
+__local float * from, __local float * to){
+
+int i = (get_group_id(0) * get_local_size(0)) + get_local_id(0);
+
+int group_size   = get_local_size(0);
+int local_number = get_local_id(0);
+
+
+to[local_number] = data[i];
+from[local_number] = data[i];
+
+barrier(CLK_LOCAL_MEM_FENCE);
+
+for(int distance = 1; distance <= group_size - 1; distance = distance * 2){
+	if(local_number > distance - 1){
+		to[local_number] = from[local_number] + from[local_number - distance];
+	}
+	else{
+		to[local_number] = from[local_number];
+	}
+	
+
+	float * temp = to;
+	to = from;
+	from = temp;
+}
+
+result[i] = from[local_number];
+}
