@@ -21,7 +21,7 @@ for(int distance = 1; distance <= group_size - 1; distance = distance * 2){
 	}
 	
 
-	float * temp = to;
+	__local float * temp = to;
 	to = from;
 	from = temp;
 }

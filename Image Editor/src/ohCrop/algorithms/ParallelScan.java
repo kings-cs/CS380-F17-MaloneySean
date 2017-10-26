@@ -27,7 +27,7 @@ public class ParallelScan {
 	 */
 	protected static void scan(final float[] data, float[] results, cl_context context, cl_command_queue commandQueue, String kernelMethod) {
 	
-		
+		CL.setExceptionsEnabled(true);
 		Pointer ptrData = Pointer.to(data);
 		Pointer ptrResult = Pointer.to(results);
 		
@@ -62,6 +62,8 @@ public class ParallelScan {
 		CL.clSetKernelArg(kernel, 0, Sizeof.cl_mem, Pointer.to(memData));
 		CL.clSetKernelArg(kernel, 1, Sizeof.cl_mem, Pointer.to(memResult));
 
+//		CL.clSetKernelArg(kernel, 2, Sizeof.cl_float * data.length, null);
+//		CL.clSetKernelArg(kernel, 3, Sizeof.cl_float * data.length, null);
 		CL.clSetKernelArg(kernel, 2, Sizeof.cl_float * localWorkSize[0], null);
 		CL.clSetKernelArg(kernel, 3, Sizeof.cl_float * localWorkSize[0], null);
 
