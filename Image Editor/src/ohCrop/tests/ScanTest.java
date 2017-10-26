@@ -34,11 +34,11 @@ public class ScanTest {
 		
 		assertEquals("Index 0 should contain 1", 1, result[0], 0);
 		assertEquals("Index 1 should contain 1", 2, result[1], 0);
-		assertEquals("Index 2 should contain 1", 2, result[2], 0);
+		assertEquals("Index 2 should contain 1", 3, result[2], 0);
 		assertEquals("Index 3 should contain 1", 4, result[3], 0);
-		assertEquals("Index 4 should contain 1", 3, result[4], 0);
+		assertEquals("Index 4 should contain 1", 5, result[4], 0);
 		assertEquals("Index 5 should contain 1", 6, result[5], 0);
-		assertEquals("Index 6 should contain 1", 4, result[6], 0);
+		assertEquals("Index 6 should contain 1", 7, result[6], 0);
 		assertEquals("Index 7 should contain 1", 8, result[7], 0);
 	}
 	
