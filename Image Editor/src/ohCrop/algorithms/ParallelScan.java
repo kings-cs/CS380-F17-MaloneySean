@@ -6,6 +6,7 @@ import org.jocl.Pointer;
 import org.jocl.Sizeof;
 import org.jocl.cl_command_queue;
 import org.jocl.cl_context;
+import org.jocl.cl_device_id;
 import org.jocl.cl_kernel;
 import org.jocl.cl_mem;
 import org.jocl.cl_program;
@@ -22,11 +23,13 @@ public class ParallelScan {
 	 * @param data The input data.
 	 * @param results The output of the scan.
 	 * @param context The OpenCL context to be used.
+	 * @param device The OpenCL device to be used.
 	 * @param commandQueue The OpenCL commandQueue to be used.
 	 * @param kernelMethod The name of the method in the kernel to be called.
 	 */
-	protected static void scan(final float[] data, float[] results, cl_context context, cl_command_queue commandQueue, String kernelMethod) {
-	
+	protected static void scan(final float[] data, float[] results, cl_context context, cl_command_queue commandQueue, cl_device_id device, String kernelMethod) {
+		//TODO: I have this sinking feeling this may not always work.
+		
 		CL.setExceptionsEnabled(true);
 		Pointer ptrData = Pointer.to(data);
 		Pointer ptrResult = Pointer.to(results);
@@ -53,9 +56,39 @@ public class ParallelScan {
 		//Create the kernel
 		cl_kernel kernel = CL.clCreateKernel(program, kernelMethod, null);
 	
+		
+		
+		
+		long[] size = new long[1];
+		CL.clGetDeviceInfo(device, CL.CL_DEVICE_MAX_WORK_GROUP_SIZE, 0, 
+				null, size);
+
+		int[] sizeBuffer = new int[(int) size[0]];
+		CL.clGetDeviceInfo(device, CL.CL_DEVICE_MAX_WORK_GROUP_SIZE, 
+				sizeBuffer.length, Pointer.to(sizeBuffer), null);
+
+
+		
+		int maxGroupSize = sizeBuffer[0];
+		int globalSize = data.length;
+		int localSize = maxGroupSize;
+
+		boolean divisible = false;
+			
+		while(!divisible) {
+			int mod = globalSize % localSize;
+			if(mod == 0) {
+				divisible = true;
+			}
+			else {
+				localSize--;
+			}
+		}
+		
+		
 		//Set the work-item dimensions
-		long[] globalWorkSize = new long[] {results.length};
-		long[] localWorkSize = new long[] {1};
+		long[] globalWorkSize = new long[] {globalSize};
+		long[] localWorkSize = new long[] {localSize};
 		
 		
 		//Set the arguments for the kernel
@@ -65,8 +98,10 @@ public class ParallelScan {
 //		CL.clSetKernelArg(kernel, 2, Sizeof.cl_float * data.length, null);
 //		CL.clSetKernelArg(kernel, 3, Sizeof.cl_float * data.length, null);
 		CL.clSetKernelArg(kernel, 2, Sizeof.cl_float * localWorkSize[0], null);
-		CL.clSetKernelArg(kernel, 3, Sizeof.cl_float * localWorkSize[0], null);
-
+		
+		if(kernelMethod.equals("hillis_steele_scan")) {
+			CL.clSetKernelArg(kernel, 3, Sizeof.cl_float * localWorkSize[0], null);
+		}
 		
 		//Execute the kernel
 		CL.clEnqueueNDRangeKernel(commandQueue, kernel, 1, null,
@@ -100,7 +135,7 @@ public class ParallelScan {
 	protected static void inclusiveScan(final float[] data, float[] results) {
 		ParallelSetUp setup = new ParallelSetUp();
 
-		scan(data, results, setup.getContext(), setup.getCommandQueue(), "hillis_steele_scan");
+		scan(data, results, setup.getContext(), setup.getCommandQueue(), setup.getDevice(), "hillis_steele_scan");
 	}
 	
 	/**
@@ -110,7 +145,9 @@ public class ParallelScan {
 	 * @param results The resulting scan.
 	 */
 	protected static void exclusiveScan(final float[] data, float[] results) {
-		
+		ParallelSetUp setup = new ParallelSetUp();
+
+		scan(data, results, setup.getContext(), setup.getCommandQueue(), setup.getDevice(), "blelloch_scan");
 	}
 	
 	

@@ -27,11 +27,7 @@ public class ScanTest {
 		float[] result = new float[size];
 		
 		ParallelScan.hillisSteeleScan(data, result);
-		
-		for(int i = 0; i < result.length; i++) {
-			System.out.println(result[i]);
-		}
-		
+	
 		assertEquals("Index 0 should contain 1", 1, result[0], 0);
 		assertEquals("Index 1 should contain 1", 2, result[1], 0);
 		assertEquals("Index 2 should contain 1", 3, result[2], 0);

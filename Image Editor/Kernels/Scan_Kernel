@@ -12,7 +12,8 @@ from[local_number] = data[i];
 
 barrier(CLK_LOCAL_MEM_FENCE);
 
-for(int distance = 1; distance <= group_size - 1; distance = distance * 2){
+for(int distance = 1; distance < group_size - 1; distance = distance * 2){
+
 	if(local_number > distance - 1){
 		to[local_number] = from[local_number] + from[local_number - distance];
 	}
@@ -20,11 +21,19 @@ for(int distance = 1; distance <= group_size - 1; distance = distance * 2){
 		to[local_number] = from[local_number];
 	}
 	
+	barrier(CLK_LOCAL_MEM_FENCE);
 
 	__local float * temp = to;
 	to = from;
 	from = temp;
 }
 
+
+
 result[i] = from[local_number];
+}
+
+__kernel void blelloch_scan(__global const float * data, __global float * result, __local float * local_data){
+
+
 }
