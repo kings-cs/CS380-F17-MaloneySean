@@ -50,20 +50,24 @@ barrier(CLK_LOCAL_MEM_FENCE);
 for(int space = group_size / 2; space <= 1; space = space * 2){
 
 	if(local_number < space){
-		int i = (distance * 2 * (local_number + 1)) - 1;
-		int j = (distance * 2 * (local_number + 1)) - 2;
+		int i = distance * 2 * (local_number + 1) - 1;
+		int j = distance * 2 * (local_number + 1) - 2;
 		local_data[j] += local_data[i];
 	}
 	distance = distance * 2;
 }
 
+
+if(local_number == 0){
 local_data[get_local_size(0)] = 0;
+}
+
 
 for(int space = 1; space <= group_size - 1; space = space * 2){
 	distance = distance >> 1;
 	if(local_number < space){
-		int i = (distance * 2 * (local_number + 1)) - 1;
-		int j = (distance * 2 * (local_number + 1)) - 2;
+		int i = distance * 2 * (local_number + 1) - 1;
+		int j = distance * 2 * (local_number + 1) - 2;
 		
 		float temp = local_data[j];
 		local_data[j] += local_data[i];

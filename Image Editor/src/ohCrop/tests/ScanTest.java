@@ -55,6 +55,11 @@ public class ScanTest {
 		
 		ParallelScan.blellochScan(data, result);
 		
+		
+		for(int i = 0; i < result.length; i++) {
+			System.out.println(result[i]);
+		}
+		
 		assertEquals("Index 0 should contain 0", 0, result[0], 0);
 		assertEquals("Index 1 should contain 1", 1, result[1], 0);
 		assertEquals("Index 2 should contain 2", 2, result[2], 0);
