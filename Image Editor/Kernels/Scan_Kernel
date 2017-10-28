@@ -57,7 +57,7 @@ for(int space = group_size / 2; space <= 1; space = space * 2){
 	distance = distance * 2;
 }
 
-//local_data[0] = 0;
+local_data[get_local_size(0)] = 0;
 
 for(int space = 1; space <= group_size - 1; space = space * 2){
 	distance = distance >> 1;
