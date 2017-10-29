@@ -35,6 +35,7 @@ import org.jocl.cl_platform_id;
 import ohCrop.algorithms.Blur;
 import ohCrop.algorithms.BlurParallel;
 import ohCrop.algorithms.Grayscale;
+import ohCrop.algorithms.HistogramEquilization;
 import ohCrop.algorithms.Mosaic;
 import ohCrop.algorithms.ParallelGrayScale;
 import ohCrop.algorithms.ParallelHorizontal;
@@ -176,6 +177,16 @@ public class EditorGUI extends JFrame{
 	 * Buttons used to convert an image to a mosaic, computed in parallel.
 	 */
 	private JButton mosaicParallel;
+	
+	/**
+	 * Button used to perform a Histogram Equilization on an image.
+	 */
+	private JButton histogramEq;
+	
+	/**
+	 * Button used to perform a Histogram Equilization on an image, computed in parallel.
+	 */
+	private JButton histogramEqParallel;
 	
 	/**
 	 * JPanel used to display an image.
@@ -322,6 +333,8 @@ public class EditorGUI extends JFrame{
 		blurParallel = new JButton("Blur (Parallel)");
 		mosaic = new JButton("Mosaic");
 		mosaicParallel = new JButton("Mosaic (Parallel)");
+		histogramEq = new JButton("Histogram Equalization");
+		histogramEqParallel = new JButton("Histogram Equalization (Parallel)");
 		
 		//****************Bottom Panel*****************************
 		JPanel bottomPanel = new JPanel();
@@ -357,6 +370,8 @@ public class EditorGUI extends JFrame{
 		toolBar.add(blurParallel);
 		toolBar.add(mosaic);
 		toolBar.add(mosaicParallel);
+		toolBar.add(histogramEq);
+		toolBar.add(histogramEqParallel);
 		this.add(toolBar, BorderLayout.NORTH);
 		
 		
@@ -371,6 +386,8 @@ public class EditorGUI extends JFrame{
 		blurParallel.addActionListener(ae);
 		mosaic.addActionListener(ae);
 		mosaicParallel.addActionListener(ae);
+		histogramEq.addActionListener(ae);
+		histogramEqParallel.addActionListener(ae);
 		exit.addActionListener(ae);
 		open.addActionListener(ae);
 		close.addActionListener(ae);
@@ -871,6 +888,30 @@ public class EditorGUI extends JFrame{
 				preZoomImage = mosaic;
 				
 				paintImage(mosaic);
+				
+				
+				setZoom(preEditZoom * 100);
+			}
+			else if(action.getSource() == histogramEq) {
+				changeMade = true;
+				double preEditZoom = zoomAmount;
+				
+				
+				BufferedImage histoEqualized = HistogramEquilization.histogramEq(preZoomImage);
+				
+				
+				preZoomImage = histoEqualized;
+				
+				paintImage(histoEqualized);
+				
+				
+				setZoom(preEditZoom * 100);
+			}
+			else if(action.getSource() == histogramEqParallel) {
+				changeMade = true;
+				double preEditZoom = zoomAmount;
+				
+				//TODO: FILL THIS IN
 				
 				
 				setZoom(preEditZoom * 100);
