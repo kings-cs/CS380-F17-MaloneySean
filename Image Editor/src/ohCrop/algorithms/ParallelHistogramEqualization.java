@@ -30,31 +30,6 @@ public class ParallelHistogramEqualization extends ImageAlgorithm{
 	 * @return The newly colored image.
 	 */
 	public static BufferedImage parallelHistogramEq(cl_context context, cl_command_queue commandQueue, cl_device_id device, BufferedImage original) {
-		int numBins = 256;
-		
-		
-		int[] imageRaster = strip(original);
-		int[] histogramData = new int[imageRaster.length];
-		int[] dimensions = {numBins, imageRaster.length};
-		
-		
-		
-		
-		Pointer ptrRaster = Pointer.to(imageRaster);
-		Pointer ptrHistogram = Pointer.to(histogramData);
-		Pointer ptrDimensions = Pointer.to(dimensions);
-
-		
-		cl_mem memRaster = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
-				Sizeof.cl_int * imageRaster.length, ptrRaster, null);
-		cl_mem memHistogram = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
-				Sizeof.cl_int * histogramData.length, ptrHistogram, null);
-		cl_mem memDimensions = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
-				Sizeof.cl_int * dimensions.length, ptrDimensions, null);
-
-		
-		//KERNEL EXECUTION, SHOULD PROBABLY SPLIT THESE UP
-		
 		//Create the program from the source code
 		//Create the OpenCL kernel from the program
 		String source = KernelReader.readFile("Kernels/Histogram_Equalization_Kernel");
@@ -64,71 +39,37 @@ public class ParallelHistogramEqualization extends ImageAlgorithm{
 		cl_program program = CL.clCreateProgramWithSource(context, 1, new String[] {source}, null, null);
 		
 		
-		//Build the program
-		CL.clBuildProgram(program, 0, null, null, null, null);
 		
-		//Create the kernel
-		cl_kernel kernel = CL.clCreateKernel(program, "calculate_histogram", null);
+		int numBins = 256;
 		
-		//Set the arguments for the kernel
-		CL.clSetKernelArg(kernel, 0, Sizeof.cl_mem, Pointer.to(memRaster));
-		CL.clSetKernelArg(kernel, 1, Sizeof.cl_mem, Pointer.to(memHistogram));
-		CL.clSetKernelArg(kernel, 2, Sizeof.cl_mem, Pointer.to(memDimensions));
-
-	
-		//WORK GROUP STUFF		
 		
+		int[] imageRaster = strip(original);
+		int[] histogramData = new int[numBins];
+		int[] dimensions = {numBins, imageRaster.length};
+		
+		
+		
+		
+		Pointer ptrRaster = Pointer.to(imageRaster);
+		Pointer ptrDimensions = Pointer.to(dimensions);
 
-		long[] size = new long[1];
-		CL.clGetDeviceInfo(device, CL.CL_DEVICE_MAX_WORK_GROUP_SIZE, 0, 
-				null, size);
+		
+		cl_mem memRaster = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
+				Sizeof.cl_int * imageRaster.length, ptrRaster, null);
+		cl_mem memDimensions = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
+				Sizeof.cl_int * dimensions.length, ptrDimensions, null);
 
-		int[] sizeBuffer = new int[(int) size[0]];
-		CL.clGetDeviceInfo(device, CL.CL_DEVICE_MAX_WORK_GROUP_SIZE, 
-				sizeBuffer.length, Pointer.to(sizeBuffer), null);
-
-
-
-		int maxGroupSize = sizeBuffer[0];
-		int globalSize = imageRaster.length;
-		int localSize = maxGroupSize;
-
-		boolean divisible = false;
-
-		while(!divisible) {
-			int mod = globalSize % localSize;
-			if(mod == 0) {
-				divisible = true;
-			}
-			else {
-				localSize--;
-			}
-		}
-
-
-		//Set the work-item dimensions
-		long[] globalWorkSize = new long[] {imageRaster.length};
-		long[] localWorkSize = new long[] {localSize};
+		
+		//STEP 1. CALCULATE HISTOGRAM (UNTESTED)
 
 		long startTime = System.nanoTime();
-		//Execute the kernel
-		CL.clEnqueueNDRangeKernel(commandQueue, kernel, 1, null,
-				globalWorkSize, localWorkSize, 
-				0, null, null);
-		long endTime = System.nanoTime();
 		
-		long timeTaken = endTime - startTime;
+		int[] histogram = HistogramEquilization.calculateHistogram(imageRaster);
 		
-		double miliSeconds = timeTaken / 1000000.0;
-		JOptionPane.showMessageDialog(null, "Time Taken: " + miliSeconds + " (ms)");
+		cl_mem memHistogram = parallelHelperA(memRaster, memDimensions, histogramData,  program, context, commandQueue, device, "calculate_histogram");
 		
 		
-		//Read the output data
-		CL.clEnqueueReadBuffer(commandQueue, memHistogram, 
-				CL.CL_TRUE, 0, histogramData.length * Sizeof.cl_float,
-				ptrHistogram, 0, null, null);
-		
-		//STEP 1 (UNTESTED)
+		//STEP 2. CUMULATIVE FREQUENCY DISTRIBUTION (UNTESTED)
 		
 		int[] distribution = HistogramEquilization.cumulativeFrequencyDistribution(histogramData);
 		
@@ -152,16 +93,16 @@ public class ParallelHistogramEqualization extends ImageAlgorithm{
 				Sizeof.cl_float * distributionData.length, ptrDistribution, null);
 		
 		
-		//STEP 2 (UNTESTED)
+		//STEP 3. IDEALIZED HISTOGRAM (UNTESTED)
 		
 		int[] ideal = HistogramEquilization.idealizeHistogram(histogramData, imageRaster.length);
 
 		
 		int[] idealHisto = new int[histogramData.length];
-		cl_mem memIdeal = parallelHelperA(idealHisto, context, commandQueue, device, memHistogram, memDimensions, "idealize_histogram");
+		cl_mem memIdeal = parallelHelperA(memHistogram, memDimensions, idealHisto, program, context, commandQueue, device, "idealize_histogram");
 		
 		
-		//STEP 3 (UNTESTED)
+		//STEP 4. IDEAL CUMULATIVE FREQUNCY DISTRIBUTION (UNTESTED)
 		
 		int[] idealCum = HistogramEquilization.cumulativeFrequencyDistribution(ideal);
 		
@@ -186,26 +127,32 @@ public class ParallelHistogramEqualization extends ImageAlgorithm{
 		
 		
 		
-		//STEP 5 (UNTESTED)
+		//STEP 5. DESIGN MAPPING (UNTESTED)
 		int[] mapping = HistogramEquilization.mapHistogram(distribution, idealCum);
 		
 		int[] mapDesign = new int[distribution.length];
-		cl_mem memMapping = parallelHelperA(mapDesign, context, commandQueue, device, memDistribution, memIdealCum, "map_histogram");
+		cl_mem memMapping = parallelHelperA(memDistribution, memIdealCum, mapDesign, program, context, commandQueue, device, "map_histogram");
 		
 		
-		//STEP 6 (UNTESTED)
+		//STEP 6. MAP PIXELS (UNTESTED)
 		int[] resultData = HistogramEquilization.mapPixels(mapping, imageRaster);
 		
 		int[] result = new int[imageRaster.length];
-//		
-//		
-		parallelHelperA(result, context, commandQueue, device, memMapping, memRaster, "map_pixel");
-//		
+	
+		parallelHelperA(memMapping, memRaster, result, program, context, commandQueue, device, "map_pixel");
+		
+		long endTime = System.nanoTime();
+		
+		long timeTaken = endTime - startTime;
+		
+		double miliSeconds = timeTaken / 1000000.0;
+		JOptionPane.showMessageDialog(null, "Time Taken: " + miliSeconds + " (ms)");
+		
 		BufferedImage resultImage = wrapUp(resultData, original);
 		
 				
 		//Release kernel, program, 
-		CL.clReleaseKernel(kernel);
+	
 		CL.clReleaseProgram(program);
 		CL.clReleaseMemObject(memRaster);
 		CL.clReleaseMemObject(memHistogram);
@@ -229,8 +176,8 @@ public class ParallelHistogramEqualization extends ImageAlgorithm{
 	 * @param methodName The name of the method in the kernel to be called.
 	 * @return The Cumulative frequecy distribution. 
 	 */
-	private static cl_mem parallelHelperA(int[] outputData, cl_context context, cl_command_queue commandQueue, cl_device_id device, 
-			cl_mem memInputData, cl_mem memOtherInput, String methodName) {
+	private static cl_mem parallelHelperA(cl_mem memInputData, cl_mem memOtherInput, int[] outputData, cl_program program, cl_context context, cl_command_queue commandQueue, cl_device_id device, 
+			 String methodName) {
 		int outputLength = outputData.length;
 		
 	
@@ -241,14 +188,7 @@ public class ParallelHistogramEqualization extends ImageAlgorithm{
 				Sizeof.cl_int * outputData.length, ptrOutput, null);
 		
 		//KERNEL EXECUTION, SHOULD PROBABLY SPLIT THESE UP
-		
-		//Create the program from the source code
-		//Create the OpenCL kernel from the program
-		String source = KernelReader.readFile("Kernels/Histogram_Equalization_Kernel");
-		
-		//System.out.println(source);
-		
-		cl_program program = CL.clCreateProgramWithSource(context, 1, new String[] {source}, null, null);
+
 		
 		
 		//Build the program
@@ -260,8 +200,8 @@ public class ParallelHistogramEqualization extends ImageAlgorithm{
 		//Set the arguments for the kernel
 		
 		CL.clSetKernelArg(kernel, 0, Sizeof.cl_mem, Pointer.to(memInputData));
-		CL.clSetKernelArg(kernel, 1, Sizeof.cl_mem, Pointer.to(memOutput));
-		CL.clSetKernelArg(kernel, 2, Sizeof.cl_mem, Pointer.to(memOtherInput));
+		CL.clSetKernelArg(kernel, 1, Sizeof.cl_mem, Pointer.to(memOtherInput));
+		CL.clSetKernelArg(kernel, 2, Sizeof.cl_mem, Pointer.to(memOutput));
 
 	
 		//WORK GROUP STUFF		
@@ -303,12 +243,7 @@ public class ParallelHistogramEqualization extends ImageAlgorithm{
 		CL.clEnqueueNDRangeKernel(commandQueue, kernel, 1, null,
 				globalWorkSize, localWorkSize, 
 				0, null, null);
-		long endTime = System.nanoTime();
 		
-		long timeTaken = endTime - startTime;
-		
-		double miliSeconds = timeTaken / 1000000.0;
-		JOptionPane.showMessageDialog(null, "Time Taken: " + miliSeconds + " (ms)");
 		
 		
 		//Read the output data
@@ -318,6 +253,7 @@ public class ParallelHistogramEqualization extends ImageAlgorithm{
 		
 		
 		
+		CL.clReleaseKernel(kernel);
 		
 		return memOutput;
 	}

@@ -1,5 +1,5 @@
-__kernel void calculate_histogram(__global const int * data, __global int * result,
-__global int * dimensions){
+__kernel void calculate_histogram(__global const int * data, __global const int * dimensions,  __global int * result,
+){
 
 int RED_MASK = 0x00ff0000;
 int RED_OFFSET = 16;
@@ -37,8 +37,7 @@ for(int j = i; j >= 0; j--){
 }
 
 
-__kernel void idealize_histogram(__global const int * histogram, __global int * ideal,
-__global int * dimensions){
+__kernel void idealize_histogram(__global const int * histogram, __global const int * dimensions,  __global int * ideal){
 int i = (get_group_id(0) * get_local_size(0)) + get_local_id(0);
 
 int numBins = dimensions[0];
@@ -61,7 +60,7 @@ else {
 
 
 
-__kernel void map_histogram(__global const int * cuf, __global int * mapping, __global const int * cuFeq){
+__kernel void map_histogram(__global const int * cuf, __global const int * cuFeq, __global int * mapping){
 int i = (get_group_id(0) * get_local_size(0)) + get_local_id(0);
 
 int mapping_length = get_global_size(0);
@@ -97,7 +96,7 @@ while (!foundClosest && j < mapping_length) {
 mapping[i] = mapKey;
 }
 
-__kernel void map_pixels(__global const int * mapping, __global int * result, __global const int * original){
+__kernel void map_pixels(__global const int * mapping, __global const int * original, __global int * result){
 int ALPHA_MASK = 0xff000000;
 int ALPHA_OFFSET = 24;
 int RED_MASK = 0x00ff0000;
