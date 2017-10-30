@@ -63,16 +63,23 @@ public class ParallelHistogramEqualization extends ImageAlgorithm{
 		
 		long startTime = System.nanoTime();
 		
-		//int[] histogram = HistogramEquilization.calculateHistogram(imageRaster);
-		int[] histogram = new int[numBins];
+		//int[] histogramA = HistogramEquilization.calculateHistogram(imageRaster);
+		
 		
 //		Pointer ptrHistogram = Pointer.to(histogram);
 //		cl_mem memHistogram = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
 //				Sizeof.cl_int * histogram.length, ptrHistogram, null);
 		
-
+		
+		int[] histogram = new int[numBins];
 		cl_mem memHistogram = parallelHelperA(memRaster, memDimensions, histogram, "calculate_histogram", program, context, commandQueue, device);
 		
+		
+//		for(int i : histogram) {
+//			System.out.println(i);
+//		}
+//		System.out.println(histogram.length);
+	
 		
 		//STEP 2. CUMULATIVE FREQUENCY DISTRIBUTION (TESTED!!!)		
 		float[] histoFloat = new float[histogram.length];
