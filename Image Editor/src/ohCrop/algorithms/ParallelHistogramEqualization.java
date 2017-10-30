@@ -83,6 +83,8 @@ public class ParallelHistogramEqualization extends ImageAlgorithm{
 		int[] localHistogramsCollection = new int[original.getHeight() * numBins];
 		cl_mem memOptHistogram = parallelHelper(memRaster, memDimensions, localHistogramsCollection, imageRaster.length / original.getWidth(), "optimized_calculate_histogram", program, context, commandQueue, device);
 		
+		//histogram = reduceSequential(localHistogramsCollection);
+		
 		//STEP 2. CUMULATIVE FREQUENCY DISTRIBUTION (TESTED!!!)		
 		float[] histoFloat = new float[histogram.length];
 		for(int i = 0; i < histogram.length; i++) {
@@ -266,67 +268,72 @@ public class ParallelHistogramEqualization extends ImageAlgorithm{
 		return localSize;
 	}
 	
-//	public static void main(String[] args) {
-//		ParallelSetUp setup = new ParallelSetUp();
-//		CL.setExceptionsEnabled(true);
-//		cl_context context = setup.getContext();
-//		cl_command_queue commandQueue = setup.getCommandQueue();
-//		cl_device_id device = setup.getDevice();
-//		
-//		String source = KernelReader.readFile("Kernels/Histogram_Equalization_Kernel");
-//		cl_program program = CL.clCreateProgramWithSource(context, 1, new String[] {source}, null, null);
-//		
-//		
-//		
-//		int numBins = 5;
-//		
-//		int[] imageRaster = {0, 1, 1, 2,
-//							 3, 4, 1, 2,
-//							 1, 0, 2, 2,
-//							 3, 3, 3, 3};
-//		
-//
-//
-//		
-//				
-//		int[] dimensions = {numBins, 16, 4, 4};
-//		
-//		
-//		
-//		
-//		Pointer ptrRaster = Pointer.to(imageRaster);
-//		Pointer ptrDimensions = Pointer.to(dimensions);
-//
-//		
-//		cl_mem memRaster = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
-//				Sizeof.cl_int * imageRaster.length, ptrRaster, null);
-//		cl_mem memDimensions = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
-//				Sizeof.cl_int * dimensions.length, ptrDimensions, null);
-//
-//		
-//		int[] localHistogramsCollection = new int[4 * numBins];
-//		cl_mem memOptHistogram = parallelHelper(memRaster, memDimensions, localHistogramsCollection, imageRaster.length / 4, 
-//				"optimized_calculate_histogram", program, context, commandQueue, device);
-//		
-//		int count = 0;
-//		for(int i : localHistogramsCollection) {
-//			System.out.print(i + " | ");
-//			
-//			if(count == 4) {
-//				System.out.println();
-//				count = 0;
-//			}
-//			else {
-//				count++;
-//			}
-//			
-//			
-//		}
-//		
-//		CL.clReleaseProgram(program);
-//		CL.clReleaseMemObject(memRaster);
-//		CL.clReleaseMemObject(memOptHistogram);
-//		CL.clReleaseMemObject(memDimensions);
-//		CL.clReleaseCommandQueue(commandQueue);
-//	}
+
+	/**
+	 * TESTING ONLY. Remeber to change the binCopy length back in the kernel.
+	 * @param args NOT USED.
+	 */
+	public static void main(String[] args) {
+		ParallelSetUp setup = new ParallelSetUp();
+		CL.setExceptionsEnabled(true);
+		cl_context context = setup.getContext();
+		cl_command_queue commandQueue = setup.getCommandQueue();
+		cl_device_id device = setup.getDevice();
+		
+		String source = KernelReader.readFile("Kernels/Histogram_Equalization_Kernel");
+		cl_program program = CL.clCreateProgramWithSource(context, 1, new String[] {source}, null, null);
+		
+		
+		
+		int numBins = 5;
+		
+		int[] imageRaster = {0, 1, 1, 2,
+							 3, 4, 1, 2,
+							 1, 0, 2, 2,
+							 3, 3, 3, 3};
+		
+
+
+		
+				
+		int[] dimensions = {numBins, 16, 4, 4};
+		
+		
+		
+		
+		Pointer ptrRaster = Pointer.to(imageRaster);
+		Pointer ptrDimensions = Pointer.to(dimensions);
+
+		
+		cl_mem memRaster = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
+				Sizeof.cl_int * imageRaster.length, ptrRaster, null);
+		cl_mem memDimensions = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
+				Sizeof.cl_int * dimensions.length, ptrDimensions, null);
+
+		
+		int[] localHistogramsCollection = new int[4 * numBins];
+		cl_mem memOptHistogram = parallelHelper(memRaster, memDimensions, localHistogramsCollection, imageRaster.length / 4, 
+				"optimized_calculate_histogram", program, context, commandQueue, device);
+		
+		int count = 0;
+		for(int i : localHistogramsCollection) {
+			System.out.print(i + " | ");
+			
+			if(count == 4) {
+				System.out.println();
+				count = 0;
+			}
+			else {
+				count++;
+			}
+			
+			
+		}
+		
+		CL.clReleaseProgram(program);
+		CL.clReleaseMemObject(memRaster);
+		CL.clReleaseMemObject(memOptHistogram);
+		CL.clReleaseMemObject(memDimensions);
+		CL.clReleaseCommandQueue(commandQueue);
+	}
 }
