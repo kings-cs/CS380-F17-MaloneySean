@@ -134,6 +134,8 @@ public class ParallelHistogramEqualization extends ImageAlgorithm{
 		
 		//cl_mem memDistribution = parallelHelperA(histogramData.length, context, commandQueue, device, memHistogram, memDimensions, "cumulative_frequency_distribution");
 		
+	
+		
 		float[] distributionData = new float[histogramData.length];
 		float[] histoFloat = new float[histogramData.length];
 		for(int i = 0; i < histogramData.length; i++) {
@@ -141,6 +143,14 @@ public class ParallelHistogramEqualization extends ImageAlgorithm{
 		}
 		ParallelScan.scan(histoFloat, distributionData, context, 
 				commandQueue, device, "hillis_steele_scan");
+		
+		Pointer ptrDistribution = Pointer.to(distributionData);
+		
+
+		
+		cl_mem memDistribution = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
+				Sizeof.cl_float * distributionData.length, ptrDistribution, null);
+		
 		
 		//STEP
 		
@@ -169,14 +179,19 @@ public class ParallelHistogramEqualization extends ImageAlgorithm{
 		//TODO: Make a mem object for idealCumData
 		
 		
-		cl_mem memIdealCum = null;
+		Pointer ptrIdealCum = Pointer.to(idealCumData);
+		
+
+		
+		cl_mem memIdealCum = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
+				Sizeof.cl_float * idealCumData.length, ptrIdealCum, null);
 		
 		
 		//STEP
 		int[] mapping = HistogramEquilization.mapHistogram(distribution, idealCum);
 		
 		int[] mapDesign = new int[distribution.length];
-		cl_mem memMapping = parallelHelperA(mapDesign, context, commandQueue, device, memHistogram, memIdealCum, "map_histogram");
+		cl_mem memMapping = parallelHelperA(mapDesign, context, commandQueue, device, memDistribution, memIdealCum, "map_histogram");
 		
 		
 		//STEP 
@@ -196,7 +211,9 @@ public class ParallelHistogramEqualization extends ImageAlgorithm{
 		CL.clReleaseMemObject(memRaster);
 		CL.clReleaseMemObject(memHistogram);
 		CL.clReleaseMemObject(memDimensions);
-
+		CL.clReleaseMemObject(memIdeal);
+		CL.clReleaseMemObject(memIdealCum);
+		CL.clReleaseMemObject(memMapping);
 		
 		return resultImage;
 	}
