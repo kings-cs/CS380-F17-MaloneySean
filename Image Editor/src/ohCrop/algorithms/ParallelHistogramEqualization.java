@@ -34,9 +34,6 @@ public class ParallelHistogramEqualization extends ImageAlgorithm{
 		//Create the program from the source code
 		//Create the OpenCL kernel from the program
 		String source = KernelReader.readFile("Kernels/Histogram_Equalization_Kernel");
-		
-		//System.out.println(source);
-		
 		cl_program program = CL.clCreateProgramWithSource(context, 1, new String[] {source}, null, null);
 		
 		
@@ -45,7 +42,6 @@ public class ParallelHistogramEqualization extends ImageAlgorithm{
 		
 		
 		int[] imageRaster = strip(original);
-		//int[] histogramData = new int[numBins];
 		int[] dimensions = {numBins, imageRaster.length};
 		
 		
@@ -75,11 +71,7 @@ public class ParallelHistogramEqualization extends ImageAlgorithm{
 		//cl_mem memHistogram = parallelHelperA(memRaster, memDimensions, histogramData, "calculate_histogram",  program, context, commandQueue, device);
 		
 		
-		//STEP 2. CUMULATIVE FREQUENCY DISTRIBUTION (TESTED!!!)
-		//int[] distribution = HistogramEquilization.cumulativeFrequencyDistribution(histogram);
-		
-		
-		
+		//STEP 2. CUMULATIVE FREQUENCY DISTRIBUTION (TESTED!!!)		
 		float[] histoFloat = new float[histogram.length];
 		for(int i = 0; i < histogram.length; i++) {
 			histoFloat[i] = (float) histogram[i];
@@ -96,29 +88,14 @@ public class ParallelHistogramEqualization extends ImageAlgorithm{
 		cl_mem memDistribution = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
 				Sizeof.cl_float * distributionData.length, ptrDistribution, null); //MAKE MEM OBJECT SO THIS CAN BE USED AS PARAM LATER
 		
-//		int[] distribution = new int[distributionData.length];
-//		for(int i = 0; i < distributionData.length; i++) {
-//			distribution[i] = (int) distributionData[i];
-//			//TODO: REMOVE LOOP ONCE ALL IN PARALLEL
-//		}
-		
-		
-		
-		//STEP 3. IDEALIZED HISTOGRAM (TESTED!!!)
-		
-		//int[] ideal = HistogramEquilization.idealizeHistogram(histogram, imageRaster.length);
 
-		
+				
+		//STEP 3. IDEALIZED HISTOGRAM (TESTED!!!)	
 		int[] ideal = new int[histogram.length];
 		cl_mem memIdeal = parallelHelperA(memHistogram, memDimensions, ideal, "idealize_histogram", program, context, commandQueue, device);
 		
 		
 		//STEP 4. IDEAL CUMULATIVE FREQUNCY DISTRIBUTION (TESTED!!!)
-		
-		//int[] idealCum = HistogramEquilization.cumulativeFrequencyDistribution(ideal);
-		
-		
-		
 		float[] idealFloat = new float[histogram.length];
 		for(int i = 0; i < histogram.length; i++) {
 			idealFloat[i] = ideal[i];
@@ -134,28 +111,14 @@ public class ParallelHistogramEqualization extends ImageAlgorithm{
 		
 		cl_mem memIdealCum = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
 				Sizeof.cl_float * idealCumData.length, ptrIdealCum, null);
-		
-		
-//		int[] idealCum = new int[idealCumData.length];
-//		for(int i = 0; i < idealCumData.length; i++) {
-//			idealCum[i] = (int) idealCumData[i];
-//			//TODO: REMOVE LOOP ONCE ALL IN PARALLEL
-//		}
-		
-		
+				
 		
 		//STEP 5. DESIGN MAPPING (TESTED!!!)
-		//int[] mapping = HistogramEquilization.mapHistogram(distribution, idealCum);
-		
-		
 		int[] mapping = new int[distributionData.length];
 		cl_mem memMapping = parallelHelperA(memDistribution, memIdealCum, mapping, "map_histogram", program, context, commandQueue, device);
 		
 		
-		//STEP 6. MAP PIXELS (TESTED!!!)
-		//int[] resultData = HistogramEquilization.mapPixels(mapping, imageRaster);
-		
-		
+		//STEP 6. MAP PIXELS (TESTED!!!)		
 		int[] resultData = new int[imageRaster.length];
 	
 		parallelHelperA(memMapping, memRaster, resultData, "map_pixels", program, context, commandQueue, device);
@@ -197,10 +160,8 @@ public class ParallelHistogramEqualization extends ImageAlgorithm{
 	 * @param device The OpenCL device used.
 	 * @return The memory object created during this methods execution, returned so that it can be later released and used as future parameters.
 	 */
-	public static cl_mem parallelHelperA(cl_mem memInputData, cl_mem memOtherInput, int[] outputData, String methodName, 
+	private static cl_mem parallelHelperA(cl_mem memInputData, cl_mem memOtherInput, int[] outputData, String methodName, 
 			cl_program program, cl_context context, cl_command_queue commandQueue, cl_device_id device) {
-		
-		//TODO: MAKE SURE TO CHANGE THIS BACK TO PRIVATE
 		
 		int outputLength = outputData.length;
 		
