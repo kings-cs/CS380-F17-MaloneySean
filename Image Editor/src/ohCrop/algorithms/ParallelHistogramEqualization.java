@@ -20,6 +20,12 @@ import org.jocl.cl_program;
  * @author Sean Maloney
  */
 public class ParallelHistogramEqualization extends ImageAlgorithm{
+	
+	/**
+	 * Field to keep trakc of the total time taken for all kernels to execute.
+	 */
+	private static long TOTAL_TIME;
+	
 	/**
 	 * Converts the individual pixels of an image t be in shades of gray computed using parallelism.
 	 * 
@@ -33,6 +39,7 @@ public class ParallelHistogramEqualization extends ImageAlgorithm{
 	public static BufferedImage parallelHistogramEq(cl_context context, cl_command_queue commandQueue, cl_device_id device, BufferedImage original) {
 		//Create the program from the source code
 		//Create the OpenCL kernel from the program
+		TOTAL_TIME = 0;
 		String source = KernelReader.readFile("Kernels/Histogram_Equalization_Kernel");
 		cl_program program = CL.clCreateProgramWithSource(context, 1, new String[] {source}, null, null);
 		
@@ -61,7 +68,7 @@ public class ParallelHistogramEqualization extends ImageAlgorithm{
 		//TODO: This has to be tested in parallel. Why is parallel so much slower? Remember to uncomment the atomic add!!!
 		//TODO: Idea to find time culprit. Change individual steps back to sequential after getting all working in parallel.
 		
-		long startTime = System.nanoTime();
+		
 		
 		
 		
@@ -124,11 +131,9 @@ public class ParallelHistogramEqualization extends ImageAlgorithm{
 	
 		parallelHelperA(memMapping, memRaster, resultData, resultData.length, "map_pixels", program, context, commandQueue, device);
 		
-		long endTime = System.nanoTime();
 		
-		long timeTaken = endTime - startTime;
 		
-		double miliSeconds = timeTaken / 1000000.0;
+		double miliSeconds = TOTAL_TIME / 1000000.0;
 		JOptionPane.showMessageDialog(null, "Time Taken: " + miliSeconds + " (ms)");
 		
 		
@@ -220,11 +225,15 @@ public class ParallelHistogramEqualization extends ImageAlgorithm{
 
 		
 		//Execute the kernel
+		long startTime = System.nanoTime();
 		CL.clEnqueueNDRangeKernel(commandQueue, kernel, 1, null,
 				globalWorkSize, localWorkSize, 
 				0, null, null);
+
+		long endTime = System.nanoTime();
 		
-		
+		long timeTaken = endTime - startTime;
+		TOTAL_TIME += timeTaken;
 		
 		//Read the output data
 		CL.clEnqueueReadBuffer(commandQueue, memOutput, 
