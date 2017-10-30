@@ -60,16 +60,18 @@ public class ParallelHistogramEqualization extends ImageAlgorithm{
 		//STEP 1. CALCULATE HISTOGRAM (UNTESTED)
 		//TODO: This has to be tested in parallel. Why is parallel so much slower? Remember to uncomment the atomic add!!!
 		//TODO: Idea to find time culprit. Change individual steps back to sequential after getting all working in parallel.
+		
 		long startTime = System.nanoTime();
 		
-		int[] histogram = HistogramEquilization.calculateHistogram(imageRaster);
+		//int[] histogram = HistogramEquilization.calculateHistogram(imageRaster);
+		int[] histogram = new int[numBins];
 		
-		
-		Pointer ptrHistogram = Pointer.to(histogram);
-		cl_mem memHistogram = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
-				Sizeof.cl_int * histogram.length, ptrHistogram, null);
+//		Pointer ptrHistogram = Pointer.to(histogram);
+//		cl_mem memHistogram = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
+//				Sizeof.cl_int * histogram.length, ptrHistogram, null);
 		
 
+		cl_mem memHistogram = parallelHelperA(memRaster, memDimensions, histogram, "calculate_histogram", program, context, commandQueue, device);
 		
 		
 		//STEP 2. CUMULATIVE FREQUENCY DISTRIBUTION (TESTED!!!)		

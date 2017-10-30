@@ -1,4 +1,5 @@
-__kernel void calculate_histogram(__global const int * data, __global const int * dimensions,  __global int * result){
+__kernel void calculate_histogram(__global const int * imageRaster, __global const int * dimensions,  
+__global int * bins){
 
 	int RED_MASK = 0x00ff0000;
 	int RED_OFFSET = 16;
@@ -7,15 +8,14 @@ __kernel void calculate_histogram(__global const int * data, __global const int 
 
 	int numBins = dimensions[0];
 	
-	result[i] = 0;
+	bins[i] = 0;
 	
 	barrier(CLK_LOCAL_MEM_FENCE);
 	
-	int pixel = data[i];
 	
-	int currentValue = (pixel & RED_MASK) >> RED_OFFSET;
-	//Does this need &?
-	//atomic_add(&result[pixel], 1);
+	
+	int currentValue = (imageRaster[i] & RED_MASK) >> RED_OFFSET;
+	atomic_add(&bins[currentValue], 1);
 }
 
 
