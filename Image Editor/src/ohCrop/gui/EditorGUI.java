@@ -38,6 +38,7 @@ import ohCrop.algorithms.Grayscale;
 import ohCrop.algorithms.HistogramEquilization;
 import ohCrop.algorithms.Mosaic;
 import ohCrop.algorithms.ParallelGrayScale;
+import ohCrop.algorithms.ParallelHistogramEqualization;
 import ohCrop.algorithms.ParallelHorizontal;
 import ohCrop.algorithms.ParallelLeftRotation;
 import ohCrop.algorithms.ParallelMosaic;
@@ -911,7 +912,14 @@ public class EditorGUI extends JFrame{
 				changeMade = true;
 				double preEditZoom = zoomAmount;
 				
-				//TODO: FILL THIS IN
+			
+				BufferedImage histoEqualized = ParallelHistogramEqualization.parallelHistogramEq(parallelControl.getContext(), 
+						parallelControl.getCommandQueue(), parallelControl.getDevice(), preZoomImage);
+				
+				
+				preZoomImage = histoEqualized;
+				
+				paintImage(histoEqualized);
 				
 				
 				setZoom(preEditZoom * 100);

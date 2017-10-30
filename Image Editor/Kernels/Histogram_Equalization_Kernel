@@ -1,0 +1,32 @@
+__kernel void calculate_histogram(__global const int * data, __global int * result,
+__global int * dimensions){
+
+int RED_MASK = 0x00ff0000;
+int RED_OFFSET = 16;
+
+int i = (get_group_id(0) * get_local_size(0)) + get_local_id(0);
+
+int numBins = dimensions[0];
+
+result[i] = 0;
+
+barrier(CLK_LOCAL_MEM_FENCE);
+
+int pixel = data[i];
+
+int currentValue = (pixel & RED_MASK) >> RED_OFFSET;
+atomic_add(result[pixel], 1);
+}
+
+__kernel void cumulative_frequency_distribution(__global const int * bins, __global int * distribution,
+__global int * dimensions){
+int i = (get_group_id(0) * get_local_size(0)) + get_local_id(0);
+
+int numBins = dimensions[0];
+
+for(int j = i; j >= 0; j--){
+	atomic_add(distribution[i], bins[j]);
+}
+
+
+}

@@ -64,6 +64,7 @@ public class HistogramEquilization extends ImageAlgorithm {
 		return result;
 	}
 
+	//TODO: MAKE ALL THESE METHODS PRIVATE AFTER GETTING PARALLEL FUNCTIONING
 	/**
 	 * Calculates the histogram of the given image.
 	 * 
