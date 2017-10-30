@@ -57,28 +57,18 @@ public class ParallelHistogramEqualization extends ImageAlgorithm{
 				Sizeof.cl_int * dimensions.length, ptrDimensions, null);
 
 		
-		//STEP 1. CALCULATE HISTOGRAM (UNTESTED)
+		//STEP 1. CALCULATE HISTOGRAM (TESTED!!!)
 		//TODO: This has to be tested in parallel. Why is parallel so much slower? Remember to uncomment the atomic add!!!
 		//TODO: Idea to find time culprit. Change individual steps back to sequential after getting all working in parallel.
 		
 		long startTime = System.nanoTime();
 		
-		//int[] histogramA = HistogramEquilization.calculateHistogram(imageRaster);
-		
-		
-//		Pointer ptrHistogram = Pointer.to(histogram);
-//		cl_mem memHistogram = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
-//				Sizeof.cl_int * histogram.length, ptrHistogram, null);
 		
 		
 		int[] histogram = new int[numBins];
-		cl_mem memHistogram = parallelHelperA(memRaster, memDimensions, histogram, "calculate_histogram", program, context, commandQueue, device);
+		cl_mem memHistogram = parallelHelperA(memRaster, memDimensions, histogram, imageRaster.length, "calculate_histogram", program, context, commandQueue, device);
 		
-		
-//		for(int i : histogram) {
-//			System.out.println(i);
-//		}
-//		System.out.println(histogram.length);
+
 	
 		
 		//STEP 2. CUMULATIVE FREQUENCY DISTRIBUTION (TESTED!!!)		
@@ -102,7 +92,7 @@ public class ParallelHistogramEqualization extends ImageAlgorithm{
 				
 		//STEP 3. IDEALIZED HISTOGRAM (TESTED!!!)	
 		int[] ideal = new int[histogram.length];
-		cl_mem memIdeal = parallelHelperA(memHistogram, memDimensions, ideal, "idealize_histogram", program, context, commandQueue, device);
+		cl_mem memIdeal = parallelHelperA(memHistogram, memDimensions, ideal, ideal.length, "idealize_histogram", program, context, commandQueue, device);
 		
 		
 		//STEP 4. IDEAL CUMULATIVE FREQUNCY DISTRIBUTION (TESTED!!!)
@@ -125,13 +115,13 @@ public class ParallelHistogramEqualization extends ImageAlgorithm{
 		
 		//STEP 5. DESIGN MAPPING (TESTED!!!)
 		int[] mapping = new int[distributionData.length];
-		cl_mem memMapping = parallelHelperA(memDistribution, memIdealCum, mapping, "map_histogram", program, context, commandQueue, device);
+		cl_mem memMapping = parallelHelperA(memDistribution, memIdealCum, mapping, mapping.length, "map_histogram", program, context, commandQueue, device);
 		
 		
 		//STEP 6. MAP PIXELS (TESTED!!!)		
 		int[] resultData = new int[imageRaster.length];
 	
-		parallelHelperA(memMapping, memRaster, resultData, "map_pixels", program, context, commandQueue, device);
+		parallelHelperA(memMapping, memRaster, resultData, resultData.length, "map_pixels", program, context, commandQueue, device);
 		
 		long endTime = System.nanoTime();
 		
@@ -162,6 +152,7 @@ public class ParallelHistogramEqualization extends ImageAlgorithm{
 	 * @param memInputData The input data to be used as the first parameter.
 	 * @param memOtherInput The input data to be used as the second parameter.
 	 * @param outputData The array for output to be written to.
+	 * @param globalItemCount The amount of items to be calculated in this kenerl method.
 	 * @param methodName The name of the method to be called.
 	 * @param program The OpenCL program used.
 	 * @param context The OpenCL context used.
@@ -169,10 +160,9 @@ public class ParallelHistogramEqualization extends ImageAlgorithm{
 	 * @param device The OpenCL device used.
 	 * @return The memory object created during this methods execution, returned so that it can be later released and used as future parameters.
 	 */
-	private static cl_mem parallelHelperA(cl_mem memInputData, cl_mem memOtherInput, int[] outputData, String methodName, 
+	private static cl_mem parallelHelperA(cl_mem memInputData, cl_mem memOtherInput, int[] outputData, int globalItemCount, String methodName, 
 			cl_program program, cl_context context, cl_command_queue commandQueue, cl_device_id device) {
 		
-		int outputLength = outputData.length;
 		
 	
 		Pointer ptrOutput = Pointer.to(outputData);
@@ -207,7 +197,7 @@ public class ParallelHistogramEqualization extends ImageAlgorithm{
 
 
 		int maxGroupSize = sizeBuffer[0];
-		int globalSize = outputLength;
+		int globalSize = globalItemCount;
 		int localSize = maxGroupSize;
 
 		boolean divisible = false;
@@ -224,7 +214,7 @@ public class ParallelHistogramEqualization extends ImageAlgorithm{
 
 
 		//Set the work-item dimensions
-		long[] globalWorkSize = new long[] {outputLength};
+		long[] globalWorkSize = new long[] {globalItemCount};
 		long[] localWorkSize = new long[] {localSize};
 
 		
