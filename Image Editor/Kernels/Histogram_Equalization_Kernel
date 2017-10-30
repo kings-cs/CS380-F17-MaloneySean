@@ -1,5 +1,4 @@
-__kernel void calculate_histogram(__global const int * data, __global const int * dimensions,  __global int * result,
-){
+__kernel void calculate_histogram(__global const int * data, __global const int * dimensions,  __global int * result){
 
 int RED_MASK = 0x00ff0000;
 int RED_OFFSET = 16;
