@@ -128,7 +128,7 @@ public class ParallelHistogramEqualization extends ImageAlgorithm{
 				CL.CL_TRUE, 0, histogramData.length * Sizeof.cl_float,
 				ptrHistogram, 0, null, null);
 		
-		//STEP 2
+		//STEP 1 (UNTESTED)
 		
 		int[] distribution = HistogramEquilization.cumulativeFrequencyDistribution(histogramData);
 		
@@ -152,16 +152,16 @@ public class ParallelHistogramEqualization extends ImageAlgorithm{
 				Sizeof.cl_float * distributionData.length, ptrDistribution, null);
 		
 		
-		//STEP 1
+		//STEP 2 (UNTESTED)
 		
 		int[] ideal = HistogramEquilization.idealizeHistogram(histogramData, imageRaster.length);
 
 		
-//		int[] idealHisto = new int[histogramData.length];
-//		cl_mem memIdeal = parallelHelperA(idealHisto, context, commandQueue, device, memHistogram, memDimensions, "idealize_histogram");
+		int[] idealHisto = new int[histogramData.length];
+		cl_mem memIdeal = parallelHelperA(idealHisto, context, commandQueue, device, memHistogram, memDimensions, "idealize_histogram");
 		
 		
-		//STEP 2
+		//STEP 3 (UNTESTED)
 		
 		int[] idealCum = HistogramEquilization.cumulativeFrequencyDistribution(ideal);
 		
@@ -183,21 +183,24 @@ public class ParallelHistogramEqualization extends ImageAlgorithm{
 				Sizeof.cl_float * idealCumData.length, ptrIdealCum, null);
 		
 		
-		//STEP 3
+		
+		
+		
+		//STEP 5 (UNTESTED)
 		int[] mapping = HistogramEquilization.mapHistogram(distribution, idealCum);
 		
 		int[] mapDesign = new int[distribution.length];
 		cl_mem memMapping = parallelHelperA(mapDesign, context, commandQueue, device, memDistribution, memIdealCum, "map_histogram");
 		
 		
-		//STEP 4
+		//STEP 6 (UNTESTED)
 		int[] resultData = HistogramEquilization.mapPixels(mapping, imageRaster);
 		
 		int[] result = new int[imageRaster.length];
-		
-		
+//		
+//		
 		parallelHelperA(result, context, commandQueue, device, memMapping, memRaster, "map_pixel");
-		
+//		
 		BufferedImage resultImage = wrapUp(resultData, original);
 		
 				
@@ -207,7 +210,7 @@ public class ParallelHistogramEqualization extends ImageAlgorithm{
 		CL.clReleaseMemObject(memRaster);
 		CL.clReleaseMemObject(memHistogram);
 		CL.clReleaseMemObject(memDimensions);
-		//CL.clReleaseMemObject(memIdeal);
+		CL.clReleaseMemObject(memIdeal);
 		CL.clReleaseMemObject(memIdealCum);
 		CL.clReleaseMemObject(memMapping);
 		
