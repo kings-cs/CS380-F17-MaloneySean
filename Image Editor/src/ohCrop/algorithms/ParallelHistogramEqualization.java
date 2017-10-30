@@ -58,7 +58,7 @@ public class ParallelHistogramEqualization extends ImageAlgorithm{
 
 		
 		//STEP 1. CALCULATE HISTOGRAM (UNTESTED)
-
+		//TODO: This has to be tested in parallel. Why is parallel so much slower? Remember to uncomment the atomic add!!!
 		long startTime = System.nanoTime();
 		
 		int[] histogram = HistogramEquilization.calculateHistogram(imageRaster);
@@ -68,7 +68,7 @@ public class ParallelHistogramEqualization extends ImageAlgorithm{
 		cl_mem memHistogram = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
 				Sizeof.cl_int * histogram.length, ptrHistogram, null);
 		
-		//cl_mem memHistogram = parallelHelperA(memRaster, memDimensions, histogramData, "calculate_histogram",  program, context, commandQueue, device);
+
 		
 		
 		//STEP 2. CUMULATIVE FREQUENCY DISTRIBUTION (TESTED!!!)		
@@ -134,8 +134,7 @@ public class ParallelHistogramEqualization extends ImageAlgorithm{
 		BufferedImage resultImage = wrapUp(resultData, original);
 		
 				
-		//Release kernel, program, 
-	
+		//Release program and memory objects
 		CL.clReleaseProgram(program);
 		CL.clReleaseMemObject(memRaster);
 		CL.clReleaseMemObject(memHistogram);
@@ -167,13 +166,8 @@ public class ParallelHistogramEqualization extends ImageAlgorithm{
 		
 	
 		Pointer ptrOutput = Pointer.to(outputData);
-
-		
 		cl_mem memOutput = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
 				Sizeof.cl_int * outputData.length, ptrOutput, null);
-		
-		//KERNEL EXECUTION, SHOULD PROBABLY SPLIT THESE UP
-
 		
 		
 		//Build the program

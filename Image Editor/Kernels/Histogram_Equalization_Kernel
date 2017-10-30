@@ -20,22 +20,6 @@ int currentValue = (pixel & RED_MASK) >> RED_OFFSET;
 
 
 
-
-__kernel void cumulative_frequency_distribution(__global const int * bins, __global int * distribution,
-__global int * dimensions){
-int i = (get_group_id(0) * get_local_size(0)) + get_local_id(0);
-
-int numBins = dimensions[0];
-
-for(int j = i; j >= 0; j--){
-	//Change this to scan
-	//atomic_add(distribution[i], bins[j]);
-}
-
-
-}
-
-
 __kernel void idealize_histogram(__global const int * histogram, __global const int * dimensions,  __global int * ideal){
 int i = (get_group_id(0) * get_local_size(0)) + get_local_id(0);
 
