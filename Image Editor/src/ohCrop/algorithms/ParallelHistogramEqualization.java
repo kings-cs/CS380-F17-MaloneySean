@@ -91,6 +91,7 @@ public class ParallelHistogramEqualization extends ImageAlgorithm{
 
 				
 		//STEP 3. IDEALIZED HISTOGRAM (TESTED!!!)	
+		//int[] ideal = HistogramEquilization.idealizeHistogram(histogram, imageRaster.length);
 		int[] ideal = new int[histogram.length];
 		cl_mem memIdeal = parallelHelperA(memHistogram, memDimensions, ideal, ideal.length, "idealize_histogram", program, context, commandQueue, device);
 		
