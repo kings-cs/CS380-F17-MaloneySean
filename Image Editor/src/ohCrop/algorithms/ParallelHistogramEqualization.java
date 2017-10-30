@@ -59,6 +59,7 @@ public class ParallelHistogramEqualization extends ImageAlgorithm{
 		
 		//STEP 1. CALCULATE HISTOGRAM (UNTESTED)
 		//TODO: This has to be tested in parallel. Why is parallel so much slower? Remember to uncomment the atomic add!!!
+		//TODO: Idea to find time culprit. Change individual steps back to sequential after getting all working in parallel.
 		long startTime = System.nanoTime();
 		
 		int[] histogram = HistogramEquilization.calculateHistogram(imageRaster);
