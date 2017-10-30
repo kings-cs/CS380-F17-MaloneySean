@@ -16,7 +16,7 @@ int pixel = data[i];
 
 int currentValue = (pixel & RED_MASK) >> RED_OFFSET;
 //Does this need &?
-atomic_add(&result[pixel], 1);
+//atomic_add(&result[pixel], 1);
 }
 
 
@@ -30,7 +30,7 @@ int numBins = dimensions[0];
 
 for(int j = i; j >= 0; j--){
 	//Change this to scan
-	atomic_add(distribution[i], bins[j]);
+	//atomic_add(distribution[i], bins[j]);
 }
 
 
@@ -38,7 +38,7 @@ for(int j = i; j >= 0; j--){
 
 
 __kernel void idealize_histogram(__global const int * histogram, __global int * ideal,
-__global int * dimension){
+__global int * dimensions){
 int i = (get_group_id(0) * get_local_size(0)) + get_local_id(0);
 
 int numBins = dimensions[0];
@@ -61,10 +61,10 @@ else {
 
 
 
-__kernel void map_histogram(__global const int * cuf, __global * int mapping, __global const int * cuFeq){
+__kernel void map_histogram(__global const int * cuf, __global int * mapping, __global const int * cuFeq){
 int i = (get_group_id(0) * get_local_size(0)) + get_local_id(0);
 
-int mapping_length   = get_global_size(0);
+int mapping_length = get_global_size(0);
 
 int mapKey = 0;
 int current = cuf[i];
@@ -74,9 +74,9 @@ int lastDif = (int) MAXFLOAT;;
 
 
 int j = 0;
-boolean foundClosest = false;
+bool foundClosest = false;
 
-while (!foundClosest && j < mapping.length) {
+while (!foundClosest && j < mapping_length) {
  	int feqCurrent = cuFeq[j];
 	int currentDif = abs(current - feqCurrent);
 
@@ -97,7 +97,7 @@ while (!foundClosest && j < mapping.length) {
 mapping[i] = mapKey;
 }
 
-__kernel void map_pixels(__global const int * cuf, __global * int result __global const int * original){
+__kernel void map_pixels(__global const int * mapping, __global int * result, __global const int * original){
 int ALPHA_MASK = 0xff000000;
 int ALPHA_OFFSET = 24;
 int RED_MASK = 0x00ff0000;

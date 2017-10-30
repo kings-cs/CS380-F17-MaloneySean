@@ -152,15 +152,16 @@ public class ParallelHistogramEqualization extends ImageAlgorithm{
 				Sizeof.cl_float * distributionData.length, ptrDistribution, null);
 		
 		
-		//STEP
+		//STEP 1
 		
 		int[] ideal = HistogramEquilization.idealizeHistogram(histogramData, imageRaster.length);
+
 		
-		int[] idealHisto = new int[histogramData.length];
-		cl_mem memIdeal = parallelHelperA(idealHisto, context, commandQueue, device, memHistogram, memDimensions, "idealize_histogram");
+//		int[] idealHisto = new int[histogramData.length];
+//		cl_mem memIdeal = parallelHelperA(idealHisto, context, commandQueue, device, memHistogram, memDimensions, "idealize_histogram");
 		
 		
-		//STEP
+		//STEP 2
 		
 		int[] idealCum = HistogramEquilization.cumulativeFrequencyDistribution(ideal);
 		
@@ -176,25 +177,20 @@ public class ParallelHistogramEqualization extends ImageAlgorithm{
 					commandQueue, device, "hillis_steele_scan");
 		}
 		
-		//TODO: Make a mem object for idealCumData
-		
-		
 		Pointer ptrIdealCum = Pointer.to(idealCumData);
-		
-
 		
 		cl_mem memIdealCum = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
 				Sizeof.cl_float * idealCumData.length, ptrIdealCum, null);
 		
 		
-		//STEP
+		//STEP 3
 		int[] mapping = HistogramEquilization.mapHistogram(distribution, idealCum);
 		
 		int[] mapDesign = new int[distribution.length];
 		cl_mem memMapping = parallelHelperA(mapDesign, context, commandQueue, device, memDistribution, memIdealCum, "map_histogram");
 		
 		
-		//STEP 
+		//STEP 4
 		int[] resultData = HistogramEquilization.mapPixels(mapping, imageRaster);
 		
 		int[] result = new int[imageRaster.length];
@@ -211,7 +207,7 @@ public class ParallelHistogramEqualization extends ImageAlgorithm{
 		CL.clReleaseMemObject(memRaster);
 		CL.clReleaseMemObject(memHistogram);
 		CL.clReleaseMemObject(memDimensions);
-		CL.clReleaseMemObject(memIdeal);
+		//CL.clReleaseMemObject(memIdeal);
 		CL.clReleaseMemObject(memIdealCum);
 		CL.clReleaseMemObject(memMapping);
 		
