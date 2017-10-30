@@ -61,9 +61,7 @@ else {
 
 
 
-__kernel void map_histogram(__global const int * cuf, __global * int mapping __global const int * cuFeq){
-int i = (get_group_id(0) * get_local_size(0)) + get_local_id(0);
-
+__kernel void map_histogram(__global const int * cuf, __global * int mapping, __global const int * cuFeq){
 int i = (get_group_id(0) * get_local_size(0)) + get_local_id(0);
 
 int mapping_length   = get_global_size(0);
@@ -99,7 +97,30 @@ while (!foundClosest && j < mapping.length) {
 mapping[i] = mapKey;
 }
 
+__kernel void map_pixels(__global const int * cuf, __global * int result __global const int * original){
+int ALPHA_MASK = 0xff000000;
+int ALPHA_OFFSET = 24;
+int RED_MASK = 0x00ff0000;
+int RED_OFFSET = 16;
+int GREEN_MASK = 0x0000ff00;
+int GREEN_OFFSET = 8;
+int BLUE_MASK = 0x000000ff;
+int BLUE_OFFSET = 0;
+//Should probably go back and fix my parameters to better follow convention.
+
+int i = (get_group_id(0) * get_local_size(0)) + get_local_id(0);
 
 
+int pixel = original[i];
 
+int grayVal = (pixel & RED_MASK) >> RED_OFFSET;
 
+int newGray = mapping[grayVal];
+
+int alpha = (pixel & ALPHA_MASK) >> ALPHA_OFFSET;
+
+int resultColor = (alpha << ALPHA_OFFSET) | (newGray << RED_OFFSET) | (newGray << BLUE_OFFSET)
+					| (newGray << GREEN_OFFSET);
+
+result[i] = resultColor;
+}

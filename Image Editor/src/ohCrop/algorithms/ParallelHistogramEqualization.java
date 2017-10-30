@@ -200,7 +200,7 @@ public class ParallelHistogramEqualization extends ImageAlgorithm{
 		int[] result = new int[imageRaster.length];
 		
 		
-		parallelHelperA(result, context, commandQueue, device, memMapping, memRaster, "map_histogram");
+		parallelHelperA(result, context, commandQueue, device, memMapping, memRaster, "map_pixel");
 		
 		BufferedImage resultImage = wrapUp(resultData, original);
 		
