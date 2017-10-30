@@ -17,6 +17,43 @@ __global int * bins){
 
 
 
+__kernel void optimized_calculate_histogram(__global const int * imageRaster, __global const int * dimensions,  
+__global int * result){
+
+	int RED_MASK = 0x00ff0000;
+	int RED_OFFSET = 16;
+
+	int i = (get_group_id(0) * get_local_size(0)) + get_local_id(0);
+	__const int numBins = dimensions[0];
+	int numPixels = dimensions[1];
+	int height = dimensions[2];
+	int width = dimensions[3];
+
+	__local int binCopy[256]; //Could probs do that set kernel arg thing with null like in scan
+	
+	
+	int start = get_group_id(0) * width;
+	for(int j = 0; j < width; j++){
+		int index = start + j;
+		if(index < numPixels){
+			int currentValue = (imageRaster[index] & RED_MASK) >> RED_OFFSET;
+			//int currentValue = imageRaster[index];
+			binCopy[currentValue]++;
+		}
+	} 
+	
+	barrier(CLK_LOCAL_MEM_FENCE);
+	
+	start = get_group_id(0) * numBins;
+	for(int j = 0; j < numBins; j++){
+		int index = start + j;
+		if(index < (height * numBins)){
+			result[index] = binCopy[j];
+		}
+	}
+	
+	
+}
 
 
 

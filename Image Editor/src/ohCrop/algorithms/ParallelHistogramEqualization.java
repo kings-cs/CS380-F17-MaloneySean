@@ -47,9 +47,13 @@ public class ParallelHistogramEqualization extends ImageAlgorithm{
 		
 		int numBins = 256;
 		
+		 
 		
 		int[] imageRaster = strip(original);
-		int[] dimensions = {numBins, imageRaster.length};
+
+		
+				
+		int[] dimensions = {numBins, imageRaster.length, original.getHeight(), original.getWidth()};
 		
 		
 		
@@ -67,16 +71,17 @@ public class ParallelHistogramEqualization extends ImageAlgorithm{
 		//STEP 1. CALCULATE HISTOGRAM (TESTED!!!)
 		//TODO: This has to be tested in parallel. Why is parallel so much slower? Remember to uncomment the atomic add!!!
 		//TODO: Idea to find time culprit. Change individual steps back to sequential after getting all working in parallel.
-		
+		 
 		
 		
 		
 		
 		int[] histogram = new int[numBins];
-		cl_mem memHistogram = parallelHelperA(memRaster, memDimensions, histogram, imageRaster.length, "calculate_histogram", program, context, commandQueue, device);
+		cl_mem memHistogram = parallelHelper(memRaster, memDimensions, histogram, imageRaster.length, "calculate_histogram", program, context, commandQueue, device);
 		
-
-	
+		//TODO: This is doing some fuckity shit
+		int[] localHistogramsCollection = new int[original.getHeight() * numBins];
+		cl_mem memOptHistogram = parallelHelper(memRaster, memDimensions, localHistogramsCollection, imageRaster.length / original.getWidth(), "optimized_calculate_histogram", program, context, commandQueue, device);
 		
 		//STEP 2. CUMULATIVE FREQUENCY DISTRIBUTION (TESTED!!!)		
 		float[] histoFloat = new float[histogram.length];
@@ -100,7 +105,7 @@ public class ParallelHistogramEqualization extends ImageAlgorithm{
 		//STEP 3. IDEALIZED HISTOGRAM (TESTED!!!)	
 		//int[] ideal = HistogramEquilization.idealizeHistogram(histogram, imageRaster.length);
 		int[] ideal = new int[histogram.length];
-		cl_mem memIdeal = parallelHelperA(memHistogram, memDimensions, ideal, ideal.length, "idealize_histogram", program, context, commandQueue, device);
+		cl_mem memIdeal = parallelHelper(memHistogram, memDimensions, ideal, ideal.length, "idealize_histogram", program, context, commandQueue, device);
 		
 		
 		//STEP 4. IDEAL CUMULATIVE FREQUNCY DISTRIBUTION (TESTED!!!)
@@ -123,13 +128,13 @@ public class ParallelHistogramEqualization extends ImageAlgorithm{
 		
 		//STEP 5. DESIGN MAPPING (TESTED!!!)
 		int[] mapping = new int[distributionData.length];
-		cl_mem memMapping = parallelHelperA(memDistribution, memIdealCum, mapping, mapping.length, "map_histogram", program, context, commandQueue, device);
+		cl_mem memMapping = parallelHelper(memDistribution, memIdealCum, mapping, mapping.length, "map_histogram", program, context, commandQueue, device);
 		
 		
 		//STEP 6. MAP PIXELS (TESTED!!!)		
 		int[] resultData = new int[imageRaster.length];
 	
-		parallelHelperA(memMapping, memRaster, resultData, resultData.length, "map_pixels", program, context, commandQueue, device);
+		parallelHelper(memMapping, memRaster, resultData, resultData.length, "map_pixels", program, context, commandQueue, device);
 		
 		
 		
@@ -166,7 +171,7 @@ public class ParallelHistogramEqualization extends ImageAlgorithm{
 	 * @param device The OpenCL device used.
 	 * @return The memory object created during this methods execution, returned so that it can be later released and used as future parameters.
 	 */
-	private static cl_mem parallelHelperA(cl_mem memInputData, cl_mem memOtherInput, int[] outputData, int globalItemCount, String methodName, 
+	private static cl_mem parallelHelper(cl_mem memInputData, cl_mem memOtherInput, int[] outputData, int globalItemCount, String methodName, 
 			cl_program program, cl_context context, cl_command_queue commandQueue, cl_device_id device) {
 		
 		
@@ -191,38 +196,18 @@ public class ParallelHistogramEqualization extends ImageAlgorithm{
 	
 		//WORK GROUP STUFF		
 		
-
-		long[] size = new long[1];
-		CL.clGetDeviceInfo(device, CL.CL_DEVICE_MAX_WORK_GROUP_SIZE, 0, 
-				null, size);
-
-		int[] sizeBuffer = new int[(int) size[0]];
-		CL.clGetDeviceInfo(device, CL.CL_DEVICE_MAX_WORK_GROUP_SIZE, 
-				sizeBuffer.length, Pointer.to(sizeBuffer), null);
-
-
-
-		int maxGroupSize = sizeBuffer[0];
-		int globalSize = globalItemCount;
-		int localSize = maxGroupSize;
-
-		boolean divisible = false;
-
-		while(!divisible) {
-			int mod = globalSize % localSize;
-			if(mod == 0) {
-				divisible = true;
-			}
-			else {
-				localSize--;
-			}
+		int localSize = 0;
+		if(methodName.equals("optimized_calculate_histogram")) {
+			localSize = 1;
 		}
-
-
+		else {
+			localSize = calculateLocalSize(globalItemCount, device);
+		}
+		
 		//Set the work-item dimensions
 		long[] globalWorkSize = new long[] {globalItemCount};
 		long[] localWorkSize = new long[] {localSize};
-
+		
 		
 		//Execute the kernel
 		long startTime = System.nanoTime();
@@ -246,4 +231,102 @@ public class ParallelHistogramEqualization extends ImageAlgorithm{
 		
 		return memOutput;
 	}
+	
+	/**
+	 * Private helper method used to calculate the best local size to be used.
+	 * @param globalItemCount The global item count.
+	 * @param device The open cl device to be used.
+	 * @return The optimal local group size.
+	 */
+	private static int calculateLocalSize(int globalItemCount, cl_device_id device) {
+		long[] size = new long[1];
+		CL.clGetDeviceInfo(device, CL.CL_DEVICE_MAX_WORK_GROUP_SIZE, 0, 
+				null, size);
+
+		int[] sizeBuffer = new int[(int) size[0]];
+		CL.clGetDeviceInfo(device, CL.CL_DEVICE_MAX_WORK_GROUP_SIZE, 
+				sizeBuffer.length, Pointer.to(sizeBuffer), null);
+		
+		int maxGroupSize = sizeBuffer[0];
+		int globalSize = globalItemCount;
+		int localSize = maxGroupSize;
+
+		boolean divisible = false;
+
+		while(!divisible) {
+			int mod = globalSize % localSize;
+			if(mod == 0) {
+				divisible = true;
+			}
+			else {
+				localSize--;
+			}
+		}
+		
+		return localSize;
+	}
+	
+//	public static void main(String[] args) {
+//		ParallelSetUp setup = new ParallelSetUp();
+//		CL.setExceptionsEnabled(true);
+//		cl_context context = setup.getContext();
+//		cl_command_queue commandQueue = setup.getCommandQueue();
+//		cl_device_id device = setup.getDevice();
+//		
+//		String source = KernelReader.readFile("Kernels/Histogram_Equalization_Kernel");
+//		cl_program program = CL.clCreateProgramWithSource(context, 1, new String[] {source}, null, null);
+//		
+//		
+//		
+//		int numBins = 5;
+//		
+//		int[] imageRaster = {0, 1, 1, 2,
+//							 3, 4, 1, 2,
+//							 1, 0, 2, 2,
+//							 3, 3, 3, 3};
+//		
+//
+//
+//		
+//				
+//		int[] dimensions = {numBins, 16, 4, 4};
+//		
+//		
+//		
+//		
+//		Pointer ptrRaster = Pointer.to(imageRaster);
+//		Pointer ptrDimensions = Pointer.to(dimensions);
+//
+//		
+//		cl_mem memRaster = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
+//				Sizeof.cl_int * imageRaster.length, ptrRaster, null);
+//		cl_mem memDimensions = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
+//				Sizeof.cl_int * dimensions.length, ptrDimensions, null);
+//
+//		
+//		int[] localHistogramsCollection = new int[4 * numBins];
+//		cl_mem memOptHistogram = parallelHelper(memRaster, memDimensions, localHistogramsCollection, imageRaster.length / 4, 
+//				"optimized_calculate_histogram", program, context, commandQueue, device);
+//		
+//		int count = 0;
+//		for(int i : localHistogramsCollection) {
+//			System.out.print(i + " | ");
+//			
+//			if(count == 4) {
+//				System.out.println();
+//				count = 0;
+//			}
+//			else {
+//				count++;
+//			}
+//			
+//			
+//		}
+//		
+//		CL.clReleaseProgram(program);
+//		CL.clReleaseMemObject(memRaster);
+//		CL.clReleaseMemObject(memOptHistogram);
+//		CL.clReleaseMemObject(memDimensions);
+//		CL.clReleaseCommandQueue(commandQueue);
+//	}
 }
