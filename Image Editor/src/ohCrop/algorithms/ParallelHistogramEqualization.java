@@ -128,28 +128,66 @@ public class ParallelHistogramEqualization extends ImageAlgorithm{
 				CL.CL_TRUE, 0, histogramData.length * Sizeof.cl_float,
 				ptrHistogram, 0, null, null);
 		
-		
+		//STEP 2
 		
 		int[] distribution = HistogramEquilization.cumulativeFrequencyDistribution(histogramData);
 		
-		cl_mem memDistribution = parallelHelperA(histogramData.length, context, commandQueue, device, memHistogram, memDimensions, "cumulative_frequency_distribution");
+		//cl_mem memDistribution = parallelHelperA(histogramData.length, context, commandQueue, device, memHistogram, memDimensions, "cumulative_frequency_distribution");
+		
+		float[] distributionData = new float[histogramData.length];
+		float[] histoFloat = new float[histogramData.length];
+		for(int i = 0; i < histogramData.length; i++) {
+			histoFloat[i] = histogramData[i];
+		}
+		ParallelScan.scan(histoFloat, distributionData, context, 
+				commandQueue, device, "hillis_steele_scan");
+		
+		//STEP
 		
 		int[] ideal = HistogramEquilization.idealizeHistogram(histogramData, imageRaster.length);
 		
-		cl_mem memIdeal = parallelHelperA(histogramData.length, context, commandQueue, device, memHistogram, memDimensions, "idealize_histogram");
+		int[] idealHisto = new int[histogramData.length];
+		cl_mem memIdeal = parallelHelperA(idealHisto, context, commandQueue, device, memHistogram, memDimensions, "idealize_histogram");
+		
+		
+		//STEP
 		
 		int[] idealCum = HistogramEquilization.cumulativeFrequencyDistribution(ideal);
 		
-		cl_mem memIdealCum = parallelHelperA(histogramData.length, context, commandQueue, device, memIdeal, memDimensions, "cumulative_frequency_distribution");
-
-		int[] mapping = HistogramEquilization.mapHistogram(distribution, idealCum);
-
-		cl_mem memMapping;
 		
+		//cl_mem memIdealCum = parallelHelperA(histogramData.length, context, commandQueue, device, memIdeal, memDimensions, "cumulative_frequency_distribution");
+
+		float[] idealCumData = new float[histogramData.length];
+		float[] idealFloat = new float[histogramData.length];
+		for(int i = 0; i < histogramData.length; i++) {
+			idealFloat[i] = ideal[i];
+			
+		ParallelScan.scan(idealFloat, idealCumData, context, 
+					commandQueue, device, "hillis_steele_scan");
+		}
+		
+		//TODO: Make a mem object for idealCumData
+		
+		
+		cl_mem memIdealCum = null;
+		
+		
+		//STEP
+		int[] mapping = HistogramEquilization.mapHistogram(distribution, idealCum);
+		
+		int[] mapDesign = new int[distribution.length];
+		cl_mem memMapping = parallelHelperA(mapDesign, context, commandQueue, device, memHistogram, memIdealCum, "map_histogram");
+		
+		
+		//STEP 
 		int[] resultData = HistogramEquilization.mapPixels(mapping, imageRaster);
 		
+		int[] result = new int[imageRaster.length];
 		
-		BufferedImage result = wrapUp(resultData, original);
+		
+		parallelHelperA(result, context, commandQueue, device, memMapping, memRaster, "map_histogram");
+		
+		BufferedImage resultImage = wrapUp(resultData, original);
 		
 				
 		//Release kernel, program, 
@@ -160,30 +198,24 @@ public class ParallelHistogramEqualization extends ImageAlgorithm{
 		CL.clReleaseMemObject(memDimensions);
 
 		
-		return result;
+		return resultImage;
 	}
 	
 	/**
 	 * Helper method to perform the second step of a histogram equalization in Parallel.
 	 * 
-	 * @param histogramData The histogram bin data.
+	 * @param outputData The data to be calculated.
 	 * @param context The OpenCL context used.
 	 * @param commandQueue THe OpenCL commandQueue used.
 	 * @param device The OpenCL device used.
-	 * @param memHistogram The mem object for the used histogram.
-	 * @param memDimensions The mem object for the number of bins used.
+	 * @param memInputData The mem object for input data.
+	 * @param memOtherInput Mem object for the second input parameter. (Commonly used for dimensions array).
 	 * @param methodName The name of the method in the kernel to be called.
 	 * @return The Cumulative frequecy distribution. 
 	 */
-	private static cl_mem parallelHelperA(int outputLength, cl_context context, cl_command_queue commandQueue, cl_device_id device, 
-			cl_mem memHistogram, cl_mem memDimensions, String methodName) {
-		
-		int[] outputData = new int[outputLength];
-		
-		
-	
-		
-		
+	private static cl_mem parallelHelperA(int[] outputData, cl_context context, cl_command_queue commandQueue, cl_device_id device, 
+			cl_mem memInputData, cl_mem memOtherInput, String methodName) {
+		int outputLength = outputData.length;
 		
 	
 		Pointer ptrOutput = Pointer.to(outputData);
@@ -211,9 +243,9 @@ public class ParallelHistogramEqualization extends ImageAlgorithm{
 		
 		//Set the arguments for the kernel
 		
-		CL.clSetKernelArg(kernel, 0, Sizeof.cl_mem, Pointer.to(memHistogram));
+		CL.clSetKernelArg(kernel, 0, Sizeof.cl_mem, Pointer.to(memInputData));
 		CL.clSetKernelArg(kernel, 1, Sizeof.cl_mem, Pointer.to(memOutput));
-		CL.clSetKernelArg(kernel, 2, Sizeof.cl_mem, Pointer.to(memDimensions));
+		CL.clSetKernelArg(kernel, 2, Sizeof.cl_mem, Pointer.to(memOtherInput));
 
 	
 		//WORK GROUP STUFF		

@@ -27,7 +27,7 @@ public class ParallelScan {
 	 * @param commandQueue The OpenCL commandQueue to be used.
 	 * @param kernelMethod The name of the method in the kernel to be called.
 	 */
-	protected static void scan(final float[] data, float[] results, cl_context context, cl_command_queue commandQueue, cl_device_id device, String kernelMethod) {
+	public static void scan(final float[] data, float[] results, cl_context context, cl_command_queue commandQueue, cl_device_id device, String kernelMethod) {
 		//TODO: I have this sinking feeling this may not always work.
 		
 		CL.setExceptionsEnabled(true);
@@ -126,49 +126,49 @@ public class ParallelScan {
 		CL.clReleaseMemObject(memResult);
 	}
 	
-	/**
-	 * Implementation of inclusive scan.
-	 * 
-	 * @param data The data we want to scan.
-	 * @param results The resulting scan.
-	 */
-	protected static void inclusiveScan(final float[] data, float[] results) {
-		ParallelSetUp setup = new ParallelSetUp();
-
-		scan(data, results, setup.getContext(), setup.getCommandQueue(), setup.getDevice(), "hillis_steele_scan");
-	}
-	
-	/**
-	 * Implementation of exclusive scan.
-	 * 
-	 * @param data The data we want to scan.
-	 * @param results The resulting scan.
-	 */
-	protected static void exclusiveScan(final float[] data, float[] results) {
-		ParallelSetUp setup = new ParallelSetUp();
-
-		scan(data, results, setup.getContext(), setup.getCommandQueue(), setup.getDevice(), "blelloch_scan");
-	}
-	
-	
-	
-	/**
-	 * USED FOR TESTING ONLY.
-	 * 
-	 * @param data The data we want to scan.
-	 * @param results The resulting scan.
-	 */
-	public static void hillisSteeleScan(final float[] data, float[]results) {
-		inclusiveScan(data, results);
-	}
-	
-	/**
-	 * USED FOR TESTING ONLY.
-	 * 
-	 * @param data The data we want to scan.
-	 * @param results The resulting scan.
-	 */
-	public static void blellochScan(final float[] data, float[]results) {
-		exclusiveScan(data, results);
-	}
+//	/**
+//	 * Implementation of inclusive scan.
+//	 * 
+//	 * @param data The data we want to scan.
+//	 * @param results The resulting scan.
+//	 */
+//	protected static void inclusiveScan(final float[] data, float[] results) {
+//		ParallelSetUp setup = new ParallelSetUp();
+//
+//		scan(data, results, setup.getContext(), setup.getCommandQueue(), setup.getDevice(), "hillis_steele_scan");
+//	}
+//	
+//	/**
+//	 * Implementation of exclusive scan.
+//	 * 
+//	 * @param data The data we want to scan.
+//	 * @param results The resulting scan.
+//	 */
+//	protected static void exclusiveScan(final float[] data, float[] results) {
+//		ParallelSetUp setup = new ParallelSetUp();
+//
+//		scan(data, results, setup.getContext(), setup.getCommandQueue(), setup.getDevice(), "blelloch_scan");
+//	}
+//	
+//	
+//	
+//	/**
+//	 * USED FOR TESTING ONLY.
+//	 * 
+//	 * @param data The data we want to scan.
+//	 * @param results The resulting scan.
+//	 */
+//	public static void hillisSteeleScan(final float[] data, float[]results) {
+//		inclusiveScan(data, results);
+//	}
+//	
+//	/**
+//	 * USED FOR TESTING ONLY.
+//	 * 
+//	 * @param data The data we want to scan.
+//	 * @param results The resulting scan.
+//	 */
+//	public static void blellochScan(final float[] data, float[]results) {
+//		exclusiveScan(data, results);
+//	}
 }

@@ -29,6 +29,7 @@ int i = (get_group_id(0) * get_local_size(0)) + get_local_id(0);
 int numBins = dimensions[0];
 
 for(int j = i; j >= 0; j--){
+	//Change this to scan
 	atomic_add(distribution[i], bins[j]);
 }
 
@@ -57,6 +58,46 @@ else {
 }
 }
 
+
+
+
+__kernel void map_histogram(__global const int * cuf, __global * int mapping __global const int * cuFeq){
+int i = (get_group_id(0) * get_local_size(0)) + get_local_id(0);
+
+int i = (get_group_id(0) * get_local_size(0)) + get_local_id(0);
+
+int mapping_length   = get_global_size(0);
+
+int mapKey = 0;
+int current = cuf[i];
+
+int bestDif = (int) MAXFLOAT;
+int lastDif = (int) MAXFLOAT;;
+
+
+int j = 0;
+boolean foundClosest = false;
+
+while (!foundClosest && j < mapping.length) {
+ 	int feqCurrent = cuFeq[j];
+	int currentDif = abs(current - feqCurrent);
+
+	if (currentDif < bestDif) {
+		bestDif = currentDif;
+		mapKey = j;
+	}
+
+	// TODO: If this ends up bugged, comment this out until bug is found.
+	lastDif = currentDif;
+	if (lastDif > currentDif) {
+		foundClosest = true;
+	}
+
+	j++;
+}
+
+mapping[i] = mapKey;
+}
 
 
 

@@ -5,6 +5,7 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 
 import ohCrop.algorithms.ParallelScan;
+import ohCrop.algorithms.ParallelSetUp;
 
 /**
  * Class to tests implementation of Hillis-Steele (Inclusive) and Blelloch (Exclusive) Scan.
@@ -26,7 +27,11 @@ public class ScanTest {
 		
 		float[] result = new float[size];
 		
-		ParallelScan.hillisSteeleScan(data, result);
+		
+		ParallelSetUp setup = new ParallelSetUp();
+	
+		ParallelScan.scan(data, result, setup.getContext(), 
+				setup.getCommandQueue(), setup.getDevice(), "hillis_steele_scan");
 	
 		assertEquals("Index 0 should contain 1", 1, result[0], 0);
 		assertEquals("Index 1 should contain 2", 2, result[1], 0);
@@ -52,8 +57,10 @@ public class ScanTest {
 		
 		float[] result = new float[size];
 		
+		ParallelSetUp setup = new ParallelSetUp();
 		
-		ParallelScan.blellochScan(data, result);
+		ParallelScan.scan(data, result, setup.getContext(), 
+				setup.getCommandQueue(), setup.getDevice(), "blelloch_scan");
 		
 		
 		for(int i = 0; i < result.length; i++) {
