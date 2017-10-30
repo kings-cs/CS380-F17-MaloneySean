@@ -15,8 +15,12 @@ barrier(CLK_LOCAL_MEM_FENCE);
 int pixel = data[i];
 
 int currentValue = (pixel & RED_MASK) >> RED_OFFSET;
-atomic_add(result[pixel], 1);
+//Does this need &?
+atomic_add(&result[pixel], 1);
 }
+
+
+
 
 __kernel void cumulative_frequency_distribution(__global const int * bins, __global int * distribution,
 __global int * dimensions){
@@ -30,3 +34,31 @@ for(int j = i; j >= 0; j--){
 
 
 }
+
+
+__kernel void idealize_histogram(__global const int * histogram, __global int * ideal,
+__global int * dimension){
+int i = (get_group_id(0) * get_local_size(0)) + get_local_id(0);
+
+int numBins = dimensions[0];
+int pixelCount = dimensions[1];
+
+int avg = pixelCount / numBins;
+int leftOver = pixelCount - (avg * numBins);
+int mid = (numBins - 1) / 2;
+int extraStart = mid - (leftOver / 2);
+int extraEnd = extraStart + leftOver;
+
+if (i >= extraStart && i < extraEnd) {
+	ideal[i] = avg + 1;
+} 
+else {
+	ideal[i] = avg;
+}
+}
+
+
+
+
+
+
