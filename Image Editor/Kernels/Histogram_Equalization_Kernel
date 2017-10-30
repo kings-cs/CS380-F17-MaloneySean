@@ -29,7 +29,7 @@ __global int * result){
 	int height = dimensions[2];
 	int width = dimensions[3];
 
-	__local int binCopy[5]; //Could probs do that set kernel arg thing with null like in scan
+	__local int binCopy[5]; //REMEMBER TO CHANGE THIS BACK
 	
 	
 	int start = get_group_id(0) * width;
