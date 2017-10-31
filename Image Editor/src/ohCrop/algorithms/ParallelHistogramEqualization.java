@@ -72,7 +72,7 @@ public class ParallelHistogramEqualization extends ImageAlgorithm{
 		
 		//STEP 1. CALCULATE HISTOGRAM (TESTED!!!)
 		 
-		
+		//This is the non optimized call.
 		//int[] histogram = new int[NUM_BINS];
 		//cl_mem memHistogram = parallelHelper(memRaster, memDimensions, histogram, imageRaster.length, "calculate_histogram", program, context, commandQueue, device);
 		
@@ -81,6 +81,7 @@ public class ParallelHistogramEqualization extends ImageAlgorithm{
 		cl_mem memOptHistogram = parallelHelper(memRaster, memDimensions, localHistogramsCollection, imageRaster.length / original.getHeight(), "optimized_calculate_histogram", program, context, commandQueue, device);
 		
 	
+		//TODO: MUST IMPLEMENT REDUCE IN PARALLEL!
 		int[] histogram = reduce(localHistogramsCollection, NUM_BINS);
 		
 		
