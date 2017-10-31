@@ -27,6 +27,11 @@ public class ParallelHistogramEqualization extends ImageAlgorithm{
 	private static long TOTAL_TIME;
 	
 	/**
+	 * The total number of bins used.
+	 */
+	private static final int NUM_BINS = 256;
+	
+	/**
 	 * Converts the individual pixels of an image t be in shades of gray computed using parallelism.
 	 * 
 	 * @param context The OpenCL context used for the parallel computing.
@@ -44,13 +49,12 @@ public class ParallelHistogramEqualization extends ImageAlgorithm{
 		cl_program program = CL.clCreateProgramWithSource(context, 1, new String[] {source}, null, null);
 		
 		
-			
-		int numBins = 256;
+	
 		
 		 
 		
 		int[] imageRaster = strip(original);
-		int[] dimensions = {numBins, imageRaster.length, original.getHeight(), original.getWidth()};
+		int[] dimensions = {NUM_BINS, imageRaster.length, original.getHeight(), original.getWidth()};
 		
 		System.out.println(imageRaster.length);
 		//System.out.println(original.getHeight() * 256);
@@ -75,15 +79,15 @@ public class ParallelHistogramEqualization extends ImageAlgorithm{
 		
 		
 		
-		int[] histogram = new int[numBins];
+		int[] histogram = new int[NUM_BINS];
 		cl_mem memHistogram = parallelHelper(memRaster, memDimensions, histogram, imageRaster.length, "calculate_histogram", program, context, commandQueue, device);
 		
 		//TODO: This is doing some fuckity shit
-		int[] localHistogramsCollection = new int[original.getHeight() * numBins];
+		int[] localHistogramsCollection = new int[original.getHeight() * NUM_BINS];
 		cl_mem memOptHistogram = parallelHelper(memRaster, memDimensions, localHistogramsCollection, imageRaster.length / original.getHeight(), "optimized_calculate_histogram", program, context, commandQueue, device);
 		
 	
-		int[] histogramTest = reduce(localHistogramsCollection, numBins);
+		int[] histogramTest = reduce(localHistogramsCollection, NUM_BINS);
 		
 		
 		for(int i = 0; i < histogram.length; i++) {
@@ -209,12 +213,14 @@ public class ParallelHistogramEqualization extends ImageAlgorithm{
 		CL.clSetKernelArg(kernel, 1, Sizeof.cl_mem, Pointer.to(memOtherInput));
 		CL.clSetKernelArg(kernel, 2, Sizeof.cl_mem, Pointer.to(memOutput));
 
+		
 	
 		//WORK GROUP STUFF		
 		
 		int localSize = 0;
 		if(methodName.equals("optimized_calculate_histogram")) {
 			localSize = 1;
+			CL.clSetKernelArg(kernel, 3, Sizeof.cl_int * NUM_BINS, null);
 			
 		}
 		else {

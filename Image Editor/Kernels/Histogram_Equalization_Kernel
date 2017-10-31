@@ -18,7 +18,7 @@ __global int * bins){
 
 
 __kernel void optimized_calculate_histogram(__global const int * imageRaster, __global const int * dimensions,  
-__global int * result){
+__global int * result, __local int * binCopy){
 
 	int RED_MASK = 0x00ff0000;
 	int RED_OFFSET = 16;
@@ -30,9 +30,6 @@ __global int * result){
 	int numPixels = dimensions[1];
 	int height = dimensions[2];
 	int width = dimensions[3];
-
-	__local int binCopy[256]; //REMEMBER TO CHANGE THIS BACK
-	
 	
 	
 	
