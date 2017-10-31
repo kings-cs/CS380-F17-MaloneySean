@@ -38,11 +38,11 @@ __global int * result){
 		if(index < numPixels){
 			int currentValue = (imageRaster[index] & RED_MASK) >> RED_OFFSET;
 			//int currentValue = imageRaster[index];
-			binCopy[currentValue]++;
+			//binCopy[currentValue]++;
 		}
 	} 
 	
-	
+	binCopy[i]++;
 	start = get_group_id(0) * numBins;
 	for(int j = 0; j < numBins; j++){
 		int index = start + j;
@@ -50,7 +50,6 @@ __global int * result){
 			result[index] = binCopy[j];
 		}
 	}
-	
 	
 }
 

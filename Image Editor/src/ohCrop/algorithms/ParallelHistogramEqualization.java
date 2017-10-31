@@ -3,7 +3,7 @@ package ohCrop.algorithms;
 import java.awt.image.BufferedImage;
 
 import javax.swing.JOptionPane;
-
+import javax.swing.plaf.synth.SynthSeparatorUI;
 
 import org.jocl.CL;
 import org.jocl.Pointer;
@@ -80,8 +80,9 @@ public class ParallelHistogramEqualization extends ImageAlgorithm{
 		
 		//TODO: This is doing some fuckity shit
 		int[] localHistogramsCollection = new int[original.getHeight() * numBins];
-		cl_mem memOptHistogram = parallelHelper(memRaster, memDimensions, localHistogramsCollection, imageRaster.length / original.getWidth(), "optimized_calculate_histogram", program, context, commandQueue, device);
+		cl_mem memOptHistogram = parallelHelper(memRaster, memDimensions, localHistogramsCollection, imageRaster.length / original.getHeight(), "optimized_calculate_histogram", program, context, commandQueue, device);
 		
+	
 		int[] histogramTest = reduce(localHistogramsCollection, numBins);
 		
 		
@@ -214,6 +215,7 @@ public class ParallelHistogramEqualization extends ImageAlgorithm{
 		int localSize = 0;
 		if(methodName.equals("optimized_calculate_histogram")) {
 			localSize = 1;
+			
 		}
 		else {
 			localSize = calculateLocalSize(globalItemCount, device);
@@ -298,7 +300,7 @@ public class ParallelHistogramEqualization extends ImageAlgorithm{
 			tot += input[i];
 		}
 		
-		System.out.println(tot);
+		System.out.println("TOT: " + tot);
 		
 		return histogram;
 	}
