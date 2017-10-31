@@ -56,8 +56,7 @@ public class ParallelHistogramEqualization extends ImageAlgorithm{
 		int[] imageRaster = strip(original);
 		int[] dimensions = {NUM_BINS, imageRaster.length, original.getHeight(), original.getWidth()};
 		
-		//System.out.println(imageRaster.length);
-		//System.out.println(original.getHeight() * 256);
+
 		
 		
 		
@@ -72,12 +71,7 @@ public class ParallelHistogramEqualization extends ImageAlgorithm{
 
 		
 		//STEP 1. CALCULATE HISTOGRAM (TESTED!!!)
-		//TODO: This has to be tested in parallel. Why is parallel so much slower? Remember to uncomment the atomic add!!!
-		//TODO: Idea to find time culprit. Change individual steps back to sequential after getting all working in parallel.
 		 
-		
-		
-		
 		
 		//int[] histogram = new int[NUM_BINS];
 		//cl_mem memHistogram = parallelHelper(memRaster, memDimensions, histogram, imageRaster.length, "calculate_histogram", program, context, commandQueue, device);
@@ -90,12 +84,6 @@ public class ParallelHistogramEqualization extends ImageAlgorithm{
 		int[] histogram = reduce(localHistogramsCollection, NUM_BINS);
 		
 		
-//		for(int i = 0; i < histogram.length; i++) {
-//			System.out.println(i + ": " + histogram[i] + "  |  " + histogramTest[i]);
-//		}
-		
-		
-//		histogram = histogram;
 		Pointer ptrHistoTest = Pointer.to(histogram);
 		cl_mem memHistogram = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
 				Sizeof.cl_int * histogram.length, ptrHistoTest, null);
