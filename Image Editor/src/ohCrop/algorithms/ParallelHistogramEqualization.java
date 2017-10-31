@@ -3,7 +3,7 @@ package ohCrop.algorithms;
 import java.awt.image.BufferedImage;
 
 import javax.swing.JOptionPane;
-import javax.swing.plaf.synth.SynthSeparatorUI;
+
 
 import org.jocl.CL;
 import org.jocl.Pointer;
@@ -289,11 +289,15 @@ public class ParallelHistogramEqualization extends ImageAlgorithm{
 		return localSize;
 	}
 	
+	/**
+	 * Sequential implementation of reduce used for testing.
+	 * @param input The input data.
+	 * @param bins The amount of bins in the histogram.
+	 * @return The reduced histogram.
+	 */
 	public static int[] reduce(int[] input, int bins) {
 		int[] histogram = new int[bins];
 		
-		
-		int tot = 0;
 		int count = 0;
 		for(int i = 0; i < input.length; i++) {
 			histogram[count] += input[i];
@@ -303,7 +307,7 @@ public class ParallelHistogramEqualization extends ImageAlgorithm{
 			if(count == bins) {
 				count = 0;
 			}
-			tot += input[i];
+	
 		}
 		
 
