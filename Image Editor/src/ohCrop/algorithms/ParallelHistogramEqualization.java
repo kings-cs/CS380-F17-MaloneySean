@@ -73,12 +73,12 @@ public class ParallelHistogramEqualization extends ImageAlgorithm{
 		//STEP 1. CALCULATE HISTOGRAM (TESTED!!!)
 		 
 		//This is the non optimized call.
-		//int[] histogram = new int[NUM_BINS];
-		//cl_mem memHistogram = parallelHelper(memRaster, memDimensions, histogram, imageRaster.length, "calculate_histogram", program, context, commandQueue, device);
+		//int[] histogramOg = new int[NUM_BINS];
+		//cl_mem memHistogramOg = parallelHelper(memRaster, memDimensions, histogramOg, imageRaster.length, "calculate_histogram", program, context, commandQueue, device);
 		
 	
 		int[] localHistogramsCollection = new int[original.getHeight() * NUM_BINS];
-		cl_mem memOptHistogram = parallelHelper(memRaster, memDimensions, localHistogramsCollection, imageRaster.length / original.getWidth(), "optimized_calculate_histogram", program, context, commandQueue, device);
+		cl_mem memOptHistogram = parallelHelper(memRaster, memDimensions, localHistogramsCollection, imageRaster.length / original.getWidth(), "optimized_calculate_histogram", program, context, commandQueue, device);	
 		
 	
 		//TODO: MUST IMPLEMENT REDUCE IN PARALLEL!
@@ -292,20 +292,34 @@ public class ParallelHistogramEqualization extends ImageAlgorithm{
 		int control = bins - 1;
 		
 		int count = 0;
+		int countTwo = 0;
 		for(int i = 0; i < input.length; i++) {
 			
 			
 			
 			
 			
-			if(i % control == 0 && i != 0) {
+			
+//			if(i % control == 0 && i != 0) {
+//				count++;
+//			}
+//			
+//			if(count < bins) {
+//				histogram[count] += input[i];
+//			}
+			
+			
+			if(countTwo == control) {
 				count++;
+				countTwo = 0;
 			}
 			
 			if(count < bins) {
 				histogram[count] += input[i];
 			}
 			
+			
+			countTwo++;
 		
 		}
 
