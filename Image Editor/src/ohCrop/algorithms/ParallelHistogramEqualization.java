@@ -310,8 +310,8 @@ public class ParallelHistogramEqualization extends ImageAlgorithm{
 	 * @param args NOT USED.
 	 */
 	public static void main(String[] args) {
-		ParallelSetUp setup = new ParallelSetUp();
 		CL.setExceptionsEnabled(true);
+		ParallelSetUp setup = new ParallelSetUp();		
 		cl_context context = setup.getContext();
 		cl_command_queue commandQueue = setup.getCommandQueue();
 		cl_device_id device = setup.getDevice();
