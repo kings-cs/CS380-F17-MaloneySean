@@ -56,7 +56,7 @@ public class ParallelHistogramEqualization extends ImageAlgorithm{
 		int[] imageRaster = strip(original);
 		int[] dimensions = {NUM_BINS, imageRaster.length, original.getHeight(), original.getWidth()};
 		
-		System.out.println(imageRaster.length);
+		//System.out.println(imageRaster.length);
 		//System.out.println(original.getHeight() * 256);
 		
 		
@@ -79,25 +79,25 @@ public class ParallelHistogramEqualization extends ImageAlgorithm{
 		
 		
 		
-		int[] histogram = new int[NUM_BINS];
-		cl_mem memHistogram = parallelHelper(memRaster, memDimensions, histogram, imageRaster.length, "calculate_histogram", program, context, commandQueue, device);
+		//int[] histogram = new int[NUM_BINS];
+		//cl_mem memHistogram = parallelHelper(memRaster, memDimensions, histogram, imageRaster.length, "calculate_histogram", program, context, commandQueue, device);
 		
-		//TODO: This is doing some fuckity shit
+	
 		int[] localHistogramsCollection = new int[original.getHeight() * NUM_BINS];
 		cl_mem memOptHistogram = parallelHelper(memRaster, memDimensions, localHistogramsCollection, imageRaster.length / original.getHeight(), "optimized_calculate_histogram", program, context, commandQueue, device);
 		
 	
-		int[] histogramTest = reduce(localHistogramsCollection, NUM_BINS);
+		int[] histogram = reduce(localHistogramsCollection, NUM_BINS);
 		
 		
-		for(int i = 0; i < histogram.length; i++) {
-			System.out.println(i + ": " + histogram[i] + "  |  " + histogramTest[i]);
-		}
+//		for(int i = 0; i < histogram.length; i++) {
+//			System.out.println(i + ": " + histogram[i] + "  |  " + histogramTest[i]);
+//		}
 		
 		
-		histogram = histogramTest;
+//		histogram = histogram;
 		Pointer ptrHistoTest = Pointer.to(histogram);
-		memHistogram = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
+		cl_mem memHistogram = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
 				Sizeof.cl_int * histogram.length, ptrHistoTest, null);
 		
 		
@@ -297,7 +297,7 @@ public class ParallelHistogramEqualization extends ImageAlgorithm{
 		int count = 0;
 		for(int i = 0; i < input.length; i++) {
 			histogram[count] += input[i];
-			//System.out.println("C: " + count + " I: " + input[i]);
+	
 		
 			count++;
 			if(count == bins) {
@@ -306,7 +306,7 @@ public class ParallelHistogramEqualization extends ImageAlgorithm{
 			tot += input[i];
 		}
 		
-		System.out.println("TOT: " + tot);
+
 		
 		return histogram;
 	}
