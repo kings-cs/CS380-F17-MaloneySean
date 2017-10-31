@@ -44,17 +44,16 @@ public class ParallelHistogramEqualization extends ImageAlgorithm{
 		cl_program program = CL.clCreateProgramWithSource(context, 1, new String[] {source}, null, null);
 		
 		
-		
+			
 		int numBins = 256;
 		
 		 
 		
 		int[] imageRaster = strip(original);
-
-		
-				
 		int[] dimensions = {numBins, imageRaster.length, original.getHeight(), original.getWidth()};
 		
+		System.out.println(imageRaster.length);
+		//System.out.println(original.getHeight() * 256);
 		
 		
 		
@@ -83,7 +82,19 @@ public class ParallelHistogramEqualization extends ImageAlgorithm{
 		int[] localHistogramsCollection = new int[original.getHeight() * numBins];
 		cl_mem memOptHistogram = parallelHelper(memRaster, memDimensions, localHistogramsCollection, imageRaster.length / original.getWidth(), "optimized_calculate_histogram", program, context, commandQueue, device);
 		
-		//histogram = reduceSequential(localHistogramsCollection);
+		int[] histogramTest = reduce(localHistogramsCollection, numBins);
+		
+		
+		for(int i = 0; i < histogram.length; i++) {
+			System.out.println(i + ": " + histogram[i] + "  |  " + histogramTest[i]);
+		}
+		
+		
+		histogram = histogramTest;
+		Pointer ptrHistoTest = Pointer.to(histogram);
+		memHistogram = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
+				Sizeof.cl_int * histogram.length, ptrHistoTest, null);
+		
 		
 		//STEP 2. CUMULATIVE FREQUENCY DISTRIBUTION (TESTED!!!)		
 		float[] histoFloat = new float[histogram.length];
@@ -155,6 +166,8 @@ public class ParallelHistogramEqualization extends ImageAlgorithm{
 		CL.clReleaseMemObject(memIdeal);
 		CL.clReleaseMemObject(memIdealCum);
 		CL.clReleaseMemObject(memMapping);
+		CL.clReleaseMemObject(memOptHistogram);
+		
 		
 		return resultImage;
 	}
@@ -268,6 +281,27 @@ public class ParallelHistogramEqualization extends ImageAlgorithm{
 		return localSize;
 	}
 	
+	public static int[] reduce(int[] input, int bins) {
+		int[] histogram = new int[bins];
+		
+		
+		int tot = 0;
+		int count = 0;
+		for(int i = 0; i < input.length; i++) {
+			histogram[count] += input[i];
+			//System.out.println("C: " + count + " I: " + input[i]);
+		
+			count++;
+			if(count == bins) {
+				count = 0;
+			}
+			tot += input[i];
+		}
+		
+		System.out.println(tot);
+		
+		return histogram;
+	}
 
 	/**
 	 * TESTING ONLY. Remeber to change the binCopy length back in the kernel.
@@ -287,16 +321,16 @@ public class ParallelHistogramEqualization extends ImageAlgorithm{
 		
 		int numBins = 5;
 		
-		int[] imageRaster = {0, 1, 1, 2,
-							 3, 4, 1, 2,
-							 1, 0, 2, 2,
-							 3, 3, 3, 3};
+		int[] imageRaster = {0, 1, 1, 2, 4, 0,
+							 3, 4, 1, 2, 4, 4,
+							 1, 0, 2, 2, 0, 2,
+							 3, 3, 3, 3, 3, 3};
 		
 
 
 		
 				
-		int[] dimensions = {numBins, 16, 4, 4};
+		int[] dimensions = {numBins, 24, 4, 6};
 		
 		
 		
@@ -325,10 +359,15 @@ public class ParallelHistogramEqualization extends ImageAlgorithm{
 			}
 			else {
 				count++;
-			}
-			
-			
+			}	
 		}
+		
+		int[] r = ParallelHistogramEqualization.reduce(localHistogramsCollection, 5);
+		System.out.println();
+		for(int i = 0; i < r.length; i++) {
+			System.out.print(r[i] + " | ");
+		}
+		
 		
 		CL.clReleaseProgram(program);
 		CL.clReleaseMemObject(memRaster);

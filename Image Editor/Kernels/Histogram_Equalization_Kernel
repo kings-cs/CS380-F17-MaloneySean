@@ -29,15 +29,15 @@ __global int * result){
 	int height = dimensions[2];
 	int width = dimensions[3];
 
-	__local int binCopy[5]; //REMEMBER TO CHANGE THIS BACK
+	__local int binCopy[256]; //REMEMBER TO CHANGE THIS BACK
 	
 	
 	int start = get_group_id(0) * width;
 	for(int j = 0; j < width; j++){
 		int index = start + j;
 		if(index < numPixels){
-			//int currentValue = (imageRaster[index] & RED_MASK) >> RED_OFFSET;
-			int currentValue = imageRaster[index];
+			int currentValue = (imageRaster[index] & RED_MASK) >> RED_OFFSET;
+			//int currentValue = imageRaster[index];
 			binCopy[currentValue]++;
 		}
 	} 
@@ -55,8 +55,20 @@ __global int * result){
 }
 
 
-__kernel void reduce_kernel(__global int * data, __global const int * dimensions,  __global int * result){
-
+__kernel void global_reduce_kernel(__global int * data, __global const int * dimensions,  __global int * result){
+	int itemIndex = get_local_id(0);
+	int index = get_local_size(0) * get_group_id(0) + itemIndex;
+	
+	for(int i = get_local_size(0) / 2; i > 0; i >>= 1){
+		if(itemIndex < i){
+			data[index] += data[index + i];
+		}
+		barrier(CLK_GLOBAL_MEM_FENCE);
+	}
+	
+	if(itemIndex == 0){
+		result[index] = data[index];
+	}
 }
 
 
