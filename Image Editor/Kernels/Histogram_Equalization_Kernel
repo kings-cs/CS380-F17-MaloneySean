@@ -24,6 +24,8 @@ __global int * result){
 	int RED_OFFSET = 16;
 
 	int i = (get_group_id(0) * get_local_size(0)) + get_local_id(0);
+	
+	
 	__const int numBins = dimensions[0];
 	int numPixels = dimensions[1];
 	int height = dimensions[2];
@@ -32,23 +34,32 @@ __global int * result){
 	__local int binCopy[256]; //REMEMBER TO CHANGE THIS BACK
 	
 	
+	int glob = get_global_id(0);
+	//int glob = get_group_id(0);
+	
+	if(glob < width - 1){
+	
 	int start = get_group_id(0) * width;
 	for(int j = 0; j < width; j++){
 		int index = start + j;
 		if(index < numPixels){
-			int currentValue = (imageRaster[index] & RED_MASK) >> RED_OFFSET;
-			//int currentValue = imageRaster[index];
-			//binCopy[currentValue]++;
+			//int currentValue = (imageRaster[index] & RED_MASK) >> RED_OFFSET;
+			int currentValue = imageRaster[index];
+			binCopy[currentValue]++;
 		}
 	} 
 	
-	binCopy[i]++;
+
+	
 	start = get_group_id(0) * numBins;
 	for(int j = 0; j < numBins; j++){
 		int index = start + j;
 		if(index < (height * numBins)){
 			result[index] = binCopy[j];
 		}
+	}
+	
+
 	}
 	
 }
