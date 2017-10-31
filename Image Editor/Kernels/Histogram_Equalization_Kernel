@@ -57,11 +57,6 @@ __global int * result, __local int * binCopy){
 			result[index] = binCopy[j];
 		}
 	}
-	
-	
-
-	
-	
 }
 
 
@@ -69,12 +64,18 @@ __kernel void global_reduce_kernel(__global int * data, __global const int * dim
 	int itemIndex = get_local_id(0);
 	int index = get_local_size(0) * get_group_id(0) + itemIndex;
 	
+	
+	int numBins = dimensions[0];
+	int height = dimensions[2];
+	
 	for(int i = get_local_size(0) / 2; i > 0; i >>= 1){
 		if(itemIndex < i){
 			data[index] += data[index + i];
 		}
 		barrier(CLK_GLOBAL_MEM_FENCE);
 	}
+	
+	
 	
 	if(itemIndex == 0){
 		result[index] = data[index];
