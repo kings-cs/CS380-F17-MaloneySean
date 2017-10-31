@@ -287,18 +287,27 @@ public class ParallelHistogramEqualization extends ImageAlgorithm{
 	public static int[] reduce(int[] input, int bins) {
 		int[] histogram = new int[bins];
 		
+		
+	
+		int control = bins - 1;
+		
 		int count = 0;
 		for(int i = 0; i < input.length; i++) {
-			histogram[count] += input[i];
-	
-		
-			count++;
-			if(count == bins) {
-				count = 0;
+			
+			
+			
+			
+			
+			if(i % control == 0 && i != 0) {
+				count++;
 			}
-	
-		}
+			
+			if(count < bins) {
+				histogram[count] += input[i];
+			}
+			
 		
+		}
 
 		
 		return histogram;
