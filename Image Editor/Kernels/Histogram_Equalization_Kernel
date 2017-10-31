@@ -34,10 +34,7 @@ __global int * result){
 	__local int binCopy[256]; //REMEMBER TO CHANGE THIS BACK
 	
 	
-	int glob = get_global_id(0);
-	//int glob = get_group_id(0);
 	
-	if(glob < width - 1){
 	
 	int start = get_group_id(0) * width;
 	for(int j = 0; j < width; j++){
@@ -49,18 +46,19 @@ __global int * result){
 		}
 	} 
 	
-
+	
 	
 	start = get_group_id(0) * numBins;
 	for(int j = 0; j < numBins; j++){
 		int index = start + j;
-		if(index < (height * numBins)){
+		if(index < (height * numBins)){	
 			result[index] = binCopy[j];
 		}
 	}
 	
+	
 
-	}
+	
 	
 }
 
