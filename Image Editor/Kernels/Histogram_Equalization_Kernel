@@ -42,20 +42,22 @@ __global int * result, __local int * binCopy){
 	for(int j = 0; j < width; j++){
 		int index = start + j;
 		if(index < numPixels){
-			int currentValue = (imageRaster[index] & RED_MASK) >> RED_OFFSET;
-			//int currentValue = imageRaster[index];
+			//int currentValue = (imageRaster[index] & RED_MASK) >> RED_OFFSET;
+			int currentValue = imageRaster[index];
 			binCopy[currentValue]++;
 		}
 	} 
 	
 
 	
-	start = get_group_id(0) * numBins;
+
+	start = get_group_id(0);
+	int index = start;
 	for(int j = 0; j < numBins; j++){
-		int index = start + j;
-		if(index < (height * numBins)){	
-			result[index] = binCopy[j];
-		}
+			
+		result[index] = binCopy[j];
+		index += height;
+		
 	}
 }
 
