@@ -244,4 +244,4 @@ once the project has been imported into a workspace.
 	
 </table>
 	
-5. The program currently has no limitations other than the possibly that file formats not explicitly said to be supported may not function.
+5. Current Limitations: May not function for file formats not explicitly listed. Histogram Equalization only works on grayscale images.
