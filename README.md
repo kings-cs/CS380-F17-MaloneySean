@@ -98,6 +98,24 @@ once the project has been imported into a workspace.
 		<th>Computational Device</th>
 	</tr>
 	<tr>
+		<th>Histogram Eq. Sequential</th>
+		<th>3840x2160</th>
+		<th>30.584887 (ms)</th>
+		<th>GeForce GTX 745</th>
+	</tr>
+	<tr>
+		<th>Histogram Eq. Parallel</th>
+		<th>3840x2160</th>
+		<th>8.033052 (ms)</th>
+		<th>GeForce GTX 745</th>
+	</tr>
+	<tr>
+		<th>Histogram Eq. Parallel (Atomics)</th>
+		<th>3840x2160</th>
+		<th>11.353041 (ms)</th>
+		<th>GeForce GTX 745</th>
+	</tr>
+	<tr>
 		<th>Grayscale Sequential</th>
 		<th>1920x1080p</th>
 		<th>20.516101 (ms)</th>
@@ -239,6 +257,24 @@ once the project has been imported into a workspace.
 		<th>Rotate Left Parallel</th>
 		<th>1280x791p</th>
 		<th>1.754335 (ms)</th>
+		<th>GeForce GTX 745</th>
+	</tr>
+		<tr>
+		<th>Histogram Eq. Sequential</th>
+		<th>401x268</th>
+		<th>01.23433 (ms)</th>
+		<th>GeForce GTX 745</th>
+	</tr>
+	<tr>
+		<th>Histogram Eq. Parallel</th>
+		<th>401x268</th>
+		<th>0.490134 (ms)</th>
+		<th>GeForce GTX 745</th>
+	</tr>
+	<tr>
+		<th>Histogram Eq. Parallel (Atomics)</th>
+		<th>401x268</th>
+		<th>0.571614 (ms)</th>
 		<th>GeForce GTX 745</th>
 	</tr>
 	
