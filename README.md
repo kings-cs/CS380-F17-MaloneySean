@@ -66,8 +66,18 @@ once the project has been imported into a workspace.
    
    Blur: Blurs all pixels of the current image. 
    
-   Blur (Parallel): Blurs all pixels of the current image, computed via parallel.      
-       
+   Blur (Parallel): Blurs all pixels of the current image, computed via parallel.  
+   
+   Mosaic: Creates a Mosaic image based off a give number of tile points.
+   
+   Mosaic (Parallel): Creates a Mosaic image based off a give number of tile points, computed in parallel.
+      
+   Histogram Equalization: Performs a Histogram Equalization on a blurry image.   
+   
+   Histogram Equalization (Parallel): Performs a Histogram Equalization on a blurry image, computed in parallel.
+   
+   Histogram Equalization (Atomic Parallel): Performs a Histogram Equalization on a blurry image, computed in parallel and uses atomic operations in the computation of the Histogram.   
+      
    A separate panel at the bottom of the main window contains additional zoom controls and a device selector. Here, the current level of zoom is displayed and to the 
    left of this text are buttons labeled as + and -. The + will zoom in the picture by 10% and the - will zoom out by 10%. If the current level of
    zoom is not divisible of 10, these buttons will move to the nearest divisible number by 10 in the desired direction.
