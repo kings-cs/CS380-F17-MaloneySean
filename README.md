@@ -66,8 +66,18 @@ once the project has been imported into a workspace.
    
    Blur: Blurs all pixels of the current image. 
    
-   Blur (Parallel): Blurs all pixels of the current image, computed via parallel.      
-       
+   Blur (Parallel): Blurs all pixels of the current image, computed via parallel.  
+   
+   Mosaic: Creates a Mosaic image based off a give number of tile points.
+   
+   Mosaic (Parallel): Creates a Mosaic image based off a give number of tile points, computed in parallel.
+      
+   Histogram Equalization: Performs a Histogram Equalization on a blurry image.   
+   
+   Histogram Equalization (Parallel): Performs a Histogram Equalization on a blurry image, computed in parallel.
+   
+   Histogram Equalization (Atomic Parallel): Performs a Histogram Equalization on a blurry image, computed in parallel and uses atomic operations in the computation of the Histogram.   
+      
    A separate panel at the bottom of the main window contains additional zoom controls and a device selector. Here, the current level of zoom is displayed and to the 
    left of this text are buttons labeled as + and -. The + will zoom in the picture by 10% and the - will zoom out by 10%. If the current level of
    zoom is not divisible of 10, these buttons will move to the nearest divisible number by 10 in the desired direction.
@@ -86,6 +96,24 @@ once the project has been imported into a workspace.
 		<th>Image Size</th>
 		<th>Time</th>
 		<th>Computational Device</th>
+	</tr>
+	<tr>
+		<th>Histogram Eq. Sequential</th>
+		<th>3840x2160</th>
+		<th>30.584887 (ms)</th>
+		<th>GeForce GTX 745</th>
+	</tr>
+	<tr>
+		<th>Histogram Eq. Parallel</th>
+		<th>3840x2160</th>
+		<th>8.033052 (ms)</th>
+		<th>GeForce GTX 745</th>
+	</tr>
+	<tr>
+		<th>Histogram Eq. Parallel (Atomics)</th>
+		<th>3840x2160</th>
+		<th>11.353041 (ms)</th>
+		<th>GeForce GTX 745</th>
 	</tr>
 	<tr>
 		<th>Grayscale Sequential</th>
@@ -231,7 +259,25 @@ once the project has been imported into a workspace.
 		<th>1.754335 (ms)</th>
 		<th>GeForce GTX 745</th>
 	</tr>
+		<tr>
+		<th>Histogram Eq. Sequential</th>
+		<th>401x268</th>
+		<th>01.23433 (ms)</th>
+		<th>GeForce GTX 745</th>
+	</tr>
+	<tr>
+		<th>Histogram Eq. Parallel</th>
+		<th>401x268</th>
+		<th>0.490134 (ms)</th>
+		<th>GeForce GTX 745</th>
+	</tr>
+	<tr>
+		<th>Histogram Eq. Parallel (Atomics)</th>
+		<th>401x268</th>
+		<th>0.571614 (ms)</th>
+		<th>GeForce GTX 745</th>
+	</tr>
 	
 </table>
 	
-5. The program currently has no limitations other than the possibly that file formats not explicitly said to be supported may not function.
+5. Current Limitations: May not function for file formats not explicitly listed. Histogram Equalization only works on grayscale images.
