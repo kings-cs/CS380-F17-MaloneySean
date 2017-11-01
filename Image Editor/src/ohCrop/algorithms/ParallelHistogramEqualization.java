@@ -188,7 +188,7 @@ public class ParallelHistogramEqualization extends ImageAlgorithm{
 	private static cl_mem parallelHelper(cl_mem memInputData, cl_mem memOtherInput, int[] outputData, int globalItemCount, String methodName, 
 			cl_program program, cl_context context, cl_command_queue commandQueue, cl_device_id device) {
 		
-		
+		 
 	
 		Pointer ptrOutput = Pointer.to(outputData);
 		cl_mem memOutput = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
@@ -285,123 +285,6 @@ public class ParallelHistogramEqualization extends ImageAlgorithm{
 		
 		return localSize;
 	}
-	
-	/**
-	 * Sequential implementation of reduce used for testing.
-	 * @param input The input data.
-	 * @param bins The amount of bins in the histogram.
-	 * @return The reduced histogram.
-	 */
-	public static int[] reduce(int[] input, int bins) {
-		int[] histogram = new int[bins];
-		
-		
-	
-		int control = bins - 1;
-		
-		int count = 0;
-		int countTwo = 0;
-		for(int i = 0; i < input.length; i++) {
-						
-			
-			if(countTwo == control) {
-				count++;
-				countTwo = 0;
-			}
-			
-			if(count < bins) {
-				histogram[count] += input[i];
-			}
-			
-			
-			countTwo++;
-		
-		}
 
-		
-		return histogram;
-	}
-
-	/**
-	 * TESTING ONLY. Remeber to change the binCopy length back in the kernel.
-	 * @param args NOT USED.
-	 */
-	public static void main(String[] args) {
-		CL.setExceptionsEnabled(true);
-		ParallelSetUp setup = new ParallelSetUp();		
-		cl_context context = setup.getContext();
-		cl_command_queue commandQueue = setup.getCommandQueue();
-		cl_device_id device = setup.getDevice();
-		
-		String source = KernelReader.readFile("Kernels/Histogram_Equalization_Kernel");
-		cl_program program = CL.clCreateProgramWithSource(context, 1, new String[] {source}, null, null);
-		
-		
-		
-		int numBins = 5;
-		
-		int[] imageRaster = {0, 1, 1, 2, 4, 0,
-							 3, 4, 1, 2, 4, 4,
-							 1, 0, 2, 2, 0, 2,
-							 3, 3, 3, 3, 3, 3};
-		
-
-
-		
-				
-		int[] dimensions = {numBins, 24, 4, 6};
-		
-		
-		
-		
-		Pointer ptrRaster = Pointer.to(imageRaster);
-		Pointer ptrDimensions = Pointer.to(dimensions);
-
-		
-		cl_mem memRaster = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
-				Sizeof.cl_int * imageRaster.length, ptrRaster, null);
-		cl_mem memDimensions = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
-				Sizeof.cl_int * dimensions.length, ptrDimensions, null);
-
-		
-		int[] localHistogramsCollection = new int[4 * numBins];
-		cl_mem memOptHistogram = parallelHelper(memRaster, memDimensions, localHistogramsCollection, imageRaster.length / 4, 
-				"optimized_calculate_histogram", program, context, commandQueue, device);
-		
-		int count = 0;
-		for(int i : localHistogramsCollection) {
-			System.out.print(i + " | ");
-			
-			if(count == 3) {
-				System.out.println();
-				count = 0;
-			}
-			else {
-				count++;
-			}	
-		}
-		
-		
-		
-		//int[] r = ParallelHistogramEqualization.reduce(localHistogramsCollection, 5);
-		
-		int[] r = new int[5];
-		cl_mem memHistogram = parallelHelper(memOptHistogram, memDimensions, r, 5, "reduce_kernel", program, context, commandQueue, device);
-		
-		System.out.println();
-		
-		
-		for(int i = 0; i < r.length; i++) {
-			System.out.print(r[i] + " | ");
-			
-		}
-		
-		
-		CL.clReleaseProgram(program);
-		CL.clReleaseMemObject(memRaster);
-		CL.clReleaseMemObject(memOptHistogram);
-		CL.clReleaseMemObject(memDimensions);
-		CL.clReleaseMemObject(memHistogram);
-		CL.clReleaseCommandQueue(commandQueue);
-	}
 }
+
