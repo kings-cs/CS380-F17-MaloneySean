@@ -62,6 +62,23 @@ __global int * result, __local int * binCopy){
 }
 
 
+__kernel void reduce_kernel(__global int * data, __global const int * dimensions,  __global int * result){
+
+	
+	int numPixels = dimensions[1];
+	int height = dimensions[2];
+	int width = dimensions[3];
+	
+	int start = get_group_id(0) * height;
+	int value = get_group_id(0);
+	
+	
+	for(int i = 0; i < height; i++){
+	 	result[value] += data[start + i];
+	}
+	
+}
+
 __kernel void global_reduce_kernel(__global int * data, __global const int * dimensions,  __global int * result){
 	int itemIndex = get_local_id(0);
 	int index = get_local_size(0) * get_group_id(0) + itemIndex;

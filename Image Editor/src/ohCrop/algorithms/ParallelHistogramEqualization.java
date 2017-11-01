@@ -81,13 +81,9 @@ public class ParallelHistogramEqualization extends ImageAlgorithm{
 		cl_mem memOptHistogram = parallelHelper(memRaster, memDimensions, localHistogramsCollection, imageRaster.length / original.getWidth(), "optimized_calculate_histogram", program, context, commandQueue, device);	
 		
 	
-		//TODO: MUST IMPLEMENT REDUCE IN PARALLEL!
-		int[] histogram = reduce(localHistogramsCollection, NUM_BINS);
+		int[] histogram = new int[NUM_BINS];
+		cl_mem memHistogram = parallelHelper(memOptHistogram, memDimensions, histogram, NUM_BINS, "reduce_kernel", program, context, commandQueue, device);
 		
-		
-		Pointer ptrHistoTest = Pointer.to(histogram);
-		cl_mem memHistogram = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
-				Sizeof.cl_int * histogram.length, ptrHistoTest, null);
 		
 		
 		//STEP 2. CUMULATIVE FREQUENCY DISTRIBUTION (TESTED!!!)		
@@ -212,6 +208,9 @@ public class ParallelHistogramEqualization extends ImageAlgorithm{
 			CL.clSetKernelArg(kernel, 3, Sizeof.cl_int * NUM_BINS, null);
 			
 		}
+		else if(methodName.equals("reduce_kernel")) {
+			localSize = 1;
+		}
 		else {
 			localSize = calculateLocalSize(globalItemCount, device);
 		}
@@ -294,20 +293,7 @@ public class ParallelHistogramEqualization extends ImageAlgorithm{
 		int count = 0;
 		int countTwo = 0;
 		for(int i = 0; i < input.length; i++) {
-			
-			
-			
-			
-			
-			
-//			if(i % control == 0 && i != 0) {
-//				count++;
-//			}
-//			
-//			if(count < bins) {
-//				histogram[count] += input[i];
-//			}
-			
+						
 			
 			if(countTwo == control) {
 				count++;
@@ -386,10 +372,19 @@ public class ParallelHistogramEqualization extends ImageAlgorithm{
 			}	
 		}
 		
-		int[] r = ParallelHistogramEqualization.reduce(localHistogramsCollection, 5);
+		
+		
+		//int[] r = ParallelHistogramEqualization.reduce(localHistogramsCollection, 5);
+		
+		int[] r = new int[5];
+		cl_mem memHistogram = parallelHelper(memOptHistogram, memDimensions, r, 5, "reduce_kernel", program, context, commandQueue, device);
+		
 		System.out.println();
+		
+		
 		for(int i = 0; i < r.length; i++) {
 			System.out.print(r[i] + " | ");
+			
 		}
 		
 		
@@ -397,6 +392,7 @@ public class ParallelHistogramEqualization extends ImageAlgorithm{
 		CL.clReleaseMemObject(memRaster);
 		CL.clReleaseMemObject(memOptHistogram);
 		CL.clReleaseMemObject(memDimensions);
+		CL.clReleaseMemObject(memHistogram);
 		CL.clReleaseCommandQueue(commandQueue);
 	}
 }
