@@ -38,10 +38,11 @@ public class ParallelHistogramEqualization extends ImageAlgorithm{
 	 * @param commandQueue The OpenCL commandQueue used for the parallel computing.
 	 * @param original The image to be colored.
 	 * @param device The device used by OpenCL.
+	 * @param useAtomic Whether or not the atomic implementation of the histogram should be run.
 	 * 
 	 * @return The newly colored image.
 	 */
-	public static BufferedImage parallelHistogramEq(cl_context context, cl_command_queue commandQueue, cl_device_id device, BufferedImage original) {
+	public static BufferedImage parallelHistogramEq(cl_context context, cl_command_queue commandQueue, cl_device_id device, BufferedImage original, boolean useAtomic) {
 		//Create the program from the source code
 		//Create the OpenCL kernel from the program
 		TOTAL_TIME = 0;
@@ -76,14 +77,18 @@ public class ParallelHistogramEqualization extends ImageAlgorithm{
 		//int[] histogramOg = new int[NUM_BINS];
 		//cl_mem memHistogramOg = parallelHelper(memRaster, memDimensions, histogramOg, imageRaster.length, "calculate_histogram", program, context, commandQueue, device);
 		
-	
-		int[] localHistogramsCollection = new int[original.getHeight() * NUM_BINS];
-		cl_mem memOptHistogram = parallelHelper(memRaster, memDimensions, localHistogramsCollection, imageRaster.length / original.getWidth(), "optimized_calculate_histogram", program, context, commandQueue, device);	
-		
-	
 		int[] histogram = new int[NUM_BINS];
-		cl_mem memHistogram = parallelHelper(memOptHistogram, memDimensions, histogram, NUM_BINS, "reduce_kernel", program, context, commandQueue, device);
-		
+		cl_mem memOptHistogram = null;
+		cl_mem memHistogram = null;
+	
+		if(useAtomic == false) {
+			int[] localHistogramsCollection = new int[original.getHeight() * NUM_BINS];
+			memOptHistogram = parallelHelper(memRaster, memDimensions, localHistogramsCollection, imageRaster.length / original.getWidth(), "optimized_calculate_histogram", program, context, commandQueue, device);	
+			memHistogram = parallelHelper(memOptHistogram, memDimensions, histogram, NUM_BINS, "reduce_kernel", program, context, commandQueue, device);
+		}
+		else {	
+			memHistogram = parallelHelper(memRaster, memDimensions, histogram, imageRaster.length, "calculate_histogram", program, context, commandQueue, device);
+		}
 		
 		
 		//STEP 2. CUMULATIVE FREQUENCY DISTRIBUTION (TESTED!!!)		
@@ -156,7 +161,11 @@ public class ParallelHistogramEqualization extends ImageAlgorithm{
 		CL.clReleaseMemObject(memIdeal);
 		CL.clReleaseMemObject(memIdealCum);
 		CL.clReleaseMemObject(memMapping);
-		CL.clReleaseMemObject(memOptHistogram);
+		
+		
+		if(useAtomic == false) {
+			CL.clReleaseMemObject(memOptHistogram);
+		}
 		
 		
 		return resultImage;

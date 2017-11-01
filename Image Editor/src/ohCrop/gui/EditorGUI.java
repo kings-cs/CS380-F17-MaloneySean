@@ -180,14 +180,19 @@ public class EditorGUI extends JFrame{
 	private JButton mosaicParallel;
 	
 	/**
-	 * Button used to perform a Histogram Equilization on an image.
+	 * Button used to perform a Histogram Equalization on an image.
 	 */
 	private JButton histogramEq;
 	
 	/**
-	 * Button used to perform a Histogram Equilization on an image, computed in parallel.
+	 * Button used to perform a Histogram Equalization on an image, computed in parallel.
 	 */
 	private JButton histogramEqParallel;
+	
+	/**
+	 * Button used to perform a Histogram Equalization on an image, computed in parallel using atomics.
+	 */
+	private JButton atomicParallelHist;
 	
 	/**
 	 * JPanel used to display an image.
@@ -336,6 +341,7 @@ public class EditorGUI extends JFrame{
 		mosaicParallel = new JButton("Mosaic (Parallel)");
 		histogramEq = new JButton("Histogram Equalization");
 		histogramEqParallel = new JButton("Histogram Equalization (Parallel)");
+		atomicParallelHist = new JButton("Histogram Eq. (Atomic Parallel)");
 		
 		//****************Bottom Panel*****************************
 		JPanel bottomPanel = new JPanel();
@@ -373,6 +379,7 @@ public class EditorGUI extends JFrame{
 		toolBar.add(mosaicParallel);
 		toolBar.add(histogramEq);
 		toolBar.add(histogramEqParallel);
+		toolBar.add(atomicParallelHist);
 		this.add(toolBar, BorderLayout.NORTH);
 		
 		
@@ -389,6 +396,7 @@ public class EditorGUI extends JFrame{
 		mosaicParallel.addActionListener(ae);
 		histogramEq.addActionListener(ae);
 		histogramEqParallel.addActionListener(ae);
+		atomicParallelHist.addActionListener(ae);
 		exit.addActionListener(ae);
 		open.addActionListener(ae);
 		close.addActionListener(ae);
@@ -914,7 +922,24 @@ public class EditorGUI extends JFrame{
 				
 			
 				BufferedImage histoEqualized = ParallelHistogramEqualization.parallelHistogramEq(parallelControl.getContext(), 
-						parallelControl.getCommandQueue(), parallelControl.getDevice(), preZoomImage);
+						parallelControl.getCommandQueue(), parallelControl.getDevice(), preZoomImage, false);
+				
+				
+				preZoomImage = histoEqualized;
+				
+				paintImage(histoEqualized);
+				
+				
+				setZoom(preEditZoom * 100);
+				
+			}
+			else if(action.getSource() == atomicParallelHist) {
+				changeMade = true;
+				double preEditZoom = zoomAmount;
+				
+			
+				BufferedImage histoEqualized = ParallelHistogramEqualization.parallelHistogramEq(parallelControl.getContext(), 
+						parallelControl.getCommandQueue(), parallelControl.getDevice(), preZoomImage, true);
 				
 				
 				preZoomImage = histoEqualized;
