@@ -29,19 +29,22 @@ public class ParallelScan {
 	 */
 	public static void scan(final float[] data, float[] results, cl_context context, cl_command_queue commandQueue, cl_device_id device, String kernelMethod) {
 		//TODO: I have this sinking feeling this may not always work.
-
-		int globalSize = data.length;
+		float[] paddedData = padArray(data);
+		
+		int globalSize = paddedData.length;
 		int localSize = getLocalSize(globalSize, device);
+		
+		
 		
 		float[] accumulator = new float[localSize];
 		
 		CL.setExceptionsEnabled(true);
-		Pointer ptrData = Pointer.to(data);
+		Pointer ptrData = Pointer.to(paddedData);
 		Pointer ptrResult = Pointer.to(results);
 		
 		
 		cl_mem memData = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
-				Sizeof.cl_float * data.length, ptrData, null);
+				Sizeof.cl_float * paddedData.length, ptrData, null);
 		cl_mem memResult = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
 				Sizeof.cl_float * results.length, ptrResult, null);
 		cl_mem memAccumulator = null;
@@ -147,5 +150,30 @@ public class ParallelScan {
 		}
 		
 		return localSize;
+	}
+	
+	/**
+	 * Pads the array to be a length that is a power of 2.
+	 * @param data The input data.
+	 * @return The padded array.
+	 */
+	private static float[] padArray(float[] data) {
+		float[] result = data;
+		
+		double power = Math.log(data.length) / Math.log(2);
+		
+		double cieling = Math.ceil(power);
+		int size = (int) Math.pow(2, cieling);
+		
+		if(size != data.length) {
+			
+			result = new float[size];
+			
+			for(int i = 0; i < data.length; i++) {
+				result[i] = data[i];
+			}
+		}
+		
+		return result;
 	}
 }

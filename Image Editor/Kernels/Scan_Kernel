@@ -41,7 +41,7 @@ result[i] = from[local_number];
 
 
 
-__kernel void blelloch_scan(__global const float * data, __global float * result, __global float * accumulator __local float * local_data){
+__kernel void blelloch_scan(__global const float * data, __global float * result, __global float * accumulator, __local float * local_data){
 
 int i = (get_group_id(0) * get_local_size(0)) + get_local_id(0);
 
