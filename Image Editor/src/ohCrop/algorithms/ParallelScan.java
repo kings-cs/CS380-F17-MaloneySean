@@ -29,15 +29,22 @@ public class ParallelScan {
 	 */
 	public static void scan(final float[] data, float[] results, cl_context context, cl_command_queue commandQueue, cl_device_id device, String kernelMethod) {
 		//TODO: I have this sinking feeling this may not always work.
+
+		int globalSize = data.length;
+		int localSize = getLocalSize(globalSize, device);
+		
+		float[] accumulator = new float[localSize];
 		
 		CL.setExceptionsEnabled(true);
 		Pointer ptrData = Pointer.to(data);
 		Pointer ptrResult = Pointer.to(results);
 		
+		
 		cl_mem memData = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
 				Sizeof.cl_float * data.length, ptrData, null);
 		cl_mem memResult = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
 				Sizeof.cl_float * results.length, ptrResult, null);
+		cl_mem memAccumulator = null;
 		
 		//KERNEL EXECUTION, SHOULD PROBABLY SPLIT THESE UP
 		
@@ -58,34 +65,6 @@ public class ParallelScan {
 	
 		
 		
-		
-		long[] size = new long[1];
-		CL.clGetDeviceInfo(device, CL.CL_DEVICE_MAX_WORK_GROUP_SIZE, 0, 
-				null, size);
-
-		int[] sizeBuffer = new int[(int) size[0]];
-		CL.clGetDeviceInfo(device, CL.CL_DEVICE_MAX_WORK_GROUP_SIZE, 
-				sizeBuffer.length, Pointer.to(sizeBuffer), null);
-
-
-		
-		int maxGroupSize = sizeBuffer[0];
-		int globalSize = data.length;
-		int localSize = maxGroupSize;
-
-		boolean divisible = false;
-			
-		while(!divisible) {
-			int mod = globalSize % localSize;
-			if(mod == 0) {
-				divisible = true;
-			}
-			else {
-				localSize--;
-			}
-		}
-		
-		
 		//Set the work-item dimensions
 		long[] globalWorkSize = new long[] {globalSize};
 		long[] localWorkSize = new long[] {localSize};
@@ -97,11 +76,21 @@ public class ParallelScan {
 
 //		CL.clSetKernelArg(kernel, 2, Sizeof.cl_float * data.length, null);
 //		CL.clSetKernelArg(kernel, 3, Sizeof.cl_float * data.length, null);
-		CL.clSetKernelArg(kernel, 2, Sizeof.cl_float * localWorkSize[0], null);
+		
 		
 		if(kernelMethod.equals("hillis_steele_scan")) {
-			CL.clSetKernelArg(kernel, 3, Sizeof.cl_float * localWorkSize[0], null);
+			CL.clSetKernelArg(kernel, 2, Sizeof.cl_float * localWorkSize[0], null);
+			
 		}
+		else {
+			Pointer ptrAccumulator = Pointer.to(accumulator);
+			memAccumulator = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
+					Sizeof.cl_float * accumulator.length, ptrAccumulator, null);
+			
+			CL.clSetKernelArg(kernel, 2, Sizeof.cl_mem, Pointer.to(memAccumulator));
+		}
+		
+		CL.clSetKernelArg(kernel, 3, Sizeof.cl_float * localWorkSize[0], null);
 		
 		//Execute the kernel
 		CL.clEnqueueNDRangeKernel(commandQueue, kernel, 1, null,
@@ -126,49 +115,37 @@ public class ParallelScan {
 		CL.clReleaseMemObject(memResult);
 	}
 	
-//	/**
-//	 * Implementation of inclusive scan.
-//	 * 
-//	 * @param data The data we want to scan.
-//	 * @param results The resulting scan.
-//	 */
-//	protected static void inclusiveScan(final float[] data, float[] results) {
-//		ParallelSetUp setup = new ParallelSetUp();
-//
-//		scan(data, results, setup.getContext(), setup.getCommandQueue(), setup.getDevice(), "hillis_steele_scan");
-//	}
-//	
-//	/**
-//	 * Implementation of exclusive scan.
-//	 * 
-//	 * @param data The data we want to scan.
-//	 * @param results The resulting scan.
-//	 */
-//	protected static void exclusiveScan(final float[] data, float[] results) {
-//		ParallelSetUp setup = new ParallelSetUp();
-//
-//		scan(data, results, setup.getContext(), setup.getCommandQueue(), setup.getDevice(), "blelloch_scan");
-//	}
-//	
-//	
-//	
-//	/**
-//	 * USED FOR TESTING ONLY.
-//	 * 
-//	 * @param data The data we want to scan.
-//	 * @param results The resulting scan.
-//	 */
-//	public static void hillisSteeleScan(final float[] data, float[]results) {
-//		inclusiveScan(data, results);
-//	}
-//	
-//	/**
-//	 * USED FOR TESTING ONLY.
-//	 * 
-//	 * @param data The data we want to scan.
-//	 * @param results The resulting scan.
-//	 */
-//	public static void blellochScan(final float[] data, float[]results) {
-//		exclusiveScan(data, results);
-//	}
+	/**
+	 * Private helper method to computer local size.
+	 * @param globalSize The global size.
+	 * @param device The OpenCL device used.
+	 * @return The local size.
+	 */
+	private static int getLocalSize(int globalSize, cl_device_id device) {
+		long[] size = new long[1];
+		CL.clGetDeviceInfo(device, CL.CL_DEVICE_MAX_WORK_GROUP_SIZE, 0, 
+				null, size);
+
+		int[] sizeBuffer = new int[(int) size[0]];
+		CL.clGetDeviceInfo(device, CL.CL_DEVICE_MAX_WORK_GROUP_SIZE, 
+				sizeBuffer.length, Pointer.to(sizeBuffer), null);
+		
+		int maxGroupSize = sizeBuffer[0];
+
+		int localSize = maxGroupSize;
+
+		boolean divisible = false;
+			
+		while(!divisible) {
+			int mod = globalSize % localSize;
+			if(mod == 0) {
+				divisible = true;
+			}
+			else {
+				localSize--;
+			}
+		}
+		
+		return localSize;
+	}
 }
