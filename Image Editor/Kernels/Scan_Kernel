@@ -43,10 +43,11 @@ result[i] = from[local_number];
 
 __kernel void blelloch_scan(__global const float * data, __global float * result, __global float * accumulator, __local float * local_data){
 
-int i = (get_group_id(0) * get_local_size(0)) + get_local_id(0);
-
+int group_id = get_group_id(0);
 int group_size   = get_local_size(0);
 int local_number = get_local_id(0);
+
+int i = (group_id * group_size) + local_number;
 
 
 local_data[local_number] = data[i];
@@ -66,7 +67,7 @@ for(int space = group_size / 2; space >= 1; space = space / 2){
 
 barrier(CLK_LOCAL_MEM_FENCE);
 
-if(i == 0){
+if(local_number == 0){
 local_data[get_local_size(0) - 1] = 0;
 }
 
@@ -85,10 +86,22 @@ for(int space = 1; space < group_size; space = space * 2){
 	barrier(CLK_LOCAL_MEM_FENCE);
 }
 
+if(group_size - 1 == local_number){
+accumulator[group_id] = local_data[local_number] + data[i];
+}
+
 result[i] = local_data[local_number];
 }
 
+__kernel void add_increments(__global const float * data, __global float * result, __global float * increments){
 
+int group_id = get_group_id(0);
+int i = (group_id * get_local_size(0)) + get_local_id(0);
+
+result[i] = data[i] + increments[group_id];
+
+
+}
 
 
 
