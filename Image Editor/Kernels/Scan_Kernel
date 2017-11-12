@@ -101,7 +101,7 @@ __kernel void add_increments(__global const float * data, __global float * resul
 int group_id = get_group_id(0);
 int i = (group_id * get_local_size(0)) + get_local_id(0);
 
-result[i] = data[i] + increments[group_id];
+result[i] = data[i] + increments[i / 1024];
 
 
 }

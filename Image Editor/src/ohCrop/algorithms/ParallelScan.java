@@ -28,12 +28,15 @@ public class ParallelScan {
 	 * @param kernelMethod The name of the method in the kernel to be called.
 	 */
 	public static void scan(final float[] data, float[] results, cl_context context, cl_command_queue commandQueue, cl_device_id device, String kernelMethod) {
-		float[] paddedData = padArray(data);
+		float[] paddedData = padArray1024(data, device);
 		float[] paddedResults = new float[data.length];
 		
 		
 		int globalSize = paddedData.length;
 		int localSize = getLocalSize(globalSize, device);
+	
+		
+	
 		
 		float[] accumulator = new float[globalSize / localSize];
 		
@@ -87,6 +90,8 @@ public class ParallelScan {
 		}
 		else {
 			ptrAccumulator = Pointer.to(accumulator);
+			
+			
 			memAccumulator = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
 					Sizeof.cl_float * accumulator.length, ptrAccumulator, null);
 			
@@ -203,17 +208,9 @@ public class ParallelScan {
 	 * @return The local size.
 	 */
 	private static int getLocalSize(int globalSize, cl_device_id device) {
-		long[] size = new long[1];
-		CL.clGetDeviceInfo(device, CL.CL_DEVICE_MAX_WORK_GROUP_SIZE, 0, 
-				null, size);
-
-		int[] sizeBuffer = new int[(int) size[0]];
-		CL.clGetDeviceInfo(device, CL.CL_DEVICE_MAX_WORK_GROUP_SIZE, 
-				sizeBuffer.length, Pointer.to(sizeBuffer), null);
 		
-		int maxGroupSize = sizeBuffer[0];
 
-		int localSize = maxGroupSize;
+		int localSize = getMaxWorkGroupSize(device);
 
 		boolean divisible = false;
 			
@@ -231,24 +228,70 @@ public class ParallelScan {
 	}
 	
 	/**
-	 * Pads the array to be a length that is a power of 2.
-	 * @param data The input data.
+	 * Private helper method to get the max work group size of the device.
+	 * @param device The device to be queried.
+	 * @return The max work group size.
+	 */
+	private static int getMaxWorkGroupSize(cl_device_id device) {
+		long[] size = new long[1];
+		CL.clGetDeviceInfo(device, CL.CL_DEVICE_MAX_WORK_GROUP_SIZE, 0, 
+				null, size);
+
+		int[] sizeBuffer = new int[(int) size[0]];
+		CL.clGetDeviceInfo(device, CL.CL_DEVICE_MAX_WORK_GROUP_SIZE, 
+				sizeBuffer.length, Pointer.to(sizeBuffer), null);
+		
+		int maxGroupSize = sizeBuffer[0];
+		
+		return maxGroupSize;
+	}
+	
+//	/**
+//	 * Pads the array to be a length that is a power of 2.
+//	 * @param data The input data.
+//	 * @return The padded array.
+//	 */
+//	private static float[] padArray(float[] data) {
+//		float[] result = data;
+//		
+//		double power = Math.log(data.length) / Math.log(2);
+//		
+//		double cieling = Math.ceil(power);
+//		int size = (int) Math.pow(2, cieling);
+//		
+//		if(size != data.length) {
+//			
+//			result = new float[size];
+//			
+//			for(int i = 0; i < data.length; i++) {
+//				result[i] = data[i];
+//			}
+//		}
+//		
+//		return result;
+//	}
+	
+	/**
+	 * Pads the array to be the next multiple of the max work group size.
+	 * @param data The data to be padded.
+	 * @param device The device that the max work group size is based off of.
 	 * @return The padded array.
 	 */
-	private static float[] padArray(float[] data) {
+	private static float[] padArray1024(float[] data, cl_device_id device) {
+		int maxSize = getMaxWorkGroupSize(device);
 		float[] result = data;
-		
-		double power = Math.log(data.length) / Math.log(2);
-		
-		double cieling = Math.ceil(power);
-		int size = (int) Math.pow(2, cieling);
-		
-		if(size != data.length) {
+		int newSize = data.length;
+		if(data.length > maxSize) {
+			while(newSize % maxSize != 0) {
+				newSize++;
+			}
 			
-			result = new float[size];
-			
-			for(int i = 0; i < data.length; i++) {
-				result[i] = data[i];
+			if(newSize != data.length) {
+				result = new float[newSize];
+
+				for(int i = 0; i < data.length; i++) {
+					result[i] = data[i];
+				}
 			}
 		}
 		
