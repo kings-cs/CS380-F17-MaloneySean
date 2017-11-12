@@ -115,6 +115,7 @@ public class ScanTest {
 	
 		for(int i = 0; i < data.length; i++) {
 			assertEquals("Index " + i + " should contain " + expected[i], expected[i], result[i], 0);
+			//System.out.println(result[i]);
 		}
 	}
 	

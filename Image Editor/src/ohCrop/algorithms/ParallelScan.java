@@ -76,7 +76,7 @@ public class ParallelScan {
 		//Set the arguments for the kernel
 		CL.clSetKernelArg(kernel, 0, Sizeof.cl_mem, Pointer.to(memData));
 		CL.clSetKernelArg(kernel, 1, Sizeof.cl_mem, Pointer.to(memResult));
-
+		
 //		CL.clSetKernelArg(kernel, 2, Sizeof.cl_float * data.length, null);
 //		CL.clSetKernelArg(kernel, 3, Sizeof.cl_float * data.length, null);
 		
@@ -123,6 +123,7 @@ public class ParallelScan {
 				scan(accumulator, increments, context, commandQueue, device, "blelloch_scan");
 			}
 		}
+		
 		
 		
 		//Add the increments

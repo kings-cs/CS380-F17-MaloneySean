@@ -74,7 +74,7 @@ local_data[get_local_size(0) - 1] = 0;
 
 
 for(int space = 1; space < group_size; space = space * 2){
-	//distance = distance >> 1;
+	
 	distance = distance / 2;
 	
 	if(local_number < space){
