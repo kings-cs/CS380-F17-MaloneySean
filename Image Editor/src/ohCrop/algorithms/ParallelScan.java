@@ -108,7 +108,7 @@ public class ParallelScan {
 				CL.CL_TRUE, 0, results.length * Sizeof.cl_float,
 				ptrResult, 0, null, null);
 		
-		if(kernelMethod.equals("hillis_steele_scan")) {
+		if(kernelMethod.equals("blelloch_scan")) {
 			CL.clEnqueueReadBuffer(commandQueue, memAccumulator, 
 					CL.CL_TRUE, 0, accumulator.length * Sizeof.cl_float,
 					ptrAccumulator, 0, null, null);
