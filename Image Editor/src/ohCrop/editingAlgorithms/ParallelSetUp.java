@@ -1,4 +1,4 @@
-package ohCrop.algorithms;
+package ohCrop.editingAlgorithms;
 
 import java.util.HashMap;
 
@@ -9,6 +9,8 @@ import org.jocl.cl_context;
 import org.jocl.cl_context_properties;
 import org.jocl.cl_device_id;
 import org.jocl.cl_platform_id;
+
+import ohCrop.utilAlgorithms.SetUpObject;
 
 /**
  * Class used to handle the set up required to run a parallel algorithm.

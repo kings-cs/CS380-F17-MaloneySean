@@ -1,4 +1,4 @@
-package ohCrop.algorithms;
+package ohCrop.editingAlgorithms;
 
 import java.awt.image.BufferedImage;
 

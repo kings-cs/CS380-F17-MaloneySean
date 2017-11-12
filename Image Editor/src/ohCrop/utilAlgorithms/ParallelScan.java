@@ -1,4 +1,4 @@
-package ohCrop.algorithms;
+package ohCrop.utilAlgorithms;
 
 
 import org.jocl.CL;

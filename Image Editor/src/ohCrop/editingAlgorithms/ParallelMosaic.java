@@ -1,4 +1,4 @@
-package ohCrop.algorithms;
+package ohCrop.editingAlgorithms;
 
 import java.awt.image.BufferedImage;
 import java.util.Random;
@@ -14,6 +14,8 @@ import org.jocl.cl_device_id;
 import org.jocl.cl_kernel;
 import org.jocl.cl_mem;
 import org.jocl.cl_program;
+
+import ohCrop.utilAlgorithms.KernelReader;
 
 /**
  * Class used to create a Mosaic image, computed in Parallel.

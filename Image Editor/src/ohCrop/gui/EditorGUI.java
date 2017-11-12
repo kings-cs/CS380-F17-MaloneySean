@@ -32,22 +32,22 @@ import org.jocl.CL;
 import org.jocl.cl_device_id;
 import org.jocl.cl_platform_id;
 
-import ohCrop.algorithms.Blur;
-import ohCrop.algorithms.BlurParallel;
-import ohCrop.algorithms.Grayscale;
-import ohCrop.algorithms.HistogramEquilization;
-import ohCrop.algorithms.Mosaic;
-import ohCrop.algorithms.ParallelGrayScale;
-import ohCrop.algorithms.ParallelHistogramEqualization;
-import ohCrop.algorithms.ParallelHorizontal;
-import ohCrop.algorithms.ParallelLeftRotation;
-import ohCrop.algorithms.ParallelMosaic;
-import ohCrop.algorithms.ParallelRightRotation;
-import ohCrop.algorithms.ParallelSepia;
-import ohCrop.algorithms.ParallelSetUp;
-import ohCrop.algorithms.ParallelVertical;
-import ohCrop.algorithms.Sepia;
-import ohCrop.algorithms.SetUpObject;
+import ohCrop.editingAlgorithms.Blur;
+import ohCrop.editingAlgorithms.BlurParallel;
+import ohCrop.editingAlgorithms.Grayscale;
+import ohCrop.editingAlgorithms.HistogramEquilization;
+import ohCrop.editingAlgorithms.Mosaic;
+import ohCrop.editingAlgorithms.ParallelGrayScale;
+import ohCrop.editingAlgorithms.ParallelHistogramEqualization;
+import ohCrop.editingAlgorithms.ParallelHorizontal;
+import ohCrop.editingAlgorithms.ParallelLeftRotation;
+import ohCrop.editingAlgorithms.ParallelMosaic;
+import ohCrop.editingAlgorithms.ParallelRightRotation;
+import ohCrop.editingAlgorithms.ParallelSepia;
+import ohCrop.editingAlgorithms.ParallelSetUp;
+import ohCrop.editingAlgorithms.ParallelVertical;
+import ohCrop.editingAlgorithms.Sepia;
+import ohCrop.utilAlgorithms.SetUpObject;
 
 /**
  * Main GUI window used in an Image Editor application that will allow the user to perform various modifications on a displayed image.

@@ -1,4 +1,4 @@
-package ohCrop.algorithms;
+package ohCrop.editingAlgorithms;
 
 import java.awt.image.BufferedImage;
 
@@ -14,6 +14,9 @@ import org.jocl.cl_device_id;
 import org.jocl.cl_kernel;
 import org.jocl.cl_mem;
 import org.jocl.cl_program;
+
+import ohCrop.utilAlgorithms.KernelReader;
+import ohCrop.utilAlgorithms.ParallelScan;
 
 /**
  * Computes a Histogram Equalizaion in Parallel.

@@ -1,4 +1,4 @@
-package ohCrop.algorithms;
+package ohCrop.editingAlgorithms;
 
 
 import org.jocl.CL;
@@ -9,6 +9,8 @@ import org.jocl.cl_context;
 import org.jocl.cl_kernel;
 import org.jocl.cl_mem;
 import org.jocl.cl_program;
+
+import ohCrop.utilAlgorithms.KernelReader;
 
 /**
  * Class used to add the entries in two arrays using parallelism.

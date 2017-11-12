@@ -1,4 +1,4 @@
-package ohCrop.algorithms;
+package ohCrop.utilAlgorithms;
 
 import java.io.File;
 import java.io.FileNotFoundException;

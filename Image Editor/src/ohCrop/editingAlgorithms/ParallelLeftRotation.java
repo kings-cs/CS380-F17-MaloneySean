@@ -1,4 +1,4 @@
-package ohCrop.algorithms;
+package ohCrop.editingAlgorithms;
 
 import java.awt.image.BufferedImage;
 
@@ -14,23 +14,25 @@ import org.jocl.cl_kernel;
 import org.jocl.cl_mem;
 import org.jocl.cl_program;
 
+import ohCrop.utilAlgorithms.KernelReader;
+
 /**
- * Class used to flip an image horizontally.
+ * Class used to rotate an image 90 degrees to the left.
  * @author Sean Maloney
  *
  */
-public class ParallelHorizontal extends ImageAlgorithm{
+public class ParallelLeftRotation extends ImageAlgorithm{
 	/**
-	 * Flips an image horizontally.
+	 * Rotates an image 90 degrees to the left.
 	 * 
 	 * @param context The OpenCL context used for the parallel computing.
 	 * @param commandQueue The OpenCL commandQueue used for the parallel computing.
 	 * @param original The image to be colored.
 	 * @param device The device used by OpenCl.
 	 * 
-	 * @return The horizontally flipped image.
+	 * @return The rotated image.
 	 */
-	public static BufferedImage horizontalFlip(cl_context context, cl_command_queue commandQueue, cl_device_id device, BufferedImage original) {
+	public static BufferedImage rotateLeft(cl_context context, cl_command_queue commandQueue, cl_device_id device, BufferedImage original) {
 		
 		
 		
@@ -53,7 +55,7 @@ public class ParallelHorizontal extends ImageAlgorithm{
 		
 		//Create the program from the source code
 		//Create the OpenCL kernel from the program
-		String source = KernelReader.readFile("Kernels/Horizontal_Kernel");
+		String source = KernelReader.readFile("Kernels/Left_Kernel");
 		
 		//System.out.println(source);
 		
@@ -64,15 +66,15 @@ public class ParallelHorizontal extends ImageAlgorithm{
 		CL.clBuildProgram(program, 0, null, null, null, null);
 		
 		//Create the kernel
-		cl_kernel kernel = CL.clCreateKernel(program, "horizontal_kernel", null);
+		cl_kernel kernel = CL.clCreateKernel(program, "left_kernel", null);
 		
 		//Set the arguments for the kernel
 		CL.clSetKernelArg(kernel, 0, Sizeof.cl_mem, Pointer.to(memRaster));
 		CL.clSetKernelArg(kernel, 1, Sizeof.cl_mem, Pointer.to(memResult));
 		CL.clSetKernelArg(kernel, 2, Sizeof.cl_mem, Pointer.to(memDimensions));
-	
+
 		//WORK GROUP STUFF		
-		
+
 
 		long[] size = new long[1];
 		CL.clGetDeviceInfo(device, CL.CL_DEVICE_MAX_WORK_GROUP_SIZE, 0, 
@@ -125,7 +127,9 @@ public class ParallelHorizontal extends ImageAlgorithm{
 				ptrResult, 0, null, null);
 		
 		
-		BufferedImage result = wrapUp(resultData, original);
+		BufferedImage rotate = new BufferedImage(original.getHeight(), original.getWidth(),
+				BufferedImage.TYPE_INT_ARGB);
+		BufferedImage result = wrapUp(resultData, rotate);
 		
 				
 		//Release kernel, program, 
@@ -135,6 +139,9 @@ public class ParallelHorizontal extends ImageAlgorithm{
 		CL.clReleaseMemObject(memResult);
 		CL.clReleaseMemObject(memDimensions);
 		
+		
 		return result;
 	}
+
+
 }

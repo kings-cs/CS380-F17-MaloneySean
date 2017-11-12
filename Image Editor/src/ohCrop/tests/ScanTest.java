@@ -4,8 +4,8 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
-import ohCrop.algorithms.ParallelScan;
-import ohCrop.algorithms.ParallelSetUp;
+import ohCrop.editingAlgorithms.ParallelSetUp;
+import ohCrop.utilAlgorithms.ParallelScan;
 
 /**
  * Class to tests implementation of Hillis-Steele (Inclusive) and Blelloch (Exclusive) Scan.

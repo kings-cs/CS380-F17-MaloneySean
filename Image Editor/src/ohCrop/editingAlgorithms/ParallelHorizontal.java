@@ -1,4 +1,4 @@
-package ohCrop.algorithms;
+package ohCrop.editingAlgorithms;
 
 import java.awt.image.BufferedImage;
 
@@ -14,23 +14,25 @@ import org.jocl.cl_kernel;
 import org.jocl.cl_mem;
 import org.jocl.cl_program;
 
+import ohCrop.utilAlgorithms.KernelReader;
+
 /**
- * Class used to flip an image vertically.
+ * Class used to flip an image horizontally.
  * @author Sean Maloney
  *
  */
-public class ParallelVertical extends ImageAlgorithm{
+public class ParallelHorizontal extends ImageAlgorithm{
 	/**
-	 * Flips an image vertically.
+	 * Flips an image horizontally.
 	 * 
 	 * @param context The OpenCL context used for the parallel computing.
 	 * @param commandQueue The OpenCL commandQueue used for the parallel computing.
 	 * @param original The image to be colored.
-	 * @param device The device used by OpenCL.
+	 * @param device The device used by OpenCl.
 	 * 
-	 * @return The vertically flipped image.
+	 * @return The horizontally flipped image.
 	 */
-	public static BufferedImage verticalFlip(cl_context context, cl_command_queue commandQueue, cl_device_id device, BufferedImage original) {
+	public static BufferedImage horizontalFlip(cl_context context, cl_command_queue commandQueue, cl_device_id device, BufferedImage original) {
 		
 		
 		
@@ -53,7 +55,7 @@ public class ParallelVertical extends ImageAlgorithm{
 		
 		//Create the program from the source code
 		//Create the OpenCL kernel from the program
-		String source = KernelReader.readFile("Kernels/Vertical_Kernel");
+		String source = KernelReader.readFile("Kernels/Horizontal_Kernel");
 		
 		//System.out.println(source);
 		
@@ -64,7 +66,7 @@ public class ParallelVertical extends ImageAlgorithm{
 		CL.clBuildProgram(program, 0, null, null, null, null);
 		
 		//Create the kernel
-		cl_kernel kernel = CL.clCreateKernel(program, "vertical_kernel", null);
+		cl_kernel kernel = CL.clCreateKernel(program, "horizontal_kernel", null);
 		
 		//Set the arguments for the kernel
 		CL.clSetKernelArg(kernel, 0, Sizeof.cl_mem, Pointer.to(memRaster));
@@ -100,11 +102,11 @@ public class ParallelVertical extends ImageAlgorithm{
 			}
 		}
 
-		
+
 		//Set the work-item dimensions
 		long[] globalWorkSize = new long[] {imageRaster.length};
 		long[] localWorkSize = new long[] {localSize};
-		
+
 		
 		long startTime = System.nanoTime();
 		//Execute the kernel
@@ -135,8 +137,6 @@ public class ParallelVertical extends ImageAlgorithm{
 		CL.clReleaseMemObject(memResult);
 		CL.clReleaseMemObject(memDimensions);
 		
-		
 		return result;
 	}
-
 }

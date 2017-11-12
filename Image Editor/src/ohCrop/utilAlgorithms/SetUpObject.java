@@ -1,4 +1,4 @@
-package ohCrop.algorithms;
+package ohCrop.utilAlgorithms;
 
 import org.jocl.cl_device_id;
 import org.jocl.cl_platform_id;
