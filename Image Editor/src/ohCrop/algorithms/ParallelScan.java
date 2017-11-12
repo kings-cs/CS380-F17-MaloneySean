@@ -115,10 +115,14 @@ public class ParallelScan {
 		}
 		
 		//TODO: Scan again on the accumulator, base case?????
-		float[] increments = {0};
+		float[] increments = new float[accumulator.length];
 		
 		
-		
+		if(kernelMethod.equals("blelloch_scan")) {
+			if(paddedData.length > 1) {
+				scan(accumulator, increments, context, commandQueue, device, "blelloch_scan");
+			}
+		}
 		
 		
 		//Add the increments
