@@ -28,12 +28,14 @@ public class ParallelScan {
 	 * @param kernelMethod The name of the method in the kernel to be called.
 	 */
 	public static void scan(final float[] data, float[] results, cl_context context, cl_command_queue commandQueue, cl_device_id device, String kernelMethod) {
-		float[] paddedData = padArray1024(data, device);
+		int maxSize = getMaxWorkGroupSize(device);
+		
+		float[] paddedData = padArrayMaxMult(data, maxSize);
 		float[] paddedResults = new float[data.length];
 		
 		
 		int globalSize = paddedData.length;
-		int localSize = getLocalSize(globalSize, device);
+		int localSize = getLocalSize(globalSize, maxSize);
 	
 		
 	
@@ -133,7 +135,7 @@ public class ParallelScan {
 		
 		//Add the increments
 		float[] incrementedValues = new float[paddedResults.length];
-		incrementScanResult(paddedResults, incrementedValues, increments, context, commandQueue, device);
+		incrementScanResult(paddedResults, incrementedValues, increments, context, commandQueue, maxSize);
 		
 		
 		
@@ -158,16 +160,18 @@ public class ParallelScan {
 	 * @param increments The values to be added to the groups in the data.
 	 * @param context The OpenCL context.
 	 * @param commandQueue The OpenCL commandQueue.
-	 * @param device The OpenCL device.
+	 * @param maxSize The max work group size as set by the device.
 	 */
-	private static void incrementScanResult(final float[] data, float[] results, float[] increments, cl_context context, cl_command_queue commandQueue, cl_device_id device) {
+	private static void incrementScanResult(final float[] data, float[] results, float[] increments, cl_context context, cl_command_queue commandQueue, int maxSize) {
 		int globalSize = data.length;
-		int localSize = getLocalSize(globalSize, device);
+		int localSize = getLocalSize(globalSize, maxSize);
 		
+		int[] maxGroupSize = {maxSize};
 		
 		Pointer ptrData = Pointer.to(data);
 		Pointer ptrResult = Pointer.to(results);
 		Pointer ptrIncrement = Pointer.to(increments);
+		Pointer ptrMaxGroupSize = Pointer.to(maxGroupSize);
 		
 		cl_mem memData = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
 				Sizeof.cl_float * data.length, ptrData, null);
@@ -175,6 +179,8 @@ public class ParallelScan {
 				Sizeof.cl_float * results.length, ptrResult, null);
 		cl_mem memIncrements = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
 				Sizeof.cl_float * increments.length, ptrIncrement, null);
+		cl_mem memMaxGroupSize = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
+				Sizeof.cl_int * maxGroupSize.length, ptrMaxGroupSize, null);
 		
 		String source = KernelReader.readFile("Kernels/Scan_Kernel");	
 		cl_program program = CL.clCreateProgramWithSource(context, 1, new String[] {source}, null, null);
@@ -189,6 +195,7 @@ public class ParallelScan {
 		CL.clSetKernelArg(kernel, 0, Sizeof.cl_mem, Pointer.to(memData));
 		CL.clSetKernelArg(kernel, 1, Sizeof.cl_mem, Pointer.to(memResult));
 		CL.clSetKernelArg(kernel, 2, Sizeof.cl_mem, Pointer.to(memIncrements));
+		CL.clSetKernelArg(kernel, 3, Sizeof.cl_mem, Pointer.to(memMaxGroupSize));
 		
 		CL.clEnqueueNDRangeKernel(commandQueue, kernel, 1, null,
 				globalWorkSize, localWorkSize, 
@@ -204,13 +211,13 @@ public class ParallelScan {
 	/**
 	 * Private helper method to computer local size.
 	 * @param globalSize The global size.
-	 * @param device The OpenCL device used.
+	 * @param maxSize The max size of a work group as set by a device.
 	 * @return The local size.
 	 */
-	private static int getLocalSize(int globalSize, cl_device_id device) {
+	private static int getLocalSize(int globalSize, int maxSize) {
 		
 
-		int localSize = getMaxWorkGroupSize(device);
+		int localSize = maxSize;
 
 		boolean divisible = false;
 			
@@ -274,11 +281,11 @@ public class ParallelScan {
 	/**
 	 * Pads the array to be the next multiple of the max work group size.
 	 * @param data The data to be padded.
-	 * @param device The device that the max work group size is based off of.
+	 * @param maxSize The max size of a work group as set by the device.
 	 * @return The padded array.
 	 */
-	private static float[] padArray1024(float[] data, cl_device_id device) {
-		int maxSize = getMaxWorkGroupSize(device);
+	private static float[] padArrayMaxMult(float[] data, int maxSize) {
+		
 		float[] result = data;
 		int newSize = data.length;
 		if(data.length > maxSize) {
