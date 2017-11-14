@@ -95,15 +95,15 @@ public class ParallelHistogramEqualization extends ImageAlgorithm{
 		
 		
 		//STEP 2. CUMULATIVE FREQUENCY DISTRIBUTION (TESTED!!!)		
-		float[] histoFloat = new float[histogram.length];
-		for(int i = 0; i < histogram.length; i++) {
-			histoFloat[i] = (float) histogram[i];
-		}
+//		float[] histoFloat = new float[histogram.length];
+//		for(int i = 0; i < histogram.length; i++) {
+//			histoFloat[i] = (float) histogram[i];
+//		}
 		
 		
-		float[] distributionData = new float[histogram.length]; //OUTPUT
+		int[] distributionData = new int[histogram.length]; //OUTPUT
 		
-		ParallelScan.scan(histoFloat, distributionData, context, 
+		ParallelScan.scan(histogram, distributionData, context, 
 				commandQueue, device, "hillis_steele_scan");
 		
 		Pointer ptrDistribution = Pointer.to(distributionData);
@@ -120,14 +120,14 @@ public class ParallelHistogramEqualization extends ImageAlgorithm{
 		
 		
 		//STEP 4. IDEAL CUMULATIVE FREQUNCY DISTRIBUTION (TESTED!!!)
-		float[] idealFloat = new float[histogram.length];
-		for(int i = 0; i < histogram.length; i++) {
-			idealFloat[i] = ideal[i];
-			
-		}
+//		float[] idealFloat = new float[histogram.length];
+//		for(int i = 0; i < histogram.length; i++) {
+//			idealFloat[i] = ideal[i];
+//			
+//		}
 		
-		float[] idealCumData = new float[histogram.length];
-		ParallelScan.scan(idealFloat, idealCumData, context, 
+		int[] idealCumData = new int[histogram.length];
+		ParallelScan.scan(ideal, idealCumData, context, 
 					commandQueue, device, "hillis_steele_scan");
 		
 		

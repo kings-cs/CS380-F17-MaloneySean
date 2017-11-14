@@ -27,11 +27,11 @@ public class ParallelScan {
 	 * @param commandQueue The OpenCL commandQueue to be used.
 	 * @param kernelMethod The name of the method in the kernel to be called.
 	 */
-	public static void scan(final float[] data, float[] results, cl_context context, cl_command_queue commandQueue, cl_device_id device, String kernelMethod) {
+	public static void scan(final int[] data, int[] results, cl_context context, cl_command_queue commandQueue, cl_device_id device, String kernelMethod) {
 		int maxSize = getMaxWorkGroupSize(device);
 		
-		float[] paddedData = padArrayMaxMult(data, maxSize);
-		float[] paddedResults = new float[data.length];
+		int[] paddedData = padArrayMaxMult(data, maxSize);
+		int[] paddedResults = new int[data.length];
 		
 		
 		int globalSize = paddedData.length;
@@ -40,7 +40,7 @@ public class ParallelScan {
 		
 	
 		
-		float[] accumulator = new float[globalSize / localSize];
+		int[] accumulator = new int[globalSize / localSize];
 		
 		
 		CL.setExceptionsEnabled(true);
@@ -49,9 +49,9 @@ public class ParallelScan {
 		
 		
 		cl_mem memData = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
-				Sizeof.cl_float * paddedData.length, ptrData, null);
+				Sizeof.cl_int * paddedData.length, ptrData, null);
 		cl_mem memResult = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
-				Sizeof.cl_float * paddedResults.length, ptrResult, null);
+				Sizeof.cl_int * paddedResults.length, ptrResult, null);
 		cl_mem memAccumulator = null;
 		
 		//KERNEL EXECUTION, SHOULD PROBABLY SPLIT THESE UP
@@ -82,12 +82,12 @@ public class ParallelScan {
 		CL.clSetKernelArg(kernel, 0, Sizeof.cl_mem, Pointer.to(memData));
 		CL.clSetKernelArg(kernel, 1, Sizeof.cl_mem, Pointer.to(memResult));
 		
-//		CL.clSetKernelArg(kernel, 2, Sizeof.cl_float * data.length, null);
-//		CL.clSetKernelArg(kernel, 3, Sizeof.cl_float * data.length, null);
+//		CL.clSetKernelArg(kernel, 2, Sizeof.cl_int * data.length, null);
+//		CL.clSetKernelArg(kernel, 3, Sizeof.cl_int * data.length, null);
 		
 		Pointer ptrAccumulator = null;
 		if(kernelMethod.equals("hillis_steele_scan")) {
-			CL.clSetKernelArg(kernel, 2, Sizeof.cl_float * localWorkSize[0], null);
+			CL.clSetKernelArg(kernel, 2, Sizeof.cl_int * localWorkSize[0], null);
 			
 		}
 		else {
@@ -95,12 +95,12 @@ public class ParallelScan {
 			
 			
 			memAccumulator = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
-					Sizeof.cl_float * accumulator.length, ptrAccumulator, null);
+					Sizeof.cl_int * accumulator.length, ptrAccumulator, null);
 			
 			CL.clSetKernelArg(kernel, 2, Sizeof.cl_mem, Pointer.to(memAccumulator));
 		}
 		
-		CL.clSetKernelArg(kernel, 3, Sizeof.cl_float * localWorkSize[0], null);
+		CL.clSetKernelArg(kernel, 3, Sizeof.cl_int * localWorkSize[0], null);
 		
 		//Execute the kernel
 		CL.clEnqueueNDRangeKernel(commandQueue, kernel, 1, null,
@@ -112,17 +112,17 @@ public class ParallelScan {
 		
 		//Read the output data
 		CL.clEnqueueReadBuffer(commandQueue, memResult, 
-				CL.CL_TRUE, 0, results.length * Sizeof.cl_float,
+				CL.CL_TRUE, 0, results.length * Sizeof.cl_int,
 				ptrResult, 0, null, null);
 		
 		if(kernelMethod.equals("blelloch_scan")) {
 			CL.clEnqueueReadBuffer(commandQueue, memAccumulator, 
-					CL.CL_TRUE, 0, accumulator.length * Sizeof.cl_float,
+					CL.CL_TRUE, 0, accumulator.length * Sizeof.cl_int,
 					ptrAccumulator, 0, null, null);
 		}
 		
 		//TODO: Scan again on the accumulator, base case?????
-		float[] increments = new float[accumulator.length];
+		int[] increments = new int[accumulator.length];
 		
 		
 		if(kernelMethod.equals("blelloch_scan")) {
@@ -134,7 +134,7 @@ public class ParallelScan {
 		
 		
 		//Add the increments
-		float[] incrementedValues = new float[paddedResults.length];
+		int[] incrementedValues = new int[paddedResults.length];
 		incrementScanResult(paddedResults, incrementedValues, increments, context, commandQueue, maxSize);
 		
 		
@@ -162,7 +162,7 @@ public class ParallelScan {
 	 * @param commandQueue The OpenCL commandQueue.
 	 * @param maxSize The max work group size as set by the device.
 	 */
-	private static void incrementScanResult(final float[] data, float[] results, float[] increments, cl_context context, cl_command_queue commandQueue, int maxSize) {
+	private static void incrementScanResult(final int[] data, int[] results, int[] increments, cl_context context, cl_command_queue commandQueue, int maxSize) {
 		int globalSize = data.length;
 		int localSize = getLocalSize(globalSize, maxSize);
 		
@@ -174,11 +174,11 @@ public class ParallelScan {
 		Pointer ptrMaxGroupSize = Pointer.to(maxGroupSize);
 		
 		cl_mem memData = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
-				Sizeof.cl_float * data.length, ptrData, null);
+				Sizeof.cl_int * data.length, ptrData, null);
 		cl_mem memResult = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
-				Sizeof.cl_float * results.length, ptrResult, null);
+				Sizeof.cl_int * results.length, ptrResult, null);
 		cl_mem memIncrements = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
-				Sizeof.cl_float * increments.length, ptrIncrement, null);
+				Sizeof.cl_int * increments.length, ptrIncrement, null);
 		cl_mem memMaxGroupSize = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
 				Sizeof.cl_int * maxGroupSize.length, ptrMaxGroupSize, null);
 		
@@ -202,7 +202,7 @@ public class ParallelScan {
 				0, null, null);
 		
 		CL.clEnqueueReadBuffer(commandQueue, memResult, 
-				CL.CL_TRUE, 0, results.length * Sizeof.cl_float,
+				CL.CL_TRUE, 0, results.length * Sizeof.cl_int,
 				ptrResult, 0, null, null);
 	}
 	
@@ -258,8 +258,8 @@ public class ParallelScan {
 //	 * @param data The input data.
 //	 * @return The padded array.
 //	 */
-//	private static float[] padArray(float[] data) {
-//		float[] result = data;
+//	private static int[] padArray(int[] data) {
+//		int[] result = data;
 //		
 //		double power = Math.log(data.length) / Math.log(2);
 //		
@@ -268,7 +268,7 @@ public class ParallelScan {
 //		
 //		if(size != data.length) {
 //			
-//			result = new float[size];
+//			result = new int[size];
 //			
 //			for(int i = 0; i < data.length; i++) {
 //				result[i] = data[i];
@@ -284,9 +284,9 @@ public class ParallelScan {
 	 * @param maxSize The max size of a work group as set by the device.
 	 * @return The padded array.
 	 */
-	private static float[] padArrayMaxMult(float[] data, int maxSize) {
+	private static int[] padArrayMaxMult(int[] data, int maxSize) {
 		
-		float[] result = data;
+		int[] result = data;
 		int newSize = data.length;
 		if(data.length > maxSize) {
 			while(newSize % maxSize != 0) {
@@ -294,7 +294,7 @@ public class ParallelScan {
 			}
 			
 			if(newSize != data.length) {
-				result = new float[newSize];
+				result = new int[newSize];
 
 				for(int i = 0; i < data.length; i++) {
 					result[i] = data[i];

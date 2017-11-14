@@ -19,17 +19,17 @@ public class ScanTest {
 	@Test
 	public void testHillisSteele() {
 		int size = 8;
-		float[] data = new float[size];
+		int[] data = new int[size];
 		
 		for(int i = 0; i < size; i++) {
 			data[i] = 1;
 		}
 		
-		float[] result = new float[size];
+		int[] result = new int[size];
 		
-		float[] expected = new float[size];
+		int[] expected = new int[size];
 		
-		float sum = 0;
+		int sum = 0;
 		for(int i = 0; i < data.length; i++) {
 			sum = sum + data[i];
 			expected[i] = sum;			
@@ -57,17 +57,17 @@ public class ScanTest {
 	@Test
 	public void testBlelloch() {
 		int size = 8;
-		float[] data = new float[size];
+		int[] data = new int[size];
 		
 		for(int i = 0; i < size; i++) {
 			data[i] = 1;
 		}
 		
-		float[] result = new float[size];
+		int[] result = new int[size];
 		
-		float[] expected = new float[size];
+		int[] expected = new int[size];
 		
-		float sum = 0;
+		int sum = 0;
 		for(int i = 0; i < data.length; i++) {
 			expected[i] = sum;
 			sum = sum + data[i];
@@ -90,17 +90,17 @@ public class ScanTest {
 	public void testBlellochLargeArray() {
 		//TODO: Determine Size
 		int size = 2000;
-		float[] data = new float[size];
+		int[] data = new int[size];
 		
 		for(int i = 0; i < size; i++) {
 			data[i] = 1;
 		}
 		
-		float[] result = new float[size];
+		int[] result = new int[size];
 		
-		float[] expected = new float[size];
+		int[] expected = new int[size];
 		
-		float sum = 0;
+		int sum = 0;
 		for(int i = 0; i < data.length; i++) {
 			expected[i] = sum;
 			sum = sum + data[i];
@@ -126,17 +126,17 @@ public class ScanTest {
 	public void testBlellochHugeArray() {
 		//TODO: Determine Size
 		int size = (1024 * 1024) + 1000;
-		float[] data = new float[size];
+		int[] data = new int[size];
 		
 		for(int i = 0; i < size; i++) {
 			data[i] = 1;
 		}
 		
-		float[] result = new float[size];
+		int[] result = new int[size];
 		
-		float[] expected = new float[size];
+		int[] expected = new int[size];
 		
-		float sum = 0;
+		int sum = 0;
 		for(int i = 0; i < data.length; i++) {
 			expected[i] = sum;
 			sum = sum + data[i];
