@@ -6,10 +6,13 @@ package ohCrop.utilAlgorithms;
  */
 public class RadixSort {
 	
-	
+	/**
+	 * Sorts elements non comparatively based on bit values.
+	 * @param data The data to be sorted. 
+	 */
 	public static void sort(int[] data) {
 		
-	
+		
 		
 	}
 	

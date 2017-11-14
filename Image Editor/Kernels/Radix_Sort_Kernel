@@ -1,0 +1,11 @@
+__kernel void hillis_steele_scan(__global const int * data, __global int * result, __global int * notResult, 
+__global int * predicate){
+
+int i = (get_group_id(0) * get_local_size(0)) + get_local_id(0);
+
+int bit = data[i] & prediacte;
+
+result[i] = bit;
+notResult[i] = !bit;
+
+}
