@@ -293,12 +293,27 @@ public class ParallelScan {
 				newSize++;
 			}
 			
-			if(newSize != data.length) {
-				result = new int[newSize];
-
-				for(int i = 0; i < data.length; i++) {
-					result[i] = data[i];
+			
+		}
+		else {
+			
+			int check = (newSize & (newSize - 1));
+			if(check != 0) {
+				int powerSize = 1;
+				
+				while(powerSize < data.length) {
+					powerSize *= 2;
 				}
+				
+				newSize = powerSize;
+			}
+		}
+		
+		if(newSize != data.length) {
+			result = new int[newSize];
+
+			for(int i = 0; i < data.length; i++) {
+				result[i] = data[i];
 			}
 		}
 		

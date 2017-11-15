@@ -3,9 +3,22 @@ __global int * predicate){
 
 int i = (get_group_id(0) * get_local_size(0)) + get_local_id(0);
 
-int bit = data[i] & predicate[0];
+int bit = (data[i] >> predicate[0]) & 1;
 
 result[i] = bit;
 notResult[i] = !bit;
+
+}
+
+__kernel void scatter_elements(__global int * data, __global int * keys,
+  __global int * p, __global int * not_p,
+__global int * p_scan, __global int * not_p_scan, 
+__global int * result, __global int * resultKeys){
+
+
+
+
+
+
 
 }
