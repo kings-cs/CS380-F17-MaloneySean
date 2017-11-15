@@ -12,6 +12,7 @@ Last Updated: 09/14/2017
 3. Features
 4. Timing
 5. Limitations
+6. Testing
 
 
 **************************
@@ -313,3 +314,8 @@ Utility Algorithm Timing:
 </table>
 	
 5. Current Limitations: May not function for file formats not explicitly listed. Histogram Equalization only works on grayscale images.
+
+6. Testing:
+	Test classes can be found in the ohCrop.tests pacakage.
+		Tests for Blelloch Scan are in the ScanTest class.
+		Tests for Radix Sort are in the SortTest class.
