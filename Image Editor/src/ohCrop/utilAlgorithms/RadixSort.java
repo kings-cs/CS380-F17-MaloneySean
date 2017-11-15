@@ -68,24 +68,12 @@ public class RadixSort extends ParallelAlgorithm {
 
 			scatterElements(sorting, sortingKeys, p, notP, scannedP, scannedNotP, result, resultKeys,
 					 context, commandQueue, device, program);
-			
-//			for(int current : result) {
-//				System.out.println(current);
-//			}
-//			
+					
 			
 			sorting = result;
 			sortingKeys = resultKeys;
 			
 			
-			// for(int j = 0; j < p.length; j++) {
-			// System.out.println(p[j]);
-			// }
-			// System.out.println();
-			//
-			// for(int j = 0; j < scannedP.length; j++) {
-			// System.out.println(scannedP[j] + " " + scannedNotP[j]);
-			// }
 		}
 
 		return TIME;

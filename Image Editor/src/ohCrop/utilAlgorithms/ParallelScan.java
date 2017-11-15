@@ -33,9 +33,19 @@ public class ParallelScan {
 	 * @return The amount of time taken.
 	 */
 	public static long scan(final int[] data, int[] results, cl_context context, cl_command_queue commandQueue, cl_device_id device, String kernelMethod) {
+		String source = KernelReader.readFile("Kernels/Scan_Kernel");
+		
+		
+		cl_program program = CL.clCreateProgramWithSource(context, 1, new String[] {source}, null, null);
+		//Build the program
+		CL.clBuildProgram(program, 0, null, null, null, null);
+		
 		int maxSize = getMaxWorkGroupSize(device);
 		
-		int[] paddedData = padArrayMaxMult(data, maxSize);
+		int padSize = getPadSize(data, maxSize);
+		int[] paddedData = new int[padSize];
+		padArray(data, paddedData, padSize, maxSize, context, commandQueue, device, program);
+		
 		int[] paddedResults = new int[data.length];
 		
 		
@@ -63,15 +73,7 @@ public class ParallelScan {
 		
 		//Create the program from the source code
 		//Create the OpenCL kernel from the program
-		String source = KernelReader.readFile("Kernels/Scan_Kernel");
-		
-		//System.out.println(source);
-		
-		cl_program program = CL.clCreateProgramWithSource(context, 1, new String[] {source}, null, null);
-		
-		
-		//Build the program
-		CL.clBuildProgram(program, 0, null, null, null, null);
+
 		
 		//Create the kernel
 		cl_kernel kernel = CL.clCreateKernel(program, kernelMethod, null);
@@ -158,10 +160,11 @@ public class ParallelScan {
 		CL.clReleaseMemObject(memResult);
 		
 		//Put the results in an array of the correct size.
-		for(int i = 0; i < results.length; i++) {
-			results[i] = incrementedValues[i];
-		}
-	
+//		for(int i = 0; i < results.length; i++) {
+//			results[i] = incrementedValues[i];
+//		}
+		
+		padArray(incrementedValues, results, results.length, maxSize, context, commandQueue, device, program);
 		
 		return TIME;
 	}
@@ -275,40 +278,15 @@ public class ParallelScan {
 		return maxGroupSize;
 	}
 	
-//	/**
-//	 * Pads the array to be a length that is a power of 2.
-//	 * @param data The input data.
-//	 * @return The padded array.
-//	 */
-//	private static int[] padArray(int[] data) {
-//		int[] result = data;
-//		
-//		double power = Math.log(data.length) / Math.log(2);
-//		
-//		double cieling = Math.ceil(power);
-//		int size = (int) Math.pow(2, cieling);
-//		
-//		if(size != data.length) {
-//			
-//			result = new int[size];
-//			
-//			for(int i = 0; i < data.length; i++) {
-//				result[i] = data[i];
-//			}
-//		}
-//		
-//		return result;
-//	}
 	
 	/**
-	 * Pads the array to be the next multiple of the max work group size.
+	 * Private helper method to calculate the size that an array should be padded to.
 	 * @param data The data to be padded.
-	 * @param maxSize The max size of a work group as set by the device.
-	 * @return The padded array.
+	 * @param maxSize The max size of a work group as set by the OpenCL device.
+	 * @return The size to be padded to.
 	 */
-	private static int[] padArrayMaxMult(int[] data, int maxSize) {
-		
-		int[] result = data;
+	private static int getPadSize(int[] data, int maxSize) {
+		int result = 0;
 		int newSize = data.length;
 		if(data.length > maxSize) {
 			while(newSize % maxSize != 0) {
@@ -331,14 +309,58 @@ public class ParallelScan {
 			}
 		}
 		
-		if(newSize != data.length) {
-			result = new int[newSize];
-
-			for(int i = 0; i < data.length; i++) {
-				result[i] = data[i];
-			}
-		}
+		result = newSize;
 		
 		return result;
+	}
+	
+	/**
+	 * Private helper to pad or compress an array in parallel.
+	 * @param data The data to be modified.
+	 * @param result The resulting array.
+	 * @param padSize The size for the array to be changed to.
+	 * @param maxSize The max size of a work group as set by the device.
+	 * @param context The OpenCL context.
+	 * @param commandQueue The OpenCL commandQueue.
+	 * @param device The OpenCL device.
+	 * @param program The OpenCL program.
+	 */
+	private static void padArray(int[] data, int[] result, int padSize, int maxSize, cl_context context, cl_command_queue commandQueue, cl_device_id device, cl_program program) {
+		int[] padSizeArray = {padSize};
+		
+		Pointer ptrData = Pointer.to(data);
+		Pointer ptrResult = Pointer.to(result);
+		Pointer ptrPadSize = Pointer.to(padSizeArray);
+		
+		cl_mem memData = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR,
+				Sizeof.cl_int * data.length, ptrData, null);
+		cl_mem memResult = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR,
+				Sizeof.cl_int * result.length, ptrResult, null);
+		cl_mem memPadSize = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR,
+				Sizeof.cl_int * padSizeArray.length, ptrPadSize, null);
+		
+		
+		cl_kernel kernel = CL.clCreateKernel(program, "pad_array", null);
+
+		CL.clSetKernelArg(kernel, 0, Sizeof.cl_mem, Pointer.to(memData));
+		CL.clSetKernelArg(kernel, 1, Sizeof.cl_mem, Pointer.to(memResult));
+		CL.clSetKernelArg(kernel, 2, Sizeof.cl_mem, Pointer.to(memPadSize));
+		
+		long[] globalWorkSize = new long[] { data.length };
+		long[] localWorkSize = new long[] { getLocalSize(data.length, maxSize) };
+		
+		long startTime = System.nanoTime();
+		
+		CL.clEnqueueNDRangeKernel(commandQueue, kernel, 1, null, globalWorkSize, localWorkSize, 0, null, null);
+		
+		long endTime = System.nanoTime();
+		
+		long timeTaken = endTime - startTime;
+		
+		TIME += timeTaken;
+		
+		
+		CL.clEnqueueReadBuffer(commandQueue, memResult, CL.CL_TRUE, 0, result.length * Sizeof.cl_float,
+				ptrResult, 0, null, null);
 	}
 }

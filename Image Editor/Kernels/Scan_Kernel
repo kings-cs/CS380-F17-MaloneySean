@@ -1,4 +1,4 @@
-__kernel void hillis_steele_scan(__global const float * data, __global float * result,
+__kernel void hillis_steele_scan(__global const int * data, __global int * result,
 __local float * from, __local float * to){
 
 int i = (get_group_id(0) * get_local_size(0)) + get_local_id(0);
@@ -41,8 +41,8 @@ result[i] = from[local_number];
 
 
 
-__kernel void blelloch_scan(__global const float * data, __global float * result, __global float * accumulator,
- __local float * local_data){
+__kernel void blelloch_scan(__global const int * data, __global int * result, __global int * accumulator,
+ __local int * local_data){
 
 int group_id = get_group_id(0);
 int group_size   = get_local_size(0);
@@ -97,13 +97,30 @@ accumulator[group_id] = local_data[local_number] + data[i];
 result[i] = local_data[local_number];
 }
 
-__kernel void add_increments(__global const float * data, __global float * result, __global float * increments,
+__kernel void add_increments(__global const int * data, __global int * result, __global int * increments,
 __global int * maxSize){
 
 int group_id = get_group_id(0);
 int i = (group_id * get_local_size(0)) + get_local_id(0);
 
 result[i] = data[i] + increments[i / maxSize[0]];
+
+
+}
+
+
+__kernel void pad_array(__global const int * data, __global int * result, __global int * padSize){
+
+int i = (get_group_id(0) * get_local_size(0)) + get_local_id(0);
+
+int pad = padSize[0];
+
+if(i < pad){
+	result[i] = data[i];
+}
+else{
+	result[i] = 0;
+}
 
 
 }
