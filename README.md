@@ -90,6 +90,8 @@ once the project has been imported into a workspace.
 
 	The follow is a table of the amount of time taken to run various image editing algorithms used in the program. Time is reported in Miliseconds (ms).
 
+Editing Algorithm Timing:
+
 <table style = "width50%">
 	<tr>
 		<th>Algorithm</th>
@@ -275,6 +277,36 @@ once the project has been imported into a workspace.
 		<th>Histogram Eq. Parallel (Atomics)</th>
 		<th>401x268</th>
 		<th>0.571614 (ms)</th>
+		<th>GeForce GTX 745</th>
+	</tr>
+	
+</table>
+
+Utility Algorithm Timing:
+
+<table style = "width50%">
+	<tr>
+		<th>Algorithm</th>
+		<th>Array Size</th>
+		<th>Time</th>
+		<th>Computational Device</th>
+	</tr>
+	<tr>
+		<th>Radix Sort</th>
+		<th>12</th>
+		<th>1206.272653 (ms)</th>
+		<th>GeForce GTX 745</th>
+	</tr>
+	<tr>
+		<th>Radix Sort</th>
+		<th>2000</th>
+		<th>15099.334 (ms)</th>
+		<th>GeForce GTX 745</th>
+	</tr>
+	<tr>
+		<th>Radix Sort</th>
+		<th>(1024 * 1024) + 1</th>
+		<th>28485.716633 (ms)</th>
 		<th>GeForce GTX 745</th>
 	</tr>
 	
