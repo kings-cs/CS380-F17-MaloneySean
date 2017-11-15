@@ -16,6 +16,11 @@ import org.jocl.cl_program;
  * @author Sean Maloney
  */
 public class RadixSort extends ParallelAlgorithm {
+	
+	/**
+	 * The time of the kernel execution.
+	 */
+	private static long TIME;
 
 	/**
 	 * Sorts elements non comparatively based on bit values.
@@ -34,9 +39,11 @@ public class RadixSort extends ParallelAlgorithm {
 	 *            The Open CL command queue.
 	 * @param device
 	 *            The Open CL device.
+	 * @return The amount of time taken to sort.
 	 */
-	public static void sort(int[] data, int[]keys, int[] result, int[] resultKeys, cl_context context, cl_command_queue commandQueue,
+	public static long sort(int[] data, int[]keys, int[] result, int[] resultKeys, cl_context context, cl_command_queue commandQueue,
 			cl_device_id device) {
+		TIME = 0;
 		CL.setExceptionsEnabled(true);
 
 		String source = KernelReader.readFile("Kernels/Radix_Sort_Kernel");
@@ -45,7 +52,7 @@ public class RadixSort extends ParallelAlgorithm {
 
 		int[] sorting = data;
 		int[] sortingKeys = keys;
-		for (int i = 0; i < 1; i++) {
+		for (int i = 0; i < 32; i++) {
 			int currentBitPosition = i;
 
 			int[] p = new int[sorting.length];
@@ -56,12 +63,16 @@ public class RadixSort extends ParallelAlgorithm {
 			int[] scannedP = new int[p.length];
 			int[] scannedNotP = new int[notP.length];
 
-			ParallelScan.scan(p, scannedP, context, commandQueue, device, "blelloch_scan");
-			ParallelScan.scan(notP, scannedNotP, context, commandQueue, device, "blelloch_scan");
+			TIME += ParallelScan.scan(p, scannedP, context, commandQueue, device, "blelloch_scan");
+			TIME += ParallelScan.scan(notP, scannedNotP, context, commandQueue, device, "blelloch_scan");
 
 			scatterElements(sorting, sortingKeys, p, notP, scannedP, scannedNotP, result, resultKeys,
 					 context, commandQueue, device, program);
 			
+//			for(int current : result) {
+//				System.out.println(current);
+//			}
+//			
 			
 			sorting = result;
 			sortingKeys = resultKeys;
@@ -77,6 +88,7 @@ public class RadixSort extends ParallelAlgorithm {
 			// }
 		}
 
+		return TIME;
 	}
 
 	/**
@@ -129,13 +141,21 @@ public class RadixSort extends ParallelAlgorithm {
 		long[] globalWorkSize = new long[] { data.length };
 		long[] localWorkSize = new long[] { calculateLocalSize(data.length, device) };
 
+		long startTime = System.nanoTime();
+		
 		CL.clEnqueueNDRangeKernel(commandQueue, kernel, 1, null, globalWorkSize, localWorkSize, 0, null, null);
+		
+		long endTime = System.nanoTime();
+		
+		long timeTaken = endTime - startTime;
 
 		CL.clEnqueueReadBuffer(commandQueue, memPredicated, CL.CL_TRUE, 0, predicated.length * Sizeof.cl_float,
 				ptrPredicated, 0, null, null);
 
 		CL.clEnqueueReadBuffer(commandQueue, memNotPredicated, CL.CL_TRUE, 0, notPredicated.length * Sizeof.cl_float,
 				ptrNotPredicated, 0, null, null);
+		
+		TIME += timeTaken;
 	}
 
 	/**
@@ -197,13 +217,24 @@ public class RadixSort extends ParallelAlgorithm {
 		long[] globalWorkSize = new long[] { data.length };
 		long[] localWorkSize = new long[] { calculateLocalSize(data.length, device) };
 		
+		
+		long startTime = System.nanoTime();
+		
 		CL.clEnqueueNDRangeKernel(commandQueue, kernel, 1, null, globalWorkSize, localWorkSize, 0, null, null);
+		
+		long endTime = System.nanoTime();
+		
+		long timeTaken = endTime - startTime;
+		
+		
 		
 		CL.clEnqueueReadBuffer(commandQueue, memResults, CL.CL_TRUE, 0, results.length * Sizeof.cl_float,
 				ptrResults, 0, null, null);
 
 		CL.clEnqueueReadBuffer(commandQueue, memResultKeys, CL.CL_TRUE, 0, resultKeys.length * Sizeof.cl_float,
 				ptrResultKeys, 0, null, null);
+		
+		TIME += timeTaken;
 	}
 
 }

@@ -15,10 +15,30 @@ __kernel void scatter_elements(__global int * data, __global int * keys,
 __global int * p_scan, __global int * not_p_scan, 
 __global int * result, __global int * resultKeys){
 
+int i = (get_group_id(0) * get_local_size(0)) + get_local_id(0);
 
+int final_index = get_global_size(0) - 1;
 
+int first_half = 0;
+if(p[i] == 1){
+	first_half = not_p_scan[final_index];
+	
+	if(not_p[final_index] == 1){
+		first_half++;
+	}
+}
 
+int second_half = 0;
+if(not_p[i] == 0){
+	second_half = p_scan[i];
+}
+else{
+	second_half = not_p_scan[i];
+}
 
+int scatter = first_half + second_half;
 
+result[scatter] = data[i];
+resultKeys[scatter] = keys[i];
 
 }

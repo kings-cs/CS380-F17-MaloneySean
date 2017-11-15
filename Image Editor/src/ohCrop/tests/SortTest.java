@@ -34,7 +34,7 @@ public class SortTest {
 		
 		
 		for(int i = 0; i < data.length; i++) {
-			assertEquals("The value at index " + i + " should be : " + expected[i], expected[i], data[i]);
+			assertEquals("The value at index " + i + " should be : " + expected[i], expected[i], results[i]);
 		}
 		
 		
@@ -53,7 +53,7 @@ public class SortTest {
 		
 		
 		//TODO: Ask Jump if a backwards data unsorted enough to test this on
-		for(int i = data.length; i >= 0; i--) {
+		for(int i = data.length - 1; i >= 0; i--) {
 			data[i] = i;
 		}
 		
@@ -69,7 +69,7 @@ public class SortTest {
 		RadixSort.sort(data, keys, results, resultsKeys, setup.getContext(), setup.getCommandQueue(), setup.getDevice());
 		
 		for(int i = 0; i < data.length; i++) {
-			assertEquals("The value at index " + i + " should be : " + expected[i], expected[i], data[i]);
+			assertEquals("The value at index " + i + " should be : " + expected[i], expected[i], results[i]);
 		}
 	}
 	
@@ -85,7 +85,7 @@ public class SortTest {
 		
 		
 		//TODO: Ask Jump if a backwards data unsorted enough to test this on
-		for(int i = data.length; i >= 0; i--) {
+		for(int i = data.length - 1; i >= 0; i--) {
 			data[i] = i;
 		}
 		
@@ -102,7 +102,7 @@ public class SortTest {
 		
 		
 		for(int i = 0; i < data.length; i++) {
-			assertEquals("The value at index " + i + " should be : " + expected[i], expected[i], data[i]);
+			assertEquals("The value at index " + i + " should be : " + expected[i], expected[i], results[i]);
 		}
 	}
 	

@@ -17,6 +17,10 @@ import org.jocl.cl_program;
  */
 public class ParallelScan {
 	
+	/**
+	 * The time of the kernel execution.
+	 */
+	private static long TIME;
 	
 	/**
 	 * Method used to setup for parallelism and designate which kernel to run.
@@ -26,8 +30,9 @@ public class ParallelScan {
 	 * @param device The OpenCL device to be used.
 	 * @param commandQueue The OpenCL commandQueue to be used.
 	 * @param kernelMethod The name of the method in the kernel to be called.
+	 * @return The amount of time taken.
 	 */
-	public static void scan(final int[] data, int[] results, cl_context context, cl_command_queue commandQueue, cl_device_id device, String kernelMethod) {
+	public static long scan(final int[] data, int[] results, cl_context context, cl_command_queue commandQueue, cl_device_id device, String kernelMethod) {
 		int maxSize = getMaxWorkGroupSize(device);
 		
 		int[] paddedData = padArrayMaxMult(data, maxSize);
@@ -103,12 +108,18 @@ public class ParallelScan {
 		CL.clSetKernelArg(kernel, 3, Sizeof.cl_int * localWorkSize[0], null);
 		
 		//Execute the kernel
+		
+		long startTime = System.nanoTime();
+		
 		CL.clEnqueueNDRangeKernel(commandQueue, kernel, 1, null,
 				globalWorkSize, localWorkSize, 
 				0, null, null);
 
+		long endTime = System.nanoTime();
 		
+		long timeTaken = endTime - startTime;
 		
+		TIME += timeTaken;
 		
 		//Read the output data
 		CL.clEnqueueReadBuffer(commandQueue, memResult, 
@@ -150,7 +161,9 @@ public class ParallelScan {
 		for(int i = 0; i < results.length; i++) {
 			results[i] = incrementedValues[i];
 		}
+	
 		
+		return TIME;
 	}
 	
 	/**
@@ -197,9 +210,18 @@ public class ParallelScan {
 		CL.clSetKernelArg(kernel, 2, Sizeof.cl_mem, Pointer.to(memIncrements));
 		CL.clSetKernelArg(kernel, 3, Sizeof.cl_mem, Pointer.to(memMaxGroupSize));
 		
+		long startTime = System.nanoTime();
+		
 		CL.clEnqueueNDRangeKernel(commandQueue, kernel, 1, null,
 				globalWorkSize, localWorkSize, 
 				0, null, null);
+
+		long endTime = System.nanoTime();
+		
+		long timeTaken = endTime - startTime;
+		
+		TIME += timeTaken;
+		
 		
 		CL.clEnqueueReadBuffer(commandQueue, memResult, 
 				CL.CL_TRUE, 0, results.length * Sizeof.cl_int,
