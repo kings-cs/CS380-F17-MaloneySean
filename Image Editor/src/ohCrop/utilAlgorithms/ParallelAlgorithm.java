@@ -3,6 +3,7 @@ package ohCrop.utilAlgorithms;
 import org.jocl.CL;
 import org.jocl.Pointer;
 import org.jocl.cl_device_id;
+import org.jocl.cl_mem;
 
 /**
  * Class to contain helper methods needed by methods that run in parallel.
@@ -44,4 +45,13 @@ public class ParallelAlgorithm {
 		return localSize;
 	}
 	
+	/**
+	 * Helper method to release memObjects.
+	 * @param objects The memObjects to be realesed.
+	 */
+	protected static void releaseMemObject(cl_mem[] objects) {
+		for(cl_mem current : objects) {
+			CL.clReleaseMemObject(current);
+		}
+	}
 }

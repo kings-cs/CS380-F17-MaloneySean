@@ -82,7 +82,8 @@ public class SortTest {
 	 */
 	@Test
 	public void testLargeSet() {
-		int size = (1024 * 1024) + 1;
+		//int size = (1024 * 1024) + 1;
+		int size = 16000000;
 		int[] data = new int[size];
 		int[] keys = new int[size];
 		int[] expected = new int[size];

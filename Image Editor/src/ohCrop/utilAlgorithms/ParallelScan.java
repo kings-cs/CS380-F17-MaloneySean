@@ -15,7 +15,7 @@ import org.jocl.cl_program;
  * Class to implement Hillis-Steele and Blelloch scan.
  * @author Sean Maloney
  */
-public class ParallelScan {
+public class ParallelScan extends ParallelAlgorithm{
 	
 	/**
 	 * The time of the kernel execution.
@@ -156,8 +156,11 @@ public class ParallelScan {
 		//Release kernel, program, 
 		CL.clReleaseKernel(kernel);
 		CL.clReleaseProgram(program);
-		CL.clReleaseMemObject(memData);
-		CL.clReleaseMemObject(memResult);
+		
+		cl_mem[] objects = {memData, memResult};
+		releaseMemObject(objects);
+//		CL.clReleaseMemObject(memData);
+//		CL.clReleaseMemObject(memResult);
 		
 		//Put the results in an array of the correct size.
 //		for(int i = 0; i < results.length; i++) {
@@ -229,6 +232,11 @@ public class ParallelScan {
 		CL.clEnqueueReadBuffer(commandQueue, memResult, 
 				CL.CL_TRUE, 0, results.length * Sizeof.cl_int,
 				ptrResult, 0, null, null);
+		
+		cl_mem[] objects = {memData, memResult, memIncrements, memMaxGroupSize};
+		releaseMemObject(objects);
+		CL.clReleaseKernel(kernel);
+		CL.clReleaseProgram(program);
 	}
 	
 	
@@ -362,5 +370,9 @@ public class ParallelScan {
 		
 		CL.clEnqueueReadBuffer(commandQueue, memResult, CL.CL_TRUE, 0, result.length * Sizeof.cl_float,
 				ptrResult, 0, null, null);
+	
+		
+		cl_mem[] objects = {memData, memResult, memPadSize};
+		releaseMemObject(objects);
 	}
 }

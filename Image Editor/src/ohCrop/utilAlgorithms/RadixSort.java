@@ -76,6 +76,7 @@ public class RadixSort extends ParallelAlgorithm {
 			
 		}
 
+		CL.clReleaseProgram(program);
 		return TIME;
 	}
 
@@ -144,6 +145,10 @@ public class RadixSort extends ParallelAlgorithm {
 				ptrNotPredicated, 0, null, null);
 		
 		TIME += timeTaken;
+		
+		cl_mem[] objects = {memData, memPredicated, memNotPredicated, memBitPosition};
+		releaseMemObject(objects);
+		CL.clReleaseKernel(kernel);
 	}
 
 	/**
@@ -223,6 +228,12 @@ public class RadixSort extends ParallelAlgorithm {
 				ptrResultKeys, 0, null, null);
 		
 		TIME += timeTaken;
+		
+		cl_mem[] objects = {memData, memKeys, memPredicated, memNotPredicated, memScannedP, 
+				memNotScannedP, memResults, memResultKeys};
+		releaseMemObject(objects);
+		CL.clReleaseKernel(kernel);
+
 	}
 
 }
