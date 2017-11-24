@@ -50,6 +50,7 @@ public class HistogramEqualizationParallel extends ParallelAlgorithm{
 	public static BufferedImage parallelHistogramEq(cl_context context, cl_command_queue commandQueue, cl_device_id device, BufferedImage original, boolean useAtomic) {
 		//Create the program from the source code
 		//Create the OpenCL kernel from the program
+		//TODO: TEST HISTOGRAM EQ ON LAB COMP
 		TOTAL_TIME = 0;
 		String source = KernelReader.readFile("Kernels/Histogram_Equalization_Kernel");
 		cl_program program = CL.clCreateProgramWithSource(context, 1, new String[] {source}, null, null);
