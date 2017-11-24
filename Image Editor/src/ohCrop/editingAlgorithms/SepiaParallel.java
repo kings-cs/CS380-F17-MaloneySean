@@ -2,7 +2,6 @@ package ohCrop.editingAlgorithms;
 
 import java.awt.image.BufferedImage;
 
-import javax.swing.JOptionPane;
 
 import org.jocl.CL;
 import org.jocl.Pointer;
@@ -13,8 +12,8 @@ import org.jocl.cl_kernel;
 import org.jocl.cl_mem;
 import org.jocl.cl_program;
 
-import ohCrop.utilAlgorithms.ImageAlgorithm;
 import ohCrop.utilAlgorithms.KernelReader;
+import ohCrop.utilAlgorithms.ParallelAlgorithm;
 
 /**
  * Control class used to handle the Sepia Tone algorithm in parallel.
@@ -22,7 +21,7 @@ import ohCrop.utilAlgorithms.KernelReader;
  * @author Sean Maloney
  *
  */
-public class SepiaParallel extends ImageAlgorithm{
+public class SepiaParallel extends ParallelAlgorithm{
 	/**
 	 * Converts the individual pixels of an image t be in shades of gray computed using parallelism.
 	 * 
@@ -47,6 +46,8 @@ public class SepiaParallel extends ImageAlgorithm{
 		cl_mem memResult = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
 				Sizeof.cl_int * resultData.length, ptrResult, null);
 		
+		
+		cl_mem[] objects = {memRaster, memResult};
 		//KERNEL EXECUTION, SHOULD PROBABLY SPLIT THESE UP
 		
 		//Create the program from the source code
@@ -65,9 +66,8 @@ public class SepiaParallel extends ImageAlgorithm{
 		cl_kernel kernel = CL.clCreateKernel(program, "sepia_kernel", null);
 		
 		//Set the arguments for the kernel
-		CL.clSetKernelArg(kernel, 0, Sizeof.cl_mem, Pointer.to(memRaster));
-		CL.clSetKernelArg(kernel, 1, Sizeof.cl_mem, Pointer.to(memResult));
-	
+		setKernelArgs(objects, kernel);
+		
 		//Set the work-item dimensions
 		long[] globalWorkSize = new long[] {resultData.length};
 		long[] localWorkSize = new long[] {1};
@@ -80,10 +80,7 @@ public class SepiaParallel extends ImageAlgorithm{
 				0, null, null);
 		long endTime = System.nanoTime();
 		
-		long timeTaken = endTime - startTime;
-		
-		double miliSeconds = timeTaken / 1000000.0;
-		JOptionPane.showMessageDialog(null, "Time Taken: " + miliSeconds + " (ms)");
+		displayTimeTaken(startTime, endTime);
 		
 		
 		//Read the output data
@@ -99,8 +96,7 @@ public class SepiaParallel extends ImageAlgorithm{
 		//Release kernel, program, 
 		CL.clReleaseKernel(kernel);
 		CL.clReleaseProgram(program);
-		CL.clReleaseMemObject(memRaster);
-		CL.clReleaseMemObject(memResult);
+		releaseMemObject(objects);
 		
 		
 		return result;

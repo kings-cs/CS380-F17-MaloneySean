@@ -2,7 +2,6 @@ package ohCrop.editingAlgorithms;
 
 import java.awt.image.BufferedImage;
 
-import javax.swing.JOptionPane;
 
 import org.jocl.CL;
 import org.jocl.Pointer;
@@ -188,11 +187,7 @@ public class BlurParallel extends ParallelAlgorithm{
 		
 		long endTime = System.nanoTime();
 		
-		long timeTaken = endTime - startTime;
-		
-		double miliSeconds = timeTaken / 1000000.0;
-		JOptionPane.showMessageDialog(null, "Time Taken: " + miliSeconds + " (ms)");
-		
+		displayTimeTaken(startTime, endTime);
 		
 		//Read the output data
 		CL.clEnqueueReadBuffer(commandQueue, memResult, 

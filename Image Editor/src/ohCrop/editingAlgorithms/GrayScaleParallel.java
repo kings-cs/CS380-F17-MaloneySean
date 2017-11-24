@@ -2,26 +2,26 @@ package ohCrop.editingAlgorithms;
 
 import java.awt.image.BufferedImage;
 
-import javax.swing.JOptionPane;
 
 import org.jocl.CL;
 import org.jocl.Pointer;
 import org.jocl.Sizeof;
 import org.jocl.cl_command_queue;
 import org.jocl.cl_context;
+import org.jocl.cl_device_id;
 import org.jocl.cl_kernel;
 import org.jocl.cl_mem;
 import org.jocl.cl_program;
 
-import ohCrop.utilAlgorithms.ImageAlgorithm;
 import ohCrop.utilAlgorithms.KernelReader;
+import ohCrop.utilAlgorithms.ParallelAlgorithm;
 
 /**
  * Control class used to handle the Gray Scale algorithm.
  * 
  * @author Sean Maloney 
  */
-public class GrayScaleParallel extends ImageAlgorithm{
+public class GrayScaleParallel extends ParallelAlgorithm{
 	
 	
 	
@@ -30,11 +30,12 @@ public class GrayScaleParallel extends ImageAlgorithm{
 	 * 
 	 * @param context The OpenCL context used for the parallel computing.
 	 * @param commandQueue The OpenCL commandQueue used for the parallel computing.
+	 * @param device The OpenCL device used.
 	 * @param original The image to be colored.
 	 * 
 	 * @return The newly colored image.
 	 */
-	public static BufferedImage parallelGrayScale(cl_context context, cl_command_queue commandQueue, BufferedImage original) {
+	public static BufferedImage parallelGrayScale(cl_context context, cl_command_queue commandQueue, cl_device_id device, BufferedImage original) {
 		
 		
 		
@@ -48,6 +49,8 @@ public class GrayScaleParallel extends ImageAlgorithm{
 				Sizeof.cl_int * imageRaster.length, ptrRaster, null);
 		cl_mem memResult = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
 				Sizeof.cl_int * resultData.length, ptrResult, null);
+		
+		cl_mem[] objects = {memRaster, memResult};
 		
 		//KERNEL EXECUTION, SHOULD PROBABLY SPLIT THESE UP
 		
@@ -67,12 +70,15 @@ public class GrayScaleParallel extends ImageAlgorithm{
 		cl_kernel kernel = CL.clCreateKernel(program, "grayscale_kernel", null);
 		
 		//Set the arguments for the kernel
-		CL.clSetKernelArg(kernel, 0, Sizeof.cl_mem, Pointer.to(memRaster));
-		CL.clSetKernelArg(kernel, 1, Sizeof.cl_mem, Pointer.to(memResult));
+		setKernelArgs(objects, kernel);
 	
 		//Set the work-item dimensions
-		long[] globalWorkSize = new long[] {resultData.length};
-		long[] localWorkSize = new long[] {1};
+		int globalSize = resultData.length;
+		int localSize = calculateLocalSize(globalSize, device);
+		
+		
+		long[] globalWorkSize = new long[] {globalSize};
+		long[] localWorkSize = new long[] {localSize};
 		
 		
 		long startTime = System.nanoTime();
@@ -82,11 +88,7 @@ public class GrayScaleParallel extends ImageAlgorithm{
 				0, null, null);
 		long endTime = System.nanoTime();
 		
-		long timeTaken = endTime - startTime;
-		
-		double miliSeconds = timeTaken / 1000000.0;
-		JOptionPane.showMessageDialog(null, "Time Taken: " + miliSeconds + " (ms)");
-		
+		displayTimeTaken(startTime, endTime);
 		
 		//Read the output data
 		CL.clEnqueueReadBuffer(commandQueue, memResult, 
@@ -100,8 +102,7 @@ public class GrayScaleParallel extends ImageAlgorithm{
 		//Release kernel, program, 
 		CL.clReleaseKernel(kernel);
 		CL.clReleaseProgram(program);
-		CL.clReleaseMemObject(memRaster);
-		CL.clReleaseMemObject(memResult);
+		releaseMemObject(objects);
 		
 		
 		return result;

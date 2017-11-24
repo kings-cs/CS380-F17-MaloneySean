@@ -801,7 +801,7 @@ public class EditorGUI extends JFrame{
 				
 				
 				BufferedImage gray = GrayScaleParallel.parallelGrayScale(parallelControl.getContext(), 
-						parallelControl.getCommandQueue(), preZoomImage);
+						parallelControl.getCommandQueue(), parallelControl.getDevice(), preZoomImage);
 				
 				
 				preZoomImage = gray;

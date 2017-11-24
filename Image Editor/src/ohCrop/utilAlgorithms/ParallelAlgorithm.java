@@ -1,5 +1,7 @@
 package ohCrop.utilAlgorithms;
 
+import javax.swing.JOptionPane;
+
 import org.jocl.CL;
 import org.jocl.Pointer;
 import org.jocl.Sizeof;
@@ -68,5 +70,17 @@ public class ParallelAlgorithm extends ImageAlgorithm{
 			
 			CL.clSetKernelArg(kernel, i, Sizeof.cl_mem, Pointer.to(current));
 		}
+	}
+	
+	/**
+	 * Helper method to display the time taken in milliseconds to the user.
+	 * @param startTime The start time (computed via System.nanoTime()).
+	 * @param endTime	The end time (computed via System.nanoTime()).
+	 */
+	protected static void displayTimeTaken(long startTime, long endTime) {
+		long timeTaken = endTime - startTime;
+		
+		double miliSeconds = timeTaken / 1000000.0;
+		JOptionPane.showMessageDialog(null, "Time Taken: " + miliSeconds + " (ms)");
 	}
 }

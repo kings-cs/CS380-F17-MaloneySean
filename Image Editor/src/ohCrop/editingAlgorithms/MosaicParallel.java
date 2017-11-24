@@ -15,14 +15,14 @@ import org.jocl.cl_kernel;
 import org.jocl.cl_mem;
 import org.jocl.cl_program;
 
-import ohCrop.utilAlgorithms.ImageAlgorithm;
 import ohCrop.utilAlgorithms.KernelReader;
+import ohCrop.utilAlgorithms.ParallelAlgorithm;
 
 /**
  * Class used to create a Mosaic image, computed in Parallel.
  * @author Sean Maloney
  */
-public class MosaicParallel extends ImageAlgorithm{
+public class MosaicParallel extends ParallelAlgorithm{
 
 	/**
 	 * Converts the individual pixels of an image t be in shades of gray computed using parallelism.
@@ -69,6 +69,8 @@ public class MosaicParallel extends ImageAlgorithm{
 		cl_mem memTiles = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
 				Sizeof.cl_int * tilePoints.length, ptrTiles, null);
 		
+		cl_mem[] objects = {memRaster, memResult, memDimensions, memTiles};
+		
 		//KERNEL EXECUTION, SHOULD PROBABLY SPLIT THESE UP
 		
 		//Create the program from the source code
@@ -87,43 +89,20 @@ public class MosaicParallel extends ImageAlgorithm{
 		cl_kernel kernel = CL.clCreateKernel(program, "mosaic_kernel", null);
 		
 		//Set the arguments for the kernel
-		CL.clSetKernelArg(kernel, 0, Sizeof.cl_mem, Pointer.to(memRaster));
-		CL.clSetKernelArg(kernel, 1, Sizeof.cl_mem, Pointer.to(memResult));
-		CL.clSetKernelArg(kernel, 2, Sizeof.cl_mem, Pointer.to(memDimensions));
-		CL.clSetKernelArg(kernel, 3, Sizeof.cl_mem, Pointer.to(memTiles));
+		setKernelArgs(objects, kernel);
 	
 		//WORK GROUP STUFF		
 		
 
-		long[] size = new long[1];
-		CL.clGetDeviceInfo(device, CL.CL_DEVICE_MAX_WORK_GROUP_SIZE, 0, 
-				null, size);
-
-		int[] sizeBuffer = new int[(int) size[0]];
-		CL.clGetDeviceInfo(device, CL.CL_DEVICE_MAX_WORK_GROUP_SIZE, 
-				sizeBuffer.length, Pointer.to(sizeBuffer), null);
-
-
-
-		int maxGroupSize = sizeBuffer[0];
+		
 		int globalSize = imageRaster.length;
-		int localSize = maxGroupSize;
+		int localSize = calculateLocalSize(globalSize, device);
 
-		boolean divisible = false;
 
-		while(!divisible) {
-			int mod = globalSize % localSize;
-			if(mod == 0) {
-				divisible = true;
-			}
-			else {
-				localSize--;
-			}
-		}
 
 
 		//Set the work-item dimensions
-		long[] globalWorkSize = new long[] {imageRaster.length};
+		long[] globalWorkSize = new long[] {globalSize};
 		long[] localWorkSize = new long[] {localSize};
 
 		long startTime = System.nanoTime();
@@ -133,11 +112,8 @@ public class MosaicParallel extends ImageAlgorithm{
 				0, null, null);
 		long endTime = System.nanoTime();
 		
-		long timeTaken = endTime - startTime;
 		
-		double miliSeconds = timeTaken / 1000000.0;
-		JOptionPane.showMessageDialog(null, "Time Taken: " + miliSeconds + " (ms)");
-		
+		displayTimeTaken(startTime, endTime);
 		
 		//Read the output data
 		CL.clEnqueueReadBuffer(commandQueue, memResult, 
@@ -151,10 +127,7 @@ public class MosaicParallel extends ImageAlgorithm{
 		//Release kernel, program, 
 		CL.clReleaseKernel(kernel);
 		CL.clReleaseProgram(program);
-		CL.clReleaseMemObject(memRaster);
-		CL.clReleaseMemObject(memResult);
-		CL.clReleaseMemObject(memDimensions);
-		CL.clReleaseMemObject(memTiles);
+		releaseMemObject(objects);
 		
 		
 		return result;
