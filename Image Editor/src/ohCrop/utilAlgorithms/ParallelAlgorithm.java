@@ -2,14 +2,16 @@ package ohCrop.utilAlgorithms;
 
 import org.jocl.CL;
 import org.jocl.Pointer;
+import org.jocl.Sizeof;
 import org.jocl.cl_device_id;
+import org.jocl.cl_kernel;
 import org.jocl.cl_mem;
 
 /**
  * Class to contain helper methods needed by methods that run in parallel.
  * @author Sean Maloney
  */
-public class ParallelAlgorithm {
+public class ParallelAlgorithm extends ImageAlgorithm{
 	
 	/**
 	 * Private helper method used to calculate the best local size to be used.
@@ -52,6 +54,19 @@ public class ParallelAlgorithm {
 	protected static void releaseMemObject(cl_mem[] objects) {
 		for(cl_mem current : objects) {
 			CL.clReleaseMemObject(current);
+		}
+	}
+	
+	/**
+	 * Helper method to set arguments for a kernel.
+	 * @param objects The objects to be set.
+	 * @param kernel The kernel for the arguments.
+	 */
+	protected static void setKernelArgs(cl_mem[] objects, cl_kernel kernel) {
+		for(int i = 0; i < objects.length; i++) {
+			cl_mem current = objects[i];
+			
+			CL.clSetKernelArg(kernel, i, Sizeof.cl_mem, Pointer.to(current));
 		}
 	}
 }

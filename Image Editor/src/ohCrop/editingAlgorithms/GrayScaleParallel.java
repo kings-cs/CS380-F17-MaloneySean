@@ -13,15 +13,18 @@ import org.jocl.cl_kernel;
 import org.jocl.cl_mem;
 import org.jocl.cl_program;
 
+import ohCrop.utilAlgorithms.ImageAlgorithm;
 import ohCrop.utilAlgorithms.KernelReader;
 
 /**
- * Control class used to handle the Sepia Tone algorithm in parallel.
+ * Control class used to handle the Gray Scale algorithm.
  * 
- * @author Sean Maloney
- *
+ * @author Sean Maloney 
  */
-public class ParallelSepia extends ImageAlgorithm{
+public class GrayScaleParallel extends ImageAlgorithm{
+	
+	
+	
 	/**
 	 * Converts the individual pixels of an image t be in shades of gray computed using parallelism.
 	 * 
@@ -29,9 +32,9 @@ public class ParallelSepia extends ImageAlgorithm{
 	 * @param commandQueue The OpenCL commandQueue used for the parallel computing.
 	 * @param original The image to be colored.
 	 * 
-	 * @return The newly colored image.  
+	 * @return The newly colored image.
 	 */
-	public static BufferedImage parallelSepia(cl_context context, cl_command_queue commandQueue, BufferedImage original) {
+	public static BufferedImage parallelGrayScale(cl_context context, cl_command_queue commandQueue, BufferedImage original) {
 		
 		
 		
@@ -50,7 +53,7 @@ public class ParallelSepia extends ImageAlgorithm{
 		
 		//Create the program from the source code
 		//Create the OpenCL kernel from the program
-		String source = KernelReader.readFile("Kernels/Sepia_Kernel");
+		String source = KernelReader.readFile("Kernels/Grayscale_Kernel");
 		
 		//System.out.println(source);
 		
@@ -61,7 +64,7 @@ public class ParallelSepia extends ImageAlgorithm{
 		CL.clBuildProgram(program, 0, null, null, null, null);
 		
 		//Create the kernel
-		cl_kernel kernel = CL.clCreateKernel(program, "sepia_kernel", null);
+		cl_kernel kernel = CL.clCreateKernel(program, "grayscale_kernel", null);
 		
 		//Set the arguments for the kernel
 		CL.clSetKernelArg(kernel, 0, Sizeof.cl_mem, Pointer.to(memRaster));
@@ -91,7 +94,6 @@ public class ParallelSepia extends ImageAlgorithm{
 				ptrResult, 0, null, null);
 		
 		
-		
 		BufferedImage result = wrapUp(resultData, original);
 		
 				
@@ -104,4 +106,6 @@ public class ParallelSepia extends ImageAlgorithm{
 		
 		return result;
 	}
+	
+	
 }

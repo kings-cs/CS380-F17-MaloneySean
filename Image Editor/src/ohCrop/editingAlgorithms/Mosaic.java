@@ -5,6 +5,8 @@ import java.util.Random;
 
 import javax.swing.JOptionPane;
 
+import ohCrop.utilAlgorithms.ImageAlgorithm;
+
 /**
  * Class used to apply a mosaic filter to an image.
  * 

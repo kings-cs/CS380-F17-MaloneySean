@@ -14,25 +14,26 @@ import org.jocl.cl_kernel;
 import org.jocl.cl_mem;
 import org.jocl.cl_program;
 
+import ohCrop.utilAlgorithms.ImageAlgorithm;
 import ohCrop.utilAlgorithms.KernelReader;
 
 /**
- * Class used to rotate an image 90 degrees to the right.
+ * Class used to flip an image vertically.
  * @author Sean Maloney
  *
  */
-public class ParallelRightRotation extends ImageAlgorithm{
+public class VerticalParallel extends ImageAlgorithm{
 	/**
-	 * Rotates an image 90 degrees to the right.
+	 * Flips an image vertically.
 	 * 
 	 * @param context The OpenCL context used for the parallel computing.
 	 * @param commandQueue The OpenCL commandQueue used for the parallel computing.
 	 * @param original The image to be colored.
-	 * @param device The device used by OpenCl.
+	 * @param device The device used by OpenCL.
 	 * 
-	 * @return The rotated image.
+	 * @return The vertically flipped image.
 	 */
-	public static BufferedImage rotateRight(cl_context context, cl_command_queue commandQueue, cl_device_id device, BufferedImage original) {
+	public static BufferedImage verticalFlip(cl_context context, cl_command_queue commandQueue, cl_device_id device, BufferedImage original) {
 		
 		
 		
@@ -55,7 +56,7 @@ public class ParallelRightRotation extends ImageAlgorithm{
 		
 		//Create the program from the source code
 		//Create the OpenCL kernel from the program
-		String source = KernelReader.readFile("Kernels/Right_Kernel");
+		String source = KernelReader.readFile("Kernels/Vertical_Kernel");
 		
 		//System.out.println(source);
 		
@@ -66,7 +67,7 @@ public class ParallelRightRotation extends ImageAlgorithm{
 		CL.clBuildProgram(program, 0, null, null, null, null);
 		
 		//Create the kernel
-		cl_kernel kernel = CL.clCreateKernel(program, "right_kernel", null);
+		cl_kernel kernel = CL.clCreateKernel(program, "vertical_kernel", null);
 		
 		//Set the arguments for the kernel
 		CL.clSetKernelArg(kernel, 0, Sizeof.cl_mem, Pointer.to(memRaster));
@@ -74,7 +75,7 @@ public class ParallelRightRotation extends ImageAlgorithm{
 		CL.clSetKernelArg(kernel, 2, Sizeof.cl_mem, Pointer.to(memDimensions));
 	
 		//WORK GROUP STUFF		
-
+		
 
 		long[] size = new long[1];
 		CL.clGetDeviceInfo(device, CL.CL_DEVICE_MAX_WORK_GROUP_SIZE, 0, 
@@ -102,7 +103,7 @@ public class ParallelRightRotation extends ImageAlgorithm{
 			}
 		}
 
-
+		
 		//Set the work-item dimensions
 		long[] globalWorkSize = new long[] {imageRaster.length};
 		long[] localWorkSize = new long[] {localSize};
@@ -127,9 +128,7 @@ public class ParallelRightRotation extends ImageAlgorithm{
 				ptrResult, 0, null, null);
 		
 		
-		BufferedImage rotate = new BufferedImage(original.getHeight(), original.getWidth(),
-				BufferedImage.TYPE_INT_ARGB);
-		BufferedImage result = wrapUp(resultData, rotate);
+		BufferedImage result = wrapUp(resultData, original);
 		
 				
 		//Release kernel, program, 
@@ -139,8 +138,8 @@ public class ParallelRightRotation extends ImageAlgorithm{
 		CL.clReleaseMemObject(memResult);
 		CL.clReleaseMemObject(memDimensions);
 		
+		
 		return result;
 	}
-
 
 }

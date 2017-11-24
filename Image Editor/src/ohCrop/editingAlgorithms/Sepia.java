@@ -4,6 +4,8 @@ import java.awt.image.BufferedImage;
 
 import javax.swing.JOptionPane;
 
+import ohCrop.utilAlgorithms.ImageAlgorithm;
+
 
 /**
  * Control class used to handle the Sepia tone algorithm.

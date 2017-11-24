@@ -15,6 +15,7 @@ import org.jocl.cl_kernel;
 import org.jocl.cl_mem;
 import org.jocl.cl_program;
 
+import ohCrop.utilAlgorithms.ImageAlgorithm;
 import ohCrop.utilAlgorithms.KernelReader;
 import ohCrop.utilAlgorithms.ParallelScan;
 
@@ -22,7 +23,7 @@ import ohCrop.utilAlgorithms.ParallelScan;
  * Computes a Histogram Equalizaion in Parallel.
  * @author Sean Maloney
  */
-public class ParallelHistogramEqualization extends ImageAlgorithm{
+public class HistogramEqualizationParallel extends ImageAlgorithm{
 	
 	/**
 	 * Field to keep trakc of the total time taken for all kernels to execute.

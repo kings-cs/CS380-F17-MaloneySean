@@ -15,13 +15,14 @@ import org.jocl.cl_kernel;
 import org.jocl.cl_mem;
 import org.jocl.cl_program;
 
+import ohCrop.utilAlgorithms.ImageAlgorithm;
 import ohCrop.utilAlgorithms.KernelReader;
 
 /**
  * Class used to create a Mosaic image, computed in Parallel.
  * @author Sean Maloney
  */
-public class ParallelMosaic extends ImageAlgorithm{
+public class MosaicParallel extends ImageAlgorithm{
 
 	/**
 	 * Converts the individual pixels of an image t be in shades of gray computed using parallelism.

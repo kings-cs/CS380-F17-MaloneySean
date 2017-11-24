@@ -5,12 +5,14 @@ import java.awt.image.BufferedImage;
 
 import javax.swing.JOptionPane;
 
+import ohCrop.utilAlgorithms.ImageAlgorithm;
+
 /**
  * Control class used to handle the Gray Scale algorithm.
  * 
  * @author Sean Maloney 
  */
-public class Grayscale extends ImageAlgorithm{
+public class GrayScale extends ImageAlgorithm{
 
 	/**
 	 * Converts an the colors of a given image to be in GrayScale.

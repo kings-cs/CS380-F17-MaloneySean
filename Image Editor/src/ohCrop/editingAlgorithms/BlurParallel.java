@@ -15,6 +15,7 @@ import org.jocl.cl_mem;
 import org.jocl.cl_program;
 
 import ohCrop.utilAlgorithms.KernelReader;
+import ohCrop.utilAlgorithms.ParallelAlgorithm;
 
 /**
  * Control class used to handle the Blur algorithm in parallel.
@@ -22,7 +23,7 @@ import ohCrop.utilAlgorithms.KernelReader;
  * @author Sean Maloney
  *
  */
-public class BlurParallel extends ImageAlgorithm{
+public class BlurParallel extends ParallelAlgorithm{
 	/**
 	 * Converts the individual pixels of an image to be blurred, calculated in parallel.
 	 * 
@@ -97,9 +98,7 @@ public class BlurParallel extends ImageAlgorithm{
 		String source = KernelReader.readFile("Kernels/Blur_Kernel");
 		
 		
-		
-		
-		//System.out.println(source);
+	
 		
 		cl_program program = CL.clCreateProgramWithSource(context, 1, new String[] {source}, null, null);
 		
@@ -113,114 +112,30 @@ public class BlurParallel extends ImageAlgorithm{
 		
 
 		
-//		long[] kernelSize = new long[1];
-//		 CL.clGetKernelWorkGroupInfo (seperateKernel, device, CL.CL_KERNEL_WORK_GROUP_SIZE, 0,
-//				  	null, kernelSize);
-//		 
-//		 int[] kernelBuffer = new int[(int) kernelSize[0]];
-//		 CL.clGetKernelWorkGroupInfo (seperateKernel, device, CL.CL_KERNEL_WORK_GROUP_SIZE, kernelBuffer.length,
-//				  	Pointer.to(kernelBuffer), null);
-//		 
-//		 System.out.println(kernelBuffer[0]);
-		
-		//Set the arguments for the kernel
-		//TODO: Doesnt need memResult
-		CL.clSetKernelArg(seperateKernel, 0, Sizeof.cl_mem, Pointer.to(memRaster));
-		CL.clSetKernelArg(seperateKernel, 1, Sizeof.cl_mem, Pointer.to(memRed));
-		CL.clSetKernelArg(seperateKernel, 2, Sizeof.cl_mem, Pointer.to(memGreen));
-		CL.clSetKernelArg(seperateKernel, 3, Sizeof.cl_mem, Pointer.to(memBlue));
-		CL.clSetKernelArg(seperateKernel, 4, Sizeof.cl_mem, Pointer.to(memAlpha));
-		
-		CL.clSetKernelArg(stencilKernel, 0, Sizeof.cl_mem, Pointer.to(memRaster));
-		CL.clSetKernelArg(stencilKernel, 1, Sizeof.cl_mem, Pointer.to(memRed));
-		CL.clSetKernelArg(stencilKernel, 2, Sizeof.cl_mem, Pointer.to(memGreen));
-		CL.clSetKernelArg(stencilKernel, 3, Sizeof.cl_mem, Pointer.to(memBlue));
-		CL.clSetKernelArg(stencilKernel, 4, Sizeof.cl_mem, Pointer.to(memRedAvg));
-		CL.clSetKernelArg(stencilKernel, 5, Sizeof.cl_mem, Pointer.to(memGreenAvg));
-		CL.clSetKernelArg(stencilKernel, 6, Sizeof.cl_mem, Pointer.to(memBlueAvg));
-		CL.clSetKernelArg(stencilKernel, 7, Sizeof.cl_mem, Pointer.to(memDimension));
+		cl_mem[] seperateObjects = {memRaster, memRed, memGreen, memBlue, memAlpha};
+		setKernelArgs(seperateObjects, seperateKernel);
+	
+		cl_mem[] stencilObjects = {memRaster, memRed, memGreen, memBlue, memRedAvg,
+				memGreenAvg, memBlueAvg, memDimension};
+		setKernelArgs(stencilObjects, stencilKernel);
 		
 
-		CL.clSetKernelArg(recombineKernel, 0, Sizeof.cl_mem, Pointer.to(memResult));
-		CL.clSetKernelArg(recombineKernel, 1, Sizeof.cl_mem, Pointer.to(memAlpha));
-		CL.clSetKernelArg(recombineKernel, 2, Sizeof.cl_mem, Pointer.to(memRedAvg));
-		CL.clSetKernelArg(recombineKernel, 3, Sizeof.cl_mem, Pointer.to(memGreenAvg));
-		CL.clSetKernelArg(recombineKernel, 4, Sizeof.cl_mem, Pointer.to(memBlueAvg));
-
-
-		//Set the work-item dimensions
-//				long[] globalWorkSize = new long[] {resultData.length};
-//				long[] localWorkSize = new long[] {1};
-		 //Uncomment this and comment out work group stuff below to undo 		
-
+		cl_mem[] recombineObjects = {memResult, memAlpha, memRedAvg, memGreenAvg, memBlueAvg};
+		setKernelArgs(recombineObjects, recombineKernel);
 
 
 //WORK GROUP STUFF		
 		
 
-		long[] size = new long[1];
-		CL.clGetDeviceInfo(device, CL.CL_DEVICE_MAX_WORK_GROUP_SIZE, 0, 
-				null, size);
 
-		int[] sizeBuffer = new int[(int) size[0]];
-		CL.clGetDeviceInfo(device, CL.CL_DEVICE_MAX_WORK_GROUP_SIZE, 
-				sizeBuffer.length, Pointer.to(sizeBuffer), null);
-
-
-		
-		int maxGroupSize = sizeBuffer[0];
 		int globalSize = imageRaster.length;
-		int localSize = maxGroupSize;
+		int localSize =  calculateLocalSize(globalSize, device);
 
-		boolean divisible = false;
-			
-		while(!divisible) {
-			int mod = globalSize % localSize;
-			if(mod == 0) {
-				divisible = true;
-			}
-			else {
-				localSize--;
-			}
-		}
-		
-		
-//		System.out.println(globalGroupSize % localGroupSize);
-//		System.out.println(1500 - globalGroupSize);
-//		globalGroupSize = 1500;
-		
-//		int groups = globalSize / localSize;
-		
-//		divisible = false;
-//		while(!divisible) {
-//			if(groups % localSize == 0) {
-//				divisible = true;
-//			}
-//			else {
-//				groups++;
-//			}
-//		}
-//		
-		long[] globalWorkSize = new long[] {imageRaster.length};
+		long[] globalWorkSize = new long[] {globalSize};
 		long[] localWorkSize = new long[] {localSize};
 		
 		
-		//long[] globalWorkSize = new long[] {imageRaster.length};
-		
-//		long[] globalWorkSize = new long[groups];
-//		
-//		for(int i = 0; i < globalWorkSize.length; i++) {
-//			globalWorkSize[i] = localSize;
-//		}
-		
-		//long[] localWorkSize = new long[] {localSize};
-		
-		
-//		System.out.println("MAX  : " + maxGroupSize);
-//		System.out.println("IMAGE: " + imageRaster.length);
-//		System.out.println("LOCAL: " + localSize);
-//		System.out.println("GROUP: " + groups);
-//		
+
 		
 		
 		
@@ -285,10 +200,7 @@ public class BlurParallel extends ImageAlgorithm{
 				ptrResult, 0, null, null);
 		
 		
-		//They are in fact being set to 0, work groups probably not executing
-//		for(int i = 0; i < resultData.length; i++) {
-//			System.out.println(resultData[i]);
-//		}
+
 		
 		BufferedImage result = wrapUp(resultData, original);
 		
@@ -298,16 +210,11 @@ public class BlurParallel extends ImageAlgorithm{
 		CL.clReleaseKernel(stencilKernel);
 		CL.clReleaseKernel(recombineKernel);
 		CL.clReleaseProgram(program);
-		CL.clReleaseMemObject(memRaster);
-		CL.clReleaseMemObject(memResult);
-		CL.clReleaseMemObject(memRed);
-		CL.clReleaseMemObject(memGreen);
-		CL.clReleaseMemObject(memBlue);
-		CL.clReleaseMemObject(memAlpha);
-		CL.clReleaseMemObject(memRedAvg);
-		CL.clReleaseMemObject(memGreenAvg);
-		CL.clReleaseMemObject(memBlueAvg);
-		CL.clReleaseMemObject(memDimension);
+		
+		cl_mem[] allObjects = {memRaster, memResult, memRed, memGreen, memBlue, memAlpha,
+				memRedAvg, memGreenAvg, memBlueAvg, memDimension};
+
+		releaseMemObject(allObjects);
 		
 		return result;
 	}

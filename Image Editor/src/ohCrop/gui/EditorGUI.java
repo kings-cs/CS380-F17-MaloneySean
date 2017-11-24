@@ -34,18 +34,18 @@ import org.jocl.cl_platform_id;
 
 import ohCrop.editingAlgorithms.Blur;
 import ohCrop.editingAlgorithms.BlurParallel;
-import ohCrop.editingAlgorithms.Grayscale;
+import ohCrop.editingAlgorithms.GrayScale;
 import ohCrop.editingAlgorithms.HistogramEquilization;
 import ohCrop.editingAlgorithms.Mosaic;
-import ohCrop.editingAlgorithms.ParallelGrayScale;
-import ohCrop.editingAlgorithms.ParallelHistogramEqualization;
-import ohCrop.editingAlgorithms.ParallelHorizontal;
-import ohCrop.editingAlgorithms.ParallelLeftRotation;
-import ohCrop.editingAlgorithms.ParallelMosaic;
-import ohCrop.editingAlgorithms.ParallelRightRotation;
-import ohCrop.editingAlgorithms.ParallelSepia;
+import ohCrop.editingAlgorithms.GrayScaleParallel;
+import ohCrop.editingAlgorithms.HistogramEqualizationParallel;
+import ohCrop.editingAlgorithms.HorizontalParallel;
+import ohCrop.editingAlgorithms.LeftRotationParallel;
+import ohCrop.editingAlgorithms.MosaicParallel;
+import ohCrop.editingAlgorithms.RightRotationParallel;
+import ohCrop.editingAlgorithms.SepiaParallel;
 import ohCrop.editingAlgorithms.ParallelSetUp;
-import ohCrop.editingAlgorithms.ParallelVertical;
+import ohCrop.editingAlgorithms.VerticalParallel;
 import ohCrop.editingAlgorithms.Sepia;
 import ohCrop.utilAlgorithms.SetUpObject;
 
@@ -785,7 +785,7 @@ public class EditorGUI extends JFrame{
 				double preEditZoom = zoomAmount;
 				
 				
-				BufferedImage gray = Grayscale.grayScale(preZoomImage);
+				BufferedImage gray = GrayScale.grayScale(preZoomImage);
 				
 				
 				preZoomImage = gray;
@@ -800,7 +800,7 @@ public class EditorGUI extends JFrame{
 				double preEditZoom = zoomAmount;
 				
 				
-				BufferedImage gray = ParallelGrayScale.parallelGrayScale(parallelControl.getContext(), 
+				BufferedImage gray = GrayScaleParallel.parallelGrayScale(parallelControl.getContext(), 
 						parallelControl.getCommandQueue(), preZoomImage);
 				
 				
@@ -830,7 +830,7 @@ public class EditorGUI extends JFrame{
 				double preEditZoom = zoomAmount;
 				
 				
-				BufferedImage sepia = ParallelSepia.parallelSepia(parallelControl.getContext(), 
+				BufferedImage sepia = SepiaParallel.parallelSepia(parallelControl.getContext(), 
 						parallelControl.getCommandQueue(), preZoomImage);
 				
 				
@@ -890,7 +890,7 @@ public class EditorGUI extends JFrame{
 				changeMade = true;
 				double preEditZoom = zoomAmount;
 				
-				BufferedImage mosaic =  ParallelMosaic.parallelMosaic(parallelControl.getContext(), 
+				BufferedImage mosaic =  MosaicParallel.parallelMosaic(parallelControl.getContext(), 
 						parallelControl.getCommandQueue(), parallelControl.getDevice(), preZoomImage);
 				
 				
@@ -921,7 +921,7 @@ public class EditorGUI extends JFrame{
 				double preEditZoom = zoomAmount;
 				
 			
-				BufferedImage histoEqualized = ParallelHistogramEqualization.parallelHistogramEq(parallelControl.getContext(), 
+				BufferedImage histoEqualized = HistogramEqualizationParallel.parallelHistogramEq(parallelControl.getContext(), 
 						parallelControl.getCommandQueue(), parallelControl.getDevice(), preZoomImage, false);
 				
 				
@@ -938,7 +938,7 @@ public class EditorGUI extends JFrame{
 				double preEditZoom = zoomAmount;
 				
 			
-				BufferedImage histoEqualized = ParallelHistogramEqualization.parallelHistogramEq(parallelControl.getContext(), 
+				BufferedImage histoEqualized = HistogramEqualizationParallel.parallelHistogramEq(parallelControl.getContext(), 
 						parallelControl.getCommandQueue(), parallelControl.getDevice(), preZoomImage, true);
 				
 				
@@ -954,7 +954,7 @@ public class EditorGUI extends JFrame{
 				double preEditZoom = zoomAmount;
 				
 				
-				BufferedImage horizontal = ParallelHorizontal.horizontalFlip(parallelControl.getContext(), 
+				BufferedImage horizontal = HorizontalParallel.horizontalFlip(parallelControl.getContext(), 
 						parallelControl.getCommandQueue(), parallelControl.getDevice(), preZoomImage);
 				
 				
@@ -969,7 +969,7 @@ public class EditorGUI extends JFrame{
 				double preEditZoom = zoomAmount;
 				
 				
-				BufferedImage vertical = ParallelVertical.verticalFlip(parallelControl.getContext(), 
+				BufferedImage vertical = VerticalParallel.verticalFlip(parallelControl.getContext(), 
 						parallelControl.getCommandQueue(), parallelControl.getDevice(), preZoomImage);
 				
 				
@@ -985,7 +985,7 @@ public class EditorGUI extends JFrame{
 				double preEditZoom = zoomAmount;
 				
 				
-				BufferedImage left = ParallelLeftRotation.rotateLeft(parallelControl.getContext(), 
+				BufferedImage left = LeftRotationParallel.rotateLeft(parallelControl.getContext(), 
 						parallelControl.getCommandQueue(), parallelControl.getDevice(), preZoomImage);
 				
 				
@@ -1001,7 +1001,7 @@ public class EditorGUI extends JFrame{
 				double preEditZoom = zoomAmount;
 				
 				
-				BufferedImage right = ParallelRightRotation.rotateRight(parallelControl.getContext(), 
+				BufferedImage right = RightRotationParallel.rotateRight(parallelControl.getContext(), 
 						parallelControl.getCommandQueue(), parallelControl.getDevice(), preZoomImage);
 				
 				

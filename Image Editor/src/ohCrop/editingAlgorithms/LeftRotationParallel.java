@@ -14,6 +14,7 @@ import org.jocl.cl_kernel;
 import org.jocl.cl_mem;
 import org.jocl.cl_program;
 
+import ohCrop.utilAlgorithms.ImageAlgorithm;
 import ohCrop.utilAlgorithms.KernelReader;
 
 /**
@@ -21,7 +22,7 @@ import ohCrop.utilAlgorithms.KernelReader;
  * @author Sean Maloney
  *
  */
-public class ParallelLeftRotation extends ImageAlgorithm{
+public class LeftRotationParallel extends ImageAlgorithm{
 	/**
 	 * Rotates an image 90 degrees to the left.
 	 * 

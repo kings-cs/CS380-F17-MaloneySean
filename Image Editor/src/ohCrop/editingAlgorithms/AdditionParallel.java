@@ -17,7 +17,7 @@ import ohCrop.utilAlgorithms.KernelReader;
  * @author seanmaloney
  *
  */
-public class ParallelAddition {
+public class AdditionParallel {
 	/**
 	 * Method used to allocate the memory objects used in the kernel.
 	 * 
@@ -96,7 +96,7 @@ public class ParallelAddition {
 	public static void main(String[] args) {
 		CL.setExceptionsEnabled(true);
 		ParallelSetUp test = new ParallelSetUp();
-		ParallelAddition adder = new ParallelAddition();
+		AdditionParallel adder = new AdditionParallel();
 		
 		
 		float[] result = adder.parallelAddition(test.getContext(), test.getCommandQueue());

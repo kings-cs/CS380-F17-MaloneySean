@@ -4,6 +4,8 @@ import java.awt.image.BufferedImage;
 
 import javax.swing.JOptionPane;
 
+import ohCrop.utilAlgorithms.ImageAlgorithm;
+
 /**
  * Serial Implementaion of Histogram Equalization.
  * 
