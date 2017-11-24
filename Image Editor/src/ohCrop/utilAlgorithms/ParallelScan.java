@@ -155,20 +155,15 @@ public class ParallelScan extends ParallelAlgorithm{
 		
 		//Release kernel, program, 
 		CL.clReleaseKernel(kernel);
-		CL.clReleaseProgram(program);
+		
 		
 		cl_mem[] objects = {memData, memResult};
 		releaseMemObject(objects);
-//		CL.clReleaseMemObject(memData);
-//		CL.clReleaseMemObject(memResult);
-		
-		//Put the results in an array of the correct size.
-//		for(int i = 0; i < results.length; i++) {
-//			results[i] = incrementedValues[i];
-//		}
 		
 		padArray(incrementedValues, results, results.length, maxSize, context, commandQueue, device, program);
 		
+		
+		CL.clReleaseProgram(program);
 		return TIME;
 	}
 	
