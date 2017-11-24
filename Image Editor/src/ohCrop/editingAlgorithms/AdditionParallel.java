@@ -89,24 +89,5 @@ public class AdditionParallel {
 	}
 	
 	
-	/**
-	 * TEST.
-	 * @param args NOT USED.
-	 */
-	public static void main(String[] args) {
-		CL.setExceptionsEnabled(true);
-		ParallelSetUp test = new ParallelSetUp();
-		AdditionParallel adder = new AdditionParallel();
-		
-		
-		float[] result = adder.parallelAddition(test.getContext(), test.getCommandQueue());
-		for(float current : result) {
-			System.out.println(current);
-		}
-		
-		//test.parallelAddition();
-		
-		System.out.println("DONE");
-	}
 	
 }

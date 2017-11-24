@@ -4,7 +4,7 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
-import ohCrop.editingAlgorithms.ParallelSetUp;
+import ohCrop.utilAlgorithms.ParallelSetUp;
 import ohCrop.utilAlgorithms.RadixSort;
 
 /**

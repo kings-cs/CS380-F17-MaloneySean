@@ -1,4 +1,4 @@
-package ohCrop.editingAlgorithms;
+package ohCrop.utilAlgorithms;
 
 import java.util.HashMap;
 
@@ -9,8 +9,6 @@ import org.jocl.cl_context;
 import org.jocl.cl_context_properties;
 import org.jocl.cl_device_id;
 import org.jocl.cl_platform_id;
-
-import ohCrop.utilAlgorithms.SetUpObject;
 
 /**
  * Class used to handle the set up required to run a parallel algorithm.
@@ -272,14 +270,6 @@ public class ParallelSetUp {
 	}
 
 
-	/**
-	 * TEST.
-	 * @param args Not used.
-	 */
-	public static void main(String[] args) {
-		ParallelSetUp test = new ParallelSetUp();
-		test.listDevices();
-	}
 	
 	
 }

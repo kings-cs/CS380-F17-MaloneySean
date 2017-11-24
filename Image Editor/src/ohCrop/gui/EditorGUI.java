@@ -44,9 +44,9 @@ import ohCrop.editingAlgorithms.LeftRotationParallel;
 import ohCrop.editingAlgorithms.MosaicParallel;
 import ohCrop.editingAlgorithms.RightRotationParallel;
 import ohCrop.editingAlgorithms.SepiaParallel;
-import ohCrop.editingAlgorithms.ParallelSetUp;
 import ohCrop.editingAlgorithms.VerticalParallel;
 import ohCrop.editingAlgorithms.Sepia;
+import ohCrop.utilAlgorithms.ParallelSetUp;
 import ohCrop.utilAlgorithms.SetUpObject;
 
 /**
