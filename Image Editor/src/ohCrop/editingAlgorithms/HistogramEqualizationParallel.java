@@ -15,15 +15,16 @@ import org.jocl.cl_kernel;
 import org.jocl.cl_mem;
 import org.jocl.cl_program;
 
-import ohCrop.utilAlgorithms.ImageAlgorithm;
+
 import ohCrop.utilAlgorithms.KernelReader;
+import ohCrop.utilAlgorithms.ParallelAlgorithm;
 import ohCrop.utilAlgorithms.ParallelScan;
 
 /**
  * Computes a Histogram Equalizaion in Parallel.
  * @author Sean Maloney
  */
-public class HistogramEqualizationParallel extends ImageAlgorithm{
+public class HistogramEqualizationParallel extends ParallelAlgorithm{
 	
 	/**
 	 * Field to keep trakc of the total time taken for all kernels to execute.
@@ -78,9 +79,6 @@ public class HistogramEqualizationParallel extends ImageAlgorithm{
 		//STEP 1. CALCULATE HISTOGRAM (TESTED!!!)
 		 
 		//This is the non optimized call.
-		//int[] histogramOg = new int[NUM_BINS];
-		//cl_mem memHistogramOg = parallelHelper(memRaster, memDimensions, histogramOg, imageRaster.length, "calculate_histogram", program, context, commandQueue, device);
-		
 		int[] histogram = new int[NUM_BINS];
 		cl_mem memOptHistogram = null;
 		cl_mem memHistogram = null;
@@ -96,12 +94,6 @@ public class HistogramEqualizationParallel extends ImageAlgorithm{
 		
 		
 		//STEP 2. CUMULATIVE FREQUENCY DISTRIBUTION (TESTED!!!)		
-//		float[] histoFloat = new float[histogram.length];
-//		for(int i = 0; i < histogram.length; i++) {
-//			histoFloat[i] = (float) histogram[i];
-//		}
-		
-		
 		int[] distributionData = new int[histogram.length]; //OUTPUT
 		
 		ParallelScan.scan(histogram, distributionData, context, 
@@ -115,18 +107,11 @@ public class HistogramEqualizationParallel extends ImageAlgorithm{
 
 				
 		//STEP 3. IDEALIZED HISTOGRAM (TESTED!!!)	
-		//int[] ideal = HistogramEquilization.idealizeHistogram(histogram, imageRaster.length);
 		int[] ideal = new int[histogram.length];
 		cl_mem memIdeal = parallelHelper(memHistogram, memDimensions, ideal, ideal.length, "idealize_histogram", program, context, commandQueue, device);
 		
 		
 		//STEP 4. IDEAL CUMULATIVE FREQUNCY DISTRIBUTION (TESTED!!!)
-//		float[] idealFloat = new float[histogram.length];
-//		for(int i = 0; i < histogram.length; i++) {
-//			idealFloat[i] = ideal[i];
-//			
-//		}
-		
 		int[] idealCumData = new int[histogram.length];
 		ParallelScan.scan(ideal, idealCumData, context, 
 					commandQueue, device, "hillis_steele_scan");
@@ -159,13 +144,10 @@ public class HistogramEqualizationParallel extends ImageAlgorithm{
 				
 		//Release program and memory objects
 		CL.clReleaseProgram(program);
-		CL.clReleaseMemObject(memRaster);
-		CL.clReleaseMemObject(memHistogram);
-		CL.clReleaseMemObject(memDimensions);
-		CL.clReleaseMemObject(memIdeal);
-		CL.clReleaseMemObject(memIdealCum);
-		CL.clReleaseMemObject(memMapping);
-		
+
+		cl_mem[] objects = {memRaster, memHistogram, memDimensions, memIdeal,
+				memIdealCum, memMapping};
+		releaseMemObject(objects);
 		
 		if(useAtomic == false) {
 			CL.clReleaseMemObject(memOptHistogram);
@@ -207,9 +189,9 @@ public class HistogramEqualizationParallel extends ImageAlgorithm{
 		
 		//Set the arguments for the kernel
 		
-		CL.clSetKernelArg(kernel, 0, Sizeof.cl_mem, Pointer.to(memInputData));
-		CL.clSetKernelArg(kernel, 1, Sizeof.cl_mem, Pointer.to(memOtherInput));
-		CL.clSetKernelArg(kernel, 2, Sizeof.cl_mem, Pointer.to(memOutput));
+		cl_mem[] objects = {memInputData, memOtherInput, memOutput};
+		setKernelArgs(objects, kernel);
+	
 
 		
 	
@@ -256,39 +238,6 @@ public class HistogramEqualizationParallel extends ImageAlgorithm{
 		return memOutput;
 	}
 	
-	/**
-	 * Private helper method used to calculate the best local size to be used.
-	 * @param globalItemCount The global item count.
-	 * @param device The open cl device to be used.
-	 * @return The optimal local group size.
-	 */
-	private static int calculateLocalSize(int globalItemCount, cl_device_id device) {
-		long[] size = new long[1];
-		CL.clGetDeviceInfo(device, CL.CL_DEVICE_MAX_WORK_GROUP_SIZE, 0, 
-				null, size);
-
-		int[] sizeBuffer = new int[(int) size[0]];
-		CL.clGetDeviceInfo(device, CL.CL_DEVICE_MAX_WORK_GROUP_SIZE, 
-				sizeBuffer.length, Pointer.to(sizeBuffer), null);
-		
-		int maxGroupSize = sizeBuffer[0];
-		int globalSize = globalItemCount;
-		int localSize = maxGroupSize;
-
-		boolean divisible = false;
-
-		while(!divisible) {
-			int mod = globalSize % localSize;
-			if(mod == 0) {
-				divisible = true;
-			}
-			else {
-				localSize--;
-			}
-		}
-		
-		return localSize;
-	}
 
 }
 
