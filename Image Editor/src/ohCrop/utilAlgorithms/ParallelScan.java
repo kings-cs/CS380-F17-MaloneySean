@@ -50,7 +50,7 @@ public class ParallelScan extends ParallelAlgorithm{
 		
 		
 		int globalSize = paddedData.length;
-		int localSize = getLocalSize(globalSize, maxSize);
+		int localSize = calculateLocalSize(globalSize, device);
 	
 		
 	
@@ -89,8 +89,7 @@ public class ParallelScan extends ParallelAlgorithm{
 		CL.clSetKernelArg(kernel, 0, Sizeof.cl_mem, Pointer.to(memData));
 		CL.clSetKernelArg(kernel, 1, Sizeof.cl_mem, Pointer.to(memResult));
 		
-//		CL.clSetKernelArg(kernel, 2, Sizeof.cl_int * data.length, null);
-//		CL.clSetKernelArg(kernel, 3, Sizeof.cl_int * data.length, null);
+
 		
 		Pointer ptrAccumulator = null;
 		if(kernelMethod.equals("hillis_steele_scan")) {
@@ -134,7 +133,7 @@ public class ParallelScan extends ParallelAlgorithm{
 					ptrAccumulator, 0, null, null);
 		}
 		
-		//TODO: Scan again on the accumulator, base case?????
+	
 		int[] increments = new int[accumulator.length];
 		
 		
@@ -148,7 +147,7 @@ public class ParallelScan extends ParallelAlgorithm{
 		
 		//Add the increments
 		int[] incrementedValues = new int[paddedResults.length];
-		incrementScanResult(paddedResults, incrementedValues, increments, context, commandQueue, maxSize);
+		incrementScanResult(paddedResults, incrementedValues, increments, context, commandQueue, device, maxSize);
 		
 		
 		
@@ -174,11 +173,12 @@ public class ParallelScan extends ParallelAlgorithm{
 	 * @param increments The values to be added to the groups in the data.
 	 * @param context The OpenCL context.
 	 * @param commandQueue The OpenCL commandQueue.
+	 * @param device The OpenCL device used.
 	 * @param maxSize The max work group size as set by the device.
 	 */
-	private static void incrementScanResult(final int[] data, int[] results, int[] increments, cl_context context, cl_command_queue commandQueue, int maxSize) {
+	private static void incrementScanResult(final int[] data, int[] results, int[] increments, cl_context context, cl_command_queue commandQueue, cl_device_id device, int maxSize) {
 		int globalSize = data.length;
-		int localSize = getLocalSize(globalSize, maxSize);
+		int localSize = calculateLocalSize(globalSize, device);
 		
 		int[] maxGroupSize = {maxSize};
 		
@@ -206,10 +206,9 @@ public class ParallelScan extends ParallelAlgorithm{
 		long[] localWorkSize = new long[] {localSize};
 		
 		
-		CL.clSetKernelArg(kernel, 0, Sizeof.cl_mem, Pointer.to(memData));
-		CL.clSetKernelArg(kernel, 1, Sizeof.cl_mem, Pointer.to(memResult));
-		CL.clSetKernelArg(kernel, 2, Sizeof.cl_mem, Pointer.to(memIncrements));
-		CL.clSetKernelArg(kernel, 3, Sizeof.cl_mem, Pointer.to(memMaxGroupSize));
+		cl_mem[] objects = {memData, memResult, memIncrements, memMaxGroupSize};
+		setKernelArgs(objects, kernel);
+
 		
 		long startTime = System.nanoTime();
 		
@@ -228,58 +227,13 @@ public class ParallelScan extends ParallelAlgorithm{
 				CL.CL_TRUE, 0, results.length * Sizeof.cl_int,
 				ptrResult, 0, null, null);
 		
-		cl_mem[] objects = {memData, memResult, memIncrements, memMaxGroupSize};
+		
 		releaseMemObject(objects);
 		CL.clReleaseKernel(kernel);
 		CL.clReleaseProgram(program);
 	}
 	
 	
-	
-	/**
-	 * Private helper method to computer local size.
-	 * @param globalSize The global size.
-	 * @param maxSize The max size of a work group as set by a device.
-	 * @return The local size.
-	 */
-	private static int getLocalSize(int globalSize, int maxSize) {
-		
-
-		int localSize = maxSize;
-
-		boolean divisible = false;
-			
-		while(!divisible) {
-			int mod = globalSize % localSize;
-			if(mod == 0) {
-				divisible = true;
-			}
-			else {
-				localSize--;
-			}
-		}
-		
-		return localSize;
-	}
-	
-	/**
-	 * Private helper method to get the max work group size of the device.
-	 * @param device The device to be queried.
-	 * @return The max work group size.
-	 */
-	private static int getMaxWorkGroupSize(cl_device_id device) {
-		long[] size = new long[1];
-		CL.clGetDeviceInfo(device, CL.CL_DEVICE_MAX_WORK_GROUP_SIZE, 0, 
-				null, size);
-
-		int[] sizeBuffer = new int[(int) size[0]];
-		CL.clGetDeviceInfo(device, CL.CL_DEVICE_MAX_WORK_GROUP_SIZE, 
-				sizeBuffer.length, Pointer.to(sizeBuffer), null);
-		
-		int maxGroupSize = sizeBuffer[0];
-		
-		return maxGroupSize;
-	}
 	
 	
 	/**
@@ -350,7 +304,7 @@ public class ParallelScan extends ParallelAlgorithm{
 		CL.clSetKernelArg(kernel, 2, Sizeof.cl_mem, Pointer.to(memPadSize));
 		
 		long[] globalWorkSize = new long[] { data.length };
-		long[] localWorkSize = new long[] { getLocalSize(data.length, maxSize) };
+		long[] localWorkSize = new long[] { calculateLocalSize(data.length, device) };
 		
 		long startTime = System.nanoTime();
 		

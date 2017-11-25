@@ -16,12 +16,13 @@ import org.jocl.cl_mem;
 public class ParallelAlgorithm extends ImageAlgorithm{
 	
 	/**
-	 * Private helper method used to calculate the best local size to be used.
-	 * @param globalItemCount The global item count.
-	 * @param device The open cl device to be used.
-	 * @return The optimal local group size.
+	 * Method to query the OpenCL device for the max work group size.
+	 * @param device The OpenCL device to be queried
+	 * @return The max work group size.
 	 */
-	protected static int calculateLocalSize(int globalItemCount, cl_device_id device) {
+	protected static int getMaxWorkGroupSize(cl_device_id device) {
+		int maxSize = 0;
+		
 		long[] size = new long[1];
 		CL.clGetDeviceInfo(device, CL.CL_DEVICE_MAX_WORK_GROUP_SIZE, 0, 
 				null, size);
@@ -30,7 +31,21 @@ public class ParallelAlgorithm extends ImageAlgorithm{
 		CL.clGetDeviceInfo(device, CL.CL_DEVICE_MAX_WORK_GROUP_SIZE, 
 				sizeBuffer.length, Pointer.to(sizeBuffer), null);
 		
-		int maxGroupSize = sizeBuffer[0];
+		maxSize = sizeBuffer[0];
+		return maxSize;
+	}
+	
+	
+	/**
+	 * Helper method used to calculate the best local size to be used.
+	 * @param globalItemCount The global item count.
+	 * @param device The open cl device to be used.
+	 * @return The optimal local group size.
+	 */
+	protected static int calculateLocalSize(int globalItemCount, cl_device_id device) {
+		
+		
+		int maxGroupSize = getMaxWorkGroupSize(device);
 		int globalSize = globalItemCount;
 		int localSize = maxGroupSize;
 
