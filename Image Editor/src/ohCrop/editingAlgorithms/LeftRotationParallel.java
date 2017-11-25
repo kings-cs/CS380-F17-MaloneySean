@@ -2,7 +2,6 @@ package ohCrop.editingAlgorithms;
 
 import java.awt.image.BufferedImage;
 
-import javax.swing.JOptionPane;
 
 import org.jocl.CL;
 import org.jocl.Pointer;
@@ -14,15 +13,15 @@ import org.jocl.cl_kernel;
 import org.jocl.cl_mem;
 import org.jocl.cl_program;
 
-import ohCrop.utilAlgorithms.ImageAlgorithm;
 import ohCrop.utilAlgorithms.KernelReader;
+import ohCrop.utilAlgorithms.ParallelAlgorithm;
 
 /**
  * Class used to rotate an image 90 degrees to the left.
  * @author Sean Maloney
  *
  */
-public class LeftRotationParallel extends ImageAlgorithm{
+public class LeftRotationParallel extends ParallelAlgorithm{
 	/**
 	 * Rotates an image 90 degrees to the left.
 	 * 
@@ -40,18 +39,13 @@ public class LeftRotationParallel extends ImageAlgorithm{
 		int[] imageRaster = strip(original);
 		int[] resultData = new int[imageRaster.length];
 		int[] dimensions = {original.getWidth(), original.getHeight()};
+		int[][] params = {imageRaster, resultData, dimensions};
 		
-		Pointer ptrRaster = Pointer.to(imageRaster);
-		Pointer ptrResult = Pointer.to(resultData);
-		Pointer ptrDimensions = Pointer.to(dimensions);
+		Pointer[] pointers = createPointers(params);
+		Pointer ptrResult = pointers[1];
 		
-		cl_mem memRaster = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
-				Sizeof.cl_int * imageRaster.length, ptrRaster, null);
-		cl_mem memResult = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
-				Sizeof.cl_int * resultData.length, ptrResult, null);
-		cl_mem memDimensions = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
-				Sizeof.cl_int * dimensions.length, ptrDimensions, null);
-		
+		cl_mem[] objects = createMemObjects(params, pointers, context) ;
+		cl_mem memResult = objects[1];
 		//KERNEL EXECUTION, SHOULD PROBABLY SPLIT THESE UP
 		
 		//Create the program from the source code
@@ -70,43 +64,11 @@ public class LeftRotationParallel extends ImageAlgorithm{
 		cl_kernel kernel = CL.clCreateKernel(program, "left_kernel", null);
 		
 		//Set the arguments for the kernel
-		CL.clSetKernelArg(kernel, 0, Sizeof.cl_mem, Pointer.to(memRaster));
-		CL.clSetKernelArg(kernel, 1, Sizeof.cl_mem, Pointer.to(memResult));
-		CL.clSetKernelArg(kernel, 2, Sizeof.cl_mem, Pointer.to(memDimensions));
+		setKernelArgs(objects, kernel);
 
-		//WORK GROUP STUFF		
-
-
-		long[] size = new long[1];
-		CL.clGetDeviceInfo(device, CL.CL_DEVICE_MAX_WORK_GROUP_SIZE, 0, 
-				null, size);
-
-		int[] sizeBuffer = new int[(int) size[0]];
-		CL.clGetDeviceInfo(device, CL.CL_DEVICE_MAX_WORK_GROUP_SIZE, 
-				sizeBuffer.length, Pointer.to(sizeBuffer), null);
-
-
-
-		int maxGroupSize = sizeBuffer[0];
 		int globalSize = imageRaster.length;
-		int localSize = maxGroupSize;
-
-		boolean divisible = false;
-
-		while(!divisible) {
-			int mod = globalSize % localSize;
-			if(mod == 0) {
-				divisible = true;
-			}
-			else {
-				localSize--;
-			}
-		}
-
-
-		//Set the work-item dimensions
-		long[] globalWorkSize = new long[] {imageRaster.length};
-		long[] localWorkSize = new long[] {localSize};
+		long[] globalWorkSize = new long[] {globalSize};
+		long[] localWorkSize = new long[] {calculateLocalSize(globalSize, device)};
 
 		
 		long startTime = System.nanoTime();
@@ -114,12 +76,10 @@ public class LeftRotationParallel extends ImageAlgorithm{
 		CL.clEnqueueNDRangeKernel(commandQueue, kernel, 1, null,
 				globalWorkSize, localWorkSize, 
 				0, null, null);
+	
 		long endTime = System.nanoTime();
 		
-		long timeTaken = endTime - startTime;
-		
-		double miliSeconds = timeTaken / 1000000.0;
-		JOptionPane.showMessageDialog(null, "Time Taken: " + miliSeconds + " (ms)");
+		displayTimeTaken(startTime, endTime);
 		
 		
 		//Read the output data
@@ -136,9 +96,7 @@ public class LeftRotationParallel extends ImageAlgorithm{
 		//Release kernel, program, 
 		CL.clReleaseKernel(kernel);
 		CL.clReleaseProgram(program);
-		CL.clReleaseMemObject(memRaster);
-		CL.clReleaseMemObject(memResult);
-		CL.clReleaseMemObject(memDimensions);
+		releaseMemObject(objects);
 		
 		
 		return result;
