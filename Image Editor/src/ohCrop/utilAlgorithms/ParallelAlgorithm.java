@@ -5,6 +5,7 @@ import javax.swing.JOptionPane;
 import org.jocl.CL;
 import org.jocl.Pointer;
 import org.jocl.Sizeof;
+import org.jocl.cl_context;
 import org.jocl.cl_device_id;
 import org.jocl.cl_kernel;
 import org.jocl.cl_mem;
@@ -14,6 +15,47 @@ import org.jocl.cl_mem;
  * @author Sean Maloney
  */
 public class ParallelAlgorithm extends ImageAlgorithm{
+	
+
+	/**
+	 * Helper method to create pointers from a set of input arrays.
+	 * @param params A collections of arrays for pointers to be made based off of.
+	 * @return The collection of pointers.
+	 */
+	protected static Pointer[] createPointers(int[][] params) {
+		int length = params.length;
+		Pointer[] pointers = new Pointer[length];
+		
+		for(int i = 0; i < length; i++) {
+			pointers[i] = Pointer.to(params[i]);
+		}
+		
+		return pointers;
+	}
+	
+	/**
+	 * Helper method to create memObjects from the given parameters.
+	 * @param params A collection of arrays to be turned into mem objects.
+	 * @param pointers Pointers to the arrays.
+	 * @param context The context used to create the mem objects.
+	 * @return An array of the created memory objects.
+	 */
+	protected static cl_mem[] createMemObjects(int[][] params, Pointer[] pointers, cl_context context) {
+		int length = params.length;
+		cl_mem[] objects = new cl_mem[length];
+		
+		for(int i = 0; i < length; i++){
+			int[] current = params[i];
+			
+			Pointer ptrCurrent = pointers[i];
+			cl_mem memCurrent = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
+					Sizeof.cl_int * current.length, ptrCurrent, null);
+			
+			objects[i] = memCurrent;
+		}
+		
+		return objects;
+	}
 	
 	/**
 	 * Method to query the OpenCL device for the max work group size.

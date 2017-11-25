@@ -51,44 +51,26 @@ public class BlurParallel extends ParallelAlgorithm{
 		
 		int[] dimension = {original.getWidth(), original.getHeight()};
 		
-		Pointer ptrRaster = Pointer.to(imageRaster);
-		Pointer ptrResult = Pointer.to(resultData);
-		
-		Pointer ptrRed = Pointer.to(redArray);
-		Pointer ptrGreen = Pointer.to(greenArray);
-		Pointer ptrBlue = Pointer.to(blueArray);
-		Pointer ptrAlpha = Pointer.to(alphaArray);
-		
-		Pointer ptrRedAvg = Pointer.to(redAvg);
-		Pointer ptrGreenAvg = Pointer.to(greenAvg);
-		Pointer ptrBlueAvg = Pointer.to(blueAvg);
-		
-		Pointer ptrDimension = Pointer.to(dimension);
-		
-		cl_mem memRaster = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
-				Sizeof.cl_int * imageRaster.length, ptrRaster, null);
-		cl_mem memResult = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
-				Sizeof.cl_int * resultData.length, ptrResult, null);
+		int[][] params = {imageRaster, resultData, redArray, greenArray, blueArray,
+				alphaArray, redAvg, greenAvg, blueAvg, dimension};
 		
 		
-		cl_mem memRed = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
-				Sizeof.cl_int * redArray.length, ptrRed, null);
-		cl_mem memGreen = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
-				Sizeof.cl_int * greenArray.length, ptrGreen, null);
-		cl_mem memBlue = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
-				Sizeof.cl_int * blueArray.length, ptrBlue, null);
-		cl_mem memAlpha = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
-				Sizeof.cl_int * alphaArray.length, ptrAlpha, null);
+		Pointer[] pointers = createPointers(params);
 		
-		cl_mem memRedAvg = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
-				Sizeof.cl_int * redAvg.length, ptrRedAvg, null);
-		cl_mem memGreenAvg = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
-				Sizeof.cl_int * greenAvg.length, ptrGreenAvg, null);
-		cl_mem memBlueAvg = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
-				Sizeof.cl_int * blueAvg.length, ptrBlueAvg, null);
+		Pointer ptrResult = pointers[1];
 		
-		cl_mem memDimension = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
-				Sizeof.cl_int * dimension.length, ptrDimension, null);
+		Pointer ptrRed = pointers[2];
+		Pointer ptrGreen = pointers[3];
+		Pointer ptrBlue = pointers[4];
+		Pointer ptrAlpha = pointers[5];
+		
+		Pointer ptrRedAvg = pointers[6];
+		Pointer ptrGreenAvg = pointers[7];
+		Pointer ptrBlueAvg = pointers[8];
+	
+		
+
+		cl_mem[] objects = createMemObjects(params, pointers, context);
 		
 		//KERNEL EXECUTION, SHOULD PROBABLY SPLIT THESE UP
 		
@@ -110,6 +92,16 @@ public class BlurParallel extends ParallelAlgorithm{
 		cl_kernel recombineKernel = CL.clCreateKernel(program, "recombineChannel_Kernel", null);
 		
 
+		cl_mem memRaster = objects[0];
+		cl_mem memResult = objects[1];
+		cl_mem memRed = objects[2];
+		cl_mem memGreen = objects[3];
+		cl_mem memBlue = objects[4];
+		cl_mem memAlpha = objects[5];
+		cl_mem memRedAvg = objects[6];
+		cl_mem memGreenAvg = objects[7];
+		cl_mem memBlueAvg = objects[8];
+		cl_mem memDimension = objects[9];
 		
 		cl_mem[] seperateObjects = {memRaster, memRed, memGreen, memBlue, memAlpha};
 		setKernelArgs(seperateObjects, seperateKernel);
@@ -205,11 +197,9 @@ public class BlurParallel extends ParallelAlgorithm{
 		CL.clReleaseKernel(stencilKernel);
 		CL.clReleaseKernel(recombineKernel);
 		CL.clReleaseProgram(program);
-		
-		cl_mem[] allObjects = {memRaster, memResult, memRed, memGreen, memBlue, memAlpha,
-				memRedAvg, memGreenAvg, memBlueAvg, memDimension};
+	
 
-		releaseMemObject(allObjects);
+		releaseMemObject(objects);
 		
 		return result;
 	}
