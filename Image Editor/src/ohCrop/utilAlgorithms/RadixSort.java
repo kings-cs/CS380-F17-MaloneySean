@@ -122,10 +122,9 @@ public class RadixSort extends ParallelAlgorithm {
 
 		cl_kernel kernel = CL.clCreateKernel(program, "apply_predicate", null);
 
-		CL.clSetKernelArg(kernel, 0, Sizeof.cl_mem, Pointer.to(memData));
-		CL.clSetKernelArg(kernel, 1, Sizeof.cl_mem, Pointer.to(memPredicated));
-		CL.clSetKernelArg(kernel, 2, Sizeof.cl_mem, Pointer.to(memNotPredicated));
-		CL.clSetKernelArg(kernel, 3, Sizeof.cl_mem, Pointer.to(memBitPosition));
+		cl_mem[] objects = {memData, memPredicated, memNotPredicated, memBitPosition};
+		setKernelArgs(objects, kernel);
+
 
 		long[] globalWorkSize = new long[] { data.length };
 		long[] localWorkSize = new long[] { calculateLocalSize(data.length, device) };
@@ -146,7 +145,7 @@ public class RadixSort extends ParallelAlgorithm {
 		
 		TIME += timeTaken;
 		
-		cl_mem[] objects = {memData, memPredicated, memNotPredicated, memBitPosition};
+		
 		releaseMemObject(objects);
 		CL.clReleaseKernel(kernel);
 	}
@@ -198,14 +197,10 @@ public class RadixSort extends ParallelAlgorithm {
 		
 		cl_kernel kernel = CL.clCreateKernel(program, "scatter_elements", null);
 		
-		CL.clSetKernelArg(kernel, 0, Sizeof.cl_mem, Pointer.to(memData));
-		CL.clSetKernelArg(kernel, 1, Sizeof.cl_mem, Pointer.to(memKeys));
-		CL.clSetKernelArg(kernel, 2, Sizeof.cl_mem, Pointer.to(memPredicated));
-		CL.clSetKernelArg(kernel, 3, Sizeof.cl_mem, Pointer.to(memNotPredicated));
-		CL.clSetKernelArg(kernel, 4, Sizeof.cl_mem, Pointer.to(memScannedP));
-		CL.clSetKernelArg(kernel, 5, Sizeof.cl_mem, Pointer.to(memNotScannedP));
-		CL.clSetKernelArg(kernel, 6, Sizeof.cl_mem, Pointer.to(memResults));
-		CL.clSetKernelArg(kernel, 7, Sizeof.cl_mem, Pointer.to(memResultKeys));
+		cl_mem[] objects = {memData, memKeys, memPredicated, memNotPredicated, memScannedP, 
+				memNotScannedP, memResults, memResultKeys};
+		setKernelArgs(objects, kernel);
+
 		
 		long[] globalWorkSize = new long[] { data.length };
 		long[] localWorkSize = new long[] { calculateLocalSize(data.length, device) };
@@ -229,8 +224,7 @@ public class RadixSort extends ParallelAlgorithm {
 		
 		TIME += timeTaken;
 		
-		cl_mem[] objects = {memData, memKeys, memPredicated, memNotPredicated, memScannedP, 
-				memNotScannedP, memResults, memResultKeys};
+		
 		releaseMemObject(objects);
 		CL.clReleaseKernel(kernel);
 
