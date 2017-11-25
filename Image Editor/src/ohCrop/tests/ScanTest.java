@@ -2,6 +2,8 @@ package ohCrop.tests;
 
 import static org.junit.Assert.assertEquals;
 
+import org.jocl.CL;
+import org.junit.Before;
 import org.junit.Test;
 
 import ohCrop.utilAlgorithms.ParallelScan;
@@ -14,10 +16,19 @@ import ohCrop.utilAlgorithms.ParallelSetUp;
 public class ScanTest {
 	
 	/**
+	 * Enables OpenCL exceptions before running tests.
+	 */
+	@Before
+	public void setExceptions() {
+		CL.setExceptionsEnabled(true);
+	}
+	
+	/**
 	 * Tests if Hillis-Steele generates the correct output from an input array of all ones.
 	 */
 	@Test
 	public void testHillisSteele() {
+		
 		int size = 8;
 		int[] data = new int[size];
 		

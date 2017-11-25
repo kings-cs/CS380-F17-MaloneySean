@@ -58,15 +58,15 @@ public class ParallelScan extends ParallelAlgorithm{
 		int[] accumulator = new int[globalSize / localSize];
 		
 		
-		CL.setExceptionsEnabled(true);
-		Pointer ptrData = Pointer.to(paddedData);
-		Pointer ptrResult = Pointer.to(paddedResults);
+		int[][] params = {paddedData, paddedResults};
+		
+		Pointer[] pointers = createPointers(params);
+		Pointer ptrResult = pointers[1];
 		
 		
-		cl_mem memData = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
-				Sizeof.cl_int * paddedData.length, ptrData, null);
-		cl_mem memResult = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
-				Sizeof.cl_int * paddedResults.length, ptrResult, null);
+		cl_mem[] objects = createMemObjects(params, pointers, context) ;
+		cl_mem memResult = objects[1];
+		
 		cl_mem memAccumulator = null;
 		
 		//KERNEL EXECUTION, SHOULD PROBABLY SPLIT THESE UP
@@ -86,8 +86,7 @@ public class ParallelScan extends ParallelAlgorithm{
 		
 		
 		//Set the arguments for the kernel
-		CL.clSetKernelArg(kernel, 0, Sizeof.cl_mem, Pointer.to(memData));
-		CL.clSetKernelArg(kernel, 1, Sizeof.cl_mem, Pointer.to(memResult));
+		setKernelArgs(objects, kernel);
 		
 
 		
@@ -155,8 +154,6 @@ public class ParallelScan extends ParallelAlgorithm{
 		//Release kernel, program, 
 		CL.clReleaseKernel(kernel);
 		
-		
-		cl_mem[] objects = {memData, memResult};
 		releaseMemObject(objects);
 		
 		padArray(incrementedValues, results, results.length, maxSize, context, commandQueue, device, program);
@@ -182,20 +179,14 @@ public class ParallelScan extends ParallelAlgorithm{
 		
 		int[] maxGroupSize = {maxSize};
 		
-		Pointer ptrData = Pointer.to(data);
-		Pointer ptrResult = Pointer.to(results);
-		Pointer ptrIncrement = Pointer.to(increments);
-		Pointer ptrMaxGroupSize = Pointer.to(maxGroupSize);
+		int[][] params = {data, results, increments, maxGroupSize};
 		
-		cl_mem memData = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
-				Sizeof.cl_int * data.length, ptrData, null);
-		cl_mem memResult = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
-				Sizeof.cl_int * results.length, ptrResult, null);
-		cl_mem memIncrements = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
-				Sizeof.cl_int * increments.length, ptrIncrement, null);
-		cl_mem memMaxGroupSize = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
-				Sizeof.cl_int * maxGroupSize.length, ptrMaxGroupSize, null);
+		Pointer[] pointers = createPointers(params);
+		Pointer ptrResult = pointers[1];
 		
+		cl_mem[] objects = createMemObjects(params, pointers, context) ;
+		cl_mem memResult = objects[1];
+	
 		String source = KernelReader.readFile("Kernels/Scan_Kernel");	
 		cl_program program = CL.clCreateProgramWithSource(context, 1, new String[] {source}, null, null);
 		CL.clBuildProgram(program, 0, null, null, null, null);
@@ -206,7 +197,6 @@ public class ParallelScan extends ParallelAlgorithm{
 		long[] localWorkSize = new long[] {localSize};
 		
 		
-		cl_mem[] objects = {memData, memResult, memIncrements, memMaxGroupSize};
 		setKernelArgs(objects, kernel);
 
 		
@@ -234,6 +224,54 @@ public class ParallelScan extends ParallelAlgorithm{
 	}
 	
 	
+	/**
+	 * Private helper to pad or compress an array in parallel.
+	 * @param data The data to be modified.
+	 * @param result The resulting array.
+	 * @param padSize The size for the array to be changed to.
+	 * @param maxSize The max size of a work group as set by the device.
+	 * @param context The OpenCL context.
+	 * @param commandQueue The OpenCL commandQueue.
+	 * @param device The OpenCL device.
+	 * @param program The OpenCL program.
+	 */
+	private static void padArray(int[] data, int[] result, int padSize, int maxSize, cl_context context, cl_command_queue commandQueue, cl_device_id device, cl_program program) {
+		int[] padSizeArray = {padSize};
+		
+		int[][] params = {data, result, padSizeArray};
+		
+		Pointer[] pointers = createPointers(params);
+		Pointer ptrResult = pointers[1];
+		
+		cl_mem[] objects = createMemObjects(params, pointers, context) ;
+		cl_mem memResult = objects[1];
+		
+		
+		cl_kernel kernel = CL.clCreateKernel(program, "pad_array", null);
+
+		setKernelArgs(objects, kernel);
+		
+		long[] globalWorkSize = new long[] { data.length };
+		long[] localWorkSize = new long[] { calculateLocalSize(data.length, device) };
+		
+		long startTime = System.nanoTime();
+		
+		CL.clEnqueueNDRangeKernel(commandQueue, kernel, 1, null, globalWorkSize, localWorkSize, 0, null, null);
+		
+		long endTime = System.nanoTime();
+		
+		long timeTaken = endTime - startTime;
+		
+		TIME += timeTaken;
+		
+		
+		CL.clEnqueueReadBuffer(commandQueue, memResult, CL.CL_TRUE, 0, result.length * Sizeof.cl_float,
+				ptrResult, 0, null, null);
+	
+		
+		
+		releaseMemObject(objects);
+	}
 	
 	
 	/**
@@ -269,59 +307,5 @@ public class ParallelScan extends ParallelAlgorithm{
 		result = newSize;
 		
 		return result;
-	}
-	
-	/**
-	 * Private helper to pad or compress an array in parallel.
-	 * @param data The data to be modified.
-	 * @param result The resulting array.
-	 * @param padSize The size for the array to be changed to.
-	 * @param maxSize The max size of a work group as set by the device.
-	 * @param context The OpenCL context.
-	 * @param commandQueue The OpenCL commandQueue.
-	 * @param device The OpenCL device.
-	 * @param program The OpenCL program.
-	 */
-	private static void padArray(int[] data, int[] result, int padSize, int maxSize, cl_context context, cl_command_queue commandQueue, cl_device_id device, cl_program program) {
-		int[] padSizeArray = {padSize};
-		
-		Pointer ptrData = Pointer.to(data);
-		Pointer ptrResult = Pointer.to(result);
-		Pointer ptrPadSize = Pointer.to(padSizeArray);
-		
-		cl_mem memData = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR,
-				Sizeof.cl_int * data.length, ptrData, null);
-		cl_mem memResult = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR,
-				Sizeof.cl_int * result.length, ptrResult, null);
-		cl_mem memPadSize = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR,
-				Sizeof.cl_int * padSizeArray.length, ptrPadSize, null);
-		
-		
-		cl_kernel kernel = CL.clCreateKernel(program, "pad_array", null);
-
-		CL.clSetKernelArg(kernel, 0, Sizeof.cl_mem, Pointer.to(memData));
-		CL.clSetKernelArg(kernel, 1, Sizeof.cl_mem, Pointer.to(memResult));
-		CL.clSetKernelArg(kernel, 2, Sizeof.cl_mem, Pointer.to(memPadSize));
-		
-		long[] globalWorkSize = new long[] { data.length };
-		long[] localWorkSize = new long[] { calculateLocalSize(data.length, device) };
-		
-		long startTime = System.nanoTime();
-		
-		CL.clEnqueueNDRangeKernel(commandQueue, kernel, 1, null, globalWorkSize, localWorkSize, 0, null, null);
-		
-		long endTime = System.nanoTime();
-		
-		long timeTaken = endTime - startTime;
-		
-		TIME += timeTaken;
-		
-		
-		CL.clEnqueueReadBuffer(commandQueue, memResult, CL.CL_TRUE, 0, result.length * Sizeof.cl_float,
-				ptrResult, 0, null, null);
-	
-		
-		cl_mem[] objects = {memData, memResult, memPadSize};
-		releaseMemObject(objects);
 	}
 }
