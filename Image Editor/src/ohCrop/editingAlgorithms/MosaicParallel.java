@@ -53,23 +53,14 @@ public class MosaicParallel extends ParallelAlgorithm{
 		int[] dimensions = {original.getWidth(), original.getHeight(), tileCount};
 		int[] tilePoints = generateAnchors(tileCount, imageRaster.length);
 		
+		int[][] params = {imageRaster, resultData, dimensions, tilePoints};
 		
+		Pointer[] pointers = createPointers(params);
+		Pointer ptrResult = pointers[1];
+				
+		cl_mem[] objects = createMemObjects(params, pointers, context) ;
+		cl_mem memResult = objects[1];
 		
-		Pointer ptrRaster = Pointer.to(imageRaster);
-		Pointer ptrResult = Pointer.to(resultData);
-		Pointer ptrDimensions = Pointer.to(dimensions);
-		Pointer ptrTiles = Pointer.to(tilePoints);
-		
-		cl_mem memRaster = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
-				Sizeof.cl_int * imageRaster.length, ptrRaster, null);
-		cl_mem memResult = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
-				Sizeof.cl_int * resultData.length, ptrResult, null);
-		cl_mem memDimensions = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
-				Sizeof.cl_int * dimensions.length, ptrDimensions, null);
-		cl_mem memTiles = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
-				Sizeof.cl_int * tilePoints.length, ptrTiles, null);
-		
-		cl_mem[] objects = {memRaster, memResult, memDimensions, memTiles};
 		
 		//KERNEL EXECUTION, SHOULD PROBABLY SPLIT THESE UP
 		
