@@ -106,23 +106,21 @@ public class RadixSort extends ParallelAlgorithm {
 
 		int[] bitArray = { bitPosition };
 
-		Pointer ptrData = Pointer.to(data);
-		Pointer ptrPredicated = Pointer.to(predicated);
-		Pointer ptrNotPredicated = Pointer.to(notPredicated);
-		Pointer ptrBitPosition = Pointer.to(bitArray);
+		int[][] params = {data, predicated, notPredicated, bitArray};
+		
+		Pointer[] pointers = createPointers(params);
+		Pointer ptrPredicated = pointers[1];
+		Pointer ptrNotPredicated = pointers[2];
+		
 
-		cl_mem memData = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR,
-				Sizeof.cl_int * data.length, ptrData, null);
-		cl_mem memPredicated = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR,
-				Sizeof.cl_int * predicated.length, ptrPredicated, null);
-		cl_mem memNotPredicated = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR,
-				Sizeof.cl_int * notPredicated.length, ptrNotPredicated, null);
-		cl_mem memBitPosition = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR,
-				Sizeof.cl_int * bitArray.length, ptrBitPosition, null);
+		cl_mem[] objects = createMemObjects(params, pointers, context) ;
+		cl_mem memPredicated = objects[1];
+		cl_mem memNotPredicated = objects[2];
+		
 
 		cl_kernel kernel = CL.clCreateKernel(program, "apply_predicate", null);
 
-		cl_mem[] objects = {memData, memPredicated, memNotPredicated, memBitPosition};
+		
 		setKernelArgs(objects, kernel);
 
 
@@ -169,36 +167,20 @@ public class RadixSort extends ParallelAlgorithm {
 			int[] notScannedP, int results[], int[] resultKeys,
 			cl_context context, cl_command_queue commandQueue, cl_device_id device, cl_program program) {
 
-		Pointer ptrData = Pointer.to(data);
-		Pointer ptrKeys = Pointer.to(keys);
-		Pointer ptrPredicated = Pointer.to(predicated);
-		Pointer ptrNotPredicated = Pointer.to(notPredicated);
-		Pointer ptrScannedP = Pointer.to(scannedP);
-		Pointer ptrNotScannedP = Pointer.to(notScannedP);
-		Pointer ptrResults = Pointer.to(results);
-		Pointer ptrResultKeys = Pointer.to(resultKeys);
+		int[][] params = {data, keys, predicated, notPredicated, scannedP, notScannedP, results, resultKeys};
 		
-		cl_mem memData = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR,
-				Sizeof.cl_int * data.length, ptrData, null);
-		cl_mem memKeys = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR,
-				Sizeof.cl_int * keys.length, ptrKeys, null);
-		cl_mem memPredicated = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR,
-				Sizeof.cl_int * predicated.length, ptrPredicated, null);
-		cl_mem memNotPredicated = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR,
-				Sizeof.cl_int * notPredicated.length, ptrNotPredicated, null);
-		cl_mem memScannedP = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR,
-				Sizeof.cl_int * scannedP.length, ptrScannedP, null);
-		cl_mem memNotScannedP = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR,
-				Sizeof.cl_int * notScannedP.length, ptrNotScannedP, null);
-		cl_mem memResults = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR,
-				Sizeof.cl_int * results.length, ptrResults, null);
-		cl_mem memResultKeys = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR,
-				Sizeof.cl_int * resultKeys.length, ptrResultKeys, null);
+		Pointer[] pointers = createPointers(params);
+		Pointer ptrResults = pointers[6];
+		Pointer ptrResultKeys = pointers[7];
+		
+		cl_mem[] objects = createMemObjects(params, pointers, context) ;
+		cl_mem memResults = objects[6];
+		cl_mem memResultKeys = objects[7];
+
 		
 		cl_kernel kernel = CL.clCreateKernel(program, "scatter_elements", null);
 		
-		cl_mem[] objects = {memData, memKeys, memPredicated, memNotPredicated, memScannedP, 
-				memNotScannedP, memResults, memResultKeys};
+		
 		setKernelArgs(objects, kernel);
 
 		

@@ -2,6 +2,8 @@ package ohCrop.tests;
 
 import static org.junit.Assert.assertEquals;
 
+import org.jocl.CL;
+import org.junit.Before;
 import org.junit.Test;
 
 import ohCrop.utilAlgorithms.ParallelSetUp;
@@ -13,6 +15,15 @@ import ohCrop.utilAlgorithms.RadixSort;
  */
 public class SortTest {
 
+	/**
+	 * Enables OpenCL exceptions before running tests.
+	 */
+	@Before
+	public void setExceptions() {
+		CL.setExceptionsEnabled(true);
+	}
+	
+	
 	/**
 	 * Tests that radix sort works on a small data set.
 	 */
