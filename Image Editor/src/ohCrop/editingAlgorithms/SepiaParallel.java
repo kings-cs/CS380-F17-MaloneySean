@@ -37,17 +37,17 @@ public class SepiaParallel extends ParallelAlgorithm{
 		
 		int[] imageRaster = strip(original);
 		int[] resultData = new int[imageRaster.length];
-		
-		Pointer ptrRaster = Pointer.to(imageRaster);
-		Pointer ptrResult = Pointer.to(resultData);
-		
-		cl_mem memRaster = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
-				Sizeof.cl_int * imageRaster.length, ptrRaster, null);
-		cl_mem memResult = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
-				Sizeof.cl_int * resultData.length, ptrResult, null);
+		int[][] params = {imageRaster, resultData};
 		
 		
-		cl_mem[] objects = {memRaster, memResult};
+		Pointer[] pointers = createPointers(params);
+		Pointer ptrResult = pointers[1];
+		
+
+		
+		
+		cl_mem[] objects = createMemObjects(params, pointers, context) ;
+		cl_mem memResult = objects[1];
 		//KERNEL EXECUTION, SHOULD PROBABLY SPLIT THESE UP
 		
 		//Create the program from the source code
