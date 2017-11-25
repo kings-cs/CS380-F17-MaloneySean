@@ -16,24 +16,23 @@ import ohCrop.utilAlgorithms.KernelReader;
 import ohCrop.utilAlgorithms.ParallelAlgorithm;
 
 /**
- * Class used to flip an image vertically.
+ * Class used to flip an image according to the given kernel.
  * @author Sean Maloney
  *
  */
-public class VerticalParallel extends ParallelAlgorithm{
+public class TransformationParallel extends ParallelAlgorithm{
 	/**
-	 * Flips an image vertically.
+	 * Flips an image according to the given kernel.
 	 * 
 	 * @param context The OpenCL context used for the parallel computing.
 	 * @param commandQueue The OpenCL commandQueue used for the parallel computing.
 	 * @param original The image to be colored.
-	 * @param device The device used by OpenCL.
+	 * @param device The device used by OpenCl.
+	 * @param kernelMethod The name of the kernel method to be run.
 	 * 
-	 * @return The vertically flipped image.
+	 * @return The transformed image.
 	 */
-	public static BufferedImage verticalFlip(cl_context context, cl_command_queue commandQueue, cl_device_id device, BufferedImage original) {
-		
-		
+	public static BufferedImage horizontalFlip(cl_context context, cl_command_queue commandQueue, cl_device_id device, BufferedImage original, String kernelMethod) {
 		
 		int[] imageRaster = strip(original);
 		int[] resultData = new int[imageRaster.length];
@@ -46,11 +45,13 @@ public class VerticalParallel extends ParallelAlgorithm{
 		
 		cl_mem[] objects = createMemObjects(params, pointers, context) ;
 		cl_mem memResult = objects[1];
+
+		
 		//KERNEL EXECUTION, SHOULD PROBABLY SPLIT THESE UP
 		
 		//Create the program from the source code
 		//Create the OpenCL kernel from the program
-		String source = KernelReader.readFile("Kernels/Vertical_Kernel");
+		String source = KernelReader.readFile("Kernels/Transformations_Kernel");
 		
 		//System.out.println(source);
 		
@@ -61,12 +62,13 @@ public class VerticalParallel extends ParallelAlgorithm{
 		CL.clBuildProgram(program, 0, null, null, null, null);
 		
 		//Create the kernel
-		cl_kernel kernel = CL.clCreateKernel(program, "vertical_kernel", null);
+		cl_kernel kernel = CL.clCreateKernel(program, kernelMethod, null);
 		
 		//Set the arguments for the kernel
 		setKernelArgs(objects, kernel);
 	
-		//WORK GROUP STUFF		
+
+		//Set the work-item dimensions
 		int globalSize = imageRaster.length;
 		long[] globalWorkSize = new long[] {globalSize};
 		long[] localWorkSize = new long[] {calculateLocalSize(globalSize, device)};
@@ -97,7 +99,7 @@ public class VerticalParallel extends ParallelAlgorithm{
 		CL.clReleaseProgram(program);
 		releaseMemObject(objects);
 		
+		
 		return result;
 	}
-
 }
