@@ -1,5 +1,6 @@
 package ohCrop.tests;
 
+import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -38,7 +39,11 @@ public class RedEyeTest {
 		File currentPicture = new File("Images//crop.png");
 		BufferedImage original = null;
 		try {
+			BufferedImage ri = ImageIO.read(currentPicture);
 			original = ImageIO.read(currentPicture);
+			original = new BufferedImage(ri.getWidth(), ri.getHeight(), BufferedImage.TYPE_INT_ARGB);
+			Graphics g = original.getGraphics();
+			g.drawImage(ri, 0 , 0 , null );			
 		
 		} catch (IOException e) {
 			JOptionPane.showMessageDialog(null, "The Image Could Not Be Read From A File At The Given Path", "Oops", 
