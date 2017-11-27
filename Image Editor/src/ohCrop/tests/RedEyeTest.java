@@ -39,6 +39,7 @@ public class RedEyeTest {
 		BufferedImage original = null;
 		try {
 			original = ImageIO.read(currentPicture);
+		
 		} catch (IOException e) {
 			JOptionPane.showMessageDialog(null, "The Image Could Not Be Read From A File At The Given Path", "Oops", 
 					JOptionPane.ERROR_MESSAGE);
