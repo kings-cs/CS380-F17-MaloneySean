@@ -5,10 +5,12 @@ import javax.swing.JOptionPane;
 import org.jocl.CL;
 import org.jocl.Pointer;
 import org.jocl.Sizeof;
+import org.jocl.cl_command_queue;
 import org.jocl.cl_context;
 import org.jocl.cl_device_id;
 import org.jocl.cl_kernel;
 import org.jocl.cl_mem;
+import org.jocl.cl_program;
 
 /**
  * Class to contain helper methods needed by methods that run in parallel.
@@ -139,5 +141,108 @@ public class ParallelAlgorithm extends ImageAlgorithm{
 		
 		double miliSeconds = timeTaken / 1000000.0;
 		JOptionPane.showMessageDialog(null, "Time Taken: " + miliSeconds + " (ms)");
+	}
+	
+	/***
+	 * Helper method to build the OpenCL program.
+	 * @param kernelLocation The file path for the kernel.
+	 * @param context The context used.
+	 * @return The OpenCL program.
+	 */
+	protected static cl_program buildProgram(String kernelLocation, cl_context context) {
+		String source = KernelReader.readFile(kernelLocation);
+		cl_program program = CL.clCreateProgramWithSource(context, 1, new String[] { source }, null, null);
+		CL.clBuildProgram(program, 0, null, null, null, null);
+		
+		return program;
+	}
+	
+	
+	/**
+	 * Private helper method to calculate the size that an array should be padded to.
+	 * @param data The data to be padded.
+	 * @param maxSize The max size of a work group as set by the OpenCL device.
+	 * @return The size to be padded to.
+	 */
+	protected static int getPadSize(int[] data, int maxSize) {
+		int result = 0;
+		int newSize = data.length;
+		if(data.length > maxSize) {
+			while(newSize % maxSize != 0) {
+				newSize++;
+			}
+			
+			
+		}
+		else {
+			
+			int check = (newSize & (newSize - 1));
+			if(check != 0) {
+				int powerSize = 1;
+				
+				while(powerSize < data.length) {
+					powerSize *= 2;
+				}
+				
+				newSize = powerSize;
+			}
+		}
+		
+		result = newSize;
+		
+		return result;
+	}
+	
+	
+	/**
+	 * Private helper to pad or compress an array in parallel.
+	 * @param data The data to be modified.
+	 * @param result The resulting array.
+	 * @param padSize The size for the array to be changed to.
+	 * @param maxSize The max size of a work group as set by the device.
+	 * @param context The OpenCL context.
+	 * @param commandQueue The OpenCL commandQueue.
+	 * @param device The OpenCL device.
+	 * @param program The OpenCL program.
+	 * @return The time taken to perform the padding of the array.
+	 */
+	protected static long padArray(int[] data, int[] result, int padSize, int maxSize, cl_context context, cl_command_queue commandQueue, cl_device_id device, cl_program program) {
+		int[] padSizeArray = {padSize};
+		
+		int[][] params = {data, result, padSizeArray};
+		
+		Pointer[] pointers = createPointers(params);
+		Pointer ptrResult = pointers[1];
+		
+		cl_mem[] objects = createMemObjects(params, pointers, context) ;
+		cl_mem memResult = objects[1];
+		
+		
+		cl_kernel kernel = CL.clCreateKernel(program, "pad_array", null);
+
+		setKernelArgs(objects, kernel);
+		
+		long[] globalWorkSize = new long[] { data.length };
+		long[] localWorkSize = new long[] { calculateLocalSize(data.length, device) };
+		
+		long startTime = System.nanoTime();
+		
+		CL.clEnqueueNDRangeKernel(commandQueue, kernel, 1, null, globalWorkSize, localWorkSize, 0, null, null);
+		
+		long endTime = System.nanoTime();
+		
+		long timeTaken = endTime - startTime;
+		
+		
+		
+		
+		CL.clEnqueueReadBuffer(commandQueue, memResult, CL.CL_TRUE, 0, result.length * Sizeof.cl_float,
+				ptrResult, 0, null, null);
+	
+		
+		
+		releaseMemObject(objects);
+
+		return timeTaken;
 	}
 }

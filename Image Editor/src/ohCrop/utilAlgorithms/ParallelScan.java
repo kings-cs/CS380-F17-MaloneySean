@@ -44,7 +44,7 @@ public class ParallelScan extends ParallelAlgorithm{
 		
 		int padSize = getPadSize(data, maxSize);
 		int[] paddedData = new int[padSize];
-		padArray(data, paddedData, padSize, maxSize, context, commandQueue, device, program);
+		TIME += padArray(data, paddedData, padSize, maxSize, context, commandQueue, device, program);
 		
 		int[] paddedResults = new int[data.length];
 		
@@ -224,88 +224,8 @@ public class ParallelScan extends ParallelAlgorithm{
 	}
 	
 	
-	/**
-	 * Private helper to pad or compress an array in parallel.
-	 * @param data The data to be modified.
-	 * @param result The resulting array.
-	 * @param padSize The size for the array to be changed to.
-	 * @param maxSize The max size of a work group as set by the device.
-	 * @param context The OpenCL context.
-	 * @param commandQueue The OpenCL commandQueue.
-	 * @param device The OpenCL device.
-	 * @param program The OpenCL program.
-	 */
-	private static void padArray(int[] data, int[] result, int padSize, int maxSize, cl_context context, cl_command_queue commandQueue, cl_device_id device, cl_program program) {
-		int[] padSizeArray = {padSize};
-		
-		int[][] params = {data, result, padSizeArray};
-		
-		Pointer[] pointers = createPointers(params);
-		Pointer ptrResult = pointers[1];
-		
-		cl_mem[] objects = createMemObjects(params, pointers, context) ;
-		cl_mem memResult = objects[1];
-		
-		
-		cl_kernel kernel = CL.clCreateKernel(program, "pad_array", null);
 
-		setKernelArgs(objects, kernel);
-		
-		long[] globalWorkSize = new long[] { data.length };
-		long[] localWorkSize = new long[] { calculateLocalSize(data.length, device) };
-		
-		long startTime = System.nanoTime();
-		
-		CL.clEnqueueNDRangeKernel(commandQueue, kernel, 1, null, globalWorkSize, localWorkSize, 0, null, null);
-		
-		long endTime = System.nanoTime();
-		
-		long timeTaken = endTime - startTime;
-		
-		TIME += timeTaken;
-		
-		
-		CL.clEnqueueReadBuffer(commandQueue, memResult, CL.CL_TRUE, 0, result.length * Sizeof.cl_float,
-				ptrResult, 0, null, null);
-	
-		
-		
-		releaseMemObject(objects);
-	}
 	
 	
-	/**
-	 * Private helper method to calculate the size that an array should be padded to.
-	 * @param data The data to be padded.
-	 * @param maxSize The max size of a work group as set by the OpenCL device.
-	 * @return The size to be padded to.
-	 */
-	private static int getPadSize(int[] data, int maxSize) {
-		int result = 0;
-		int newSize = data.length;
-		if(data.length > maxSize) {
-			while(newSize % maxSize != 0) {
-				newSize++;
-			}
-			
-			
-		}
-		else {
-			
-			int check = (newSize & (newSize - 1));
-			if(check != 0) {
-				int powerSize = 1;
-				
-				while(powerSize < data.length) {
-					powerSize *= 2;
-				}
-				
-				newSize = powerSize;
-			}
-		}
-		
-		result = newSize;
-		
-		return result;
-	}
+
 }
