@@ -2,6 +2,8 @@ package ohCrop.editingAlgorithms;
 
 
 
+import java.awt.image.BufferedImage;
+
 import org.jocl.CL;
 import org.jocl.Pointer;
 import org.jocl.Sizeof;
@@ -27,23 +29,48 @@ public class RedEyeParallel extends ParallelAlgorithm{
 	 * @param context The OpenCL context used.
 	 * @param commandQueue The OpenCL commandQueue used.
 	 * @param device The OpenCL device used.
-	 * @param data The image to be modified.
-	 * @return The modified image without red eyes.
+	 * @param original The image to be modified.
+	 * @param resultData The result of 
 	 */
-	public static int[] redEyeRemoval(cl_context context, cl_command_queue commandQueue, cl_device_id device, int[] data) {
+	public static void redEyeRemoval(cl_context context, cl_command_queue commandQueue, cl_device_id device, BufferedImage original, int[] resultData) {
 		
 		cl_program program = buildProgram("Kernels/Red_Eye_Kernel", context);
+		int[] data = strip(original);
 		
+		
+		
+		int[] averages = averageChannels(data, context, commandQueue, device, program);
+	
+		for(int i = 0; i < averages.length; i++) {
+			System.out.println(averages[i]);
+		}
+		
+		
+		CL.clReleaseProgram(program);
+		
+		
+		
+	}
+	
+	/**
+	 * Averages the RGB color channels of a given input.
+	 * @param context The OpenCL context used.
+	 * @param commandQueue The OpenCL commandQueue used.
+	 * @param device The OpenCL device used.
+	 * @param data The image to be modified.
+	 * @param program The OpenCL program used.
+	 * @return An array containing the three averages.
+	 */
+	private static int[] averageChannels(int[] data, cl_context context, cl_command_queue commandQueue, cl_device_id device, cl_program program) {
+				
 		int maxSize = getMaxWorkGroupSize(device);
 		int padSize = getPadSize(data, maxSize);
 		int[] paddedData = new int[padSize];
-		
 		
 		cl_program padProgram = buildProgram("Kernels/Scan_Kernel", context);
 		padArray(data, paddedData, padSize, maxSize, context, commandQueue, device, padProgram);
 		
 		int[] paddedResultData = new int[paddedData.length];
-//		int[] resultData = new int[data.length];
 		
 		int[] dimensions = {data.length};
 		
@@ -69,6 +96,8 @@ public class RedEyeParallel extends ParallelAlgorithm{
 		
 		
 		CL.clSetKernelArg(kernel, 3, Sizeof.cl_int * localWorkSize[0], null);
+		CL.clSetKernelArg(kernel, 4, Sizeof.cl_int * localWorkSize[0], null);
+		CL.clSetKernelArg(kernel, 5, Sizeof.cl_int * localWorkSize[0], null);
 		
 		CL.clEnqueueNDRangeKernel(commandQueue, kernel, 1, null,
 				globalWorkSize, localWorkSize, 
@@ -81,16 +110,13 @@ public class RedEyeParallel extends ParallelAlgorithm{
 		
 		
 		
-//		if(data.length != paddedData.length) {
-//			padArray(paddedResultData, resultData, resultData.length, maxSize, context, commandQueue, device, padProgram);
-//		}
-		
-		
-		
+
+	
 		CL.clReleaseKernel(kernel);
-		CL.clReleaseProgram(program);
 		CL.clReleaseProgram(padProgram);
 		releaseMemObject(objects);
+		
+		
 		
 		
 		return paddedResultData;
