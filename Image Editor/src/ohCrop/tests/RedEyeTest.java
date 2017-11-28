@@ -54,6 +54,8 @@ public class RedEyeTest extends ParallelAlgorithm{
 		
 		int[] data = strip(original);
 		
+		
+		
 		int redAvg = 0;
 		int blueAvg = 0;
 		int greenAvg = 0;

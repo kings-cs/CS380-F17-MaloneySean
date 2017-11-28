@@ -39,14 +39,14 @@ public class RedEyeParallel extends ParallelAlgorithm{
 		
 		
 		
-		int[] averages = averageChannels(data, context, commandQueue, device, program);
+		averageChannels(data, resultData, context, commandQueue, device, program);
 	
 		//TODO: SOMETHING IS WRONG
 		
 		//System.out.println(averages.length);
-		System.out.println(averages[0]);
-		System.out.println(averages[1]);
-		System.out.println(averages[2]);
+		System.out.println(resultData[0]);
+//		System.out.println(averages[1]);
+//		System.out.println(averages[2]);
 		
 		CL.clReleaseProgram(program);
 		
@@ -63,7 +63,7 @@ public class RedEyeParallel extends ParallelAlgorithm{
 	 * @param program The OpenCL program used.
 	 * @return An array containing the three averages.
 	 */
-	private static int[] averageChannels(int[] data, cl_context context, cl_command_queue commandQueue, cl_device_id device, cl_program program) {
+	private static void averageChannels(int[] data, int[] result, cl_context context, cl_command_queue commandQueue, cl_device_id device, cl_program program) {
 				
 		int maxSize = getMaxWorkGroupSize(device);
 		int padSize = getPadSize(data, maxSize);
@@ -72,11 +72,22 @@ public class RedEyeParallel extends ParallelAlgorithm{
 		cl_program padProgram = buildProgram("Kernels/Scan_Kernel", context);
 		padArray(data, paddedData, padSize, maxSize, context, commandQueue, device, padProgram);
 		
-		int[] paddedResultData = new int[3];
+		
+		int globalSize = paddedData.length;
+		int localSize = calculateLocalSize(globalSize, device);
+		
+		
+		long[] globalWorkSize = new long[] {globalSize};
+		long[] localWorkSize = new long[] {localSize};
+		
+		
+		int[] accumulator = new int[globalSize / localSize];
+//		int[] blueResult = new int[globalSize / localSize];
+//		int[] greenResult = new int[globalSize / localSize];
 		
 		int[] dimensions = {data.length};
 		
-		int[][] params = {paddedData, paddedResultData, dimensions};
+		int[][] params = {paddedData, accumulator, dimensions};
 		
 		Pointer[] pointers = createPointers(params);
 		Pointer ptrResult = pointers[1];
@@ -89,12 +100,7 @@ public class RedEyeParallel extends ParallelAlgorithm{
 		setKernelArgs(objects, kernel);
 		
 		
-		int globalSize = paddedData.length;
-		int localSize = calculateLocalSize(globalSize, device);
 		
-		
-		long[] globalWorkSize = new long[] {globalSize};
-		long[] localWorkSize = new long[] {localSize};
 		
 		
 		CL.clSetKernelArg(kernel, 3, Sizeof.cl_int * localWorkSize[0], null);
@@ -107,11 +113,15 @@ public class RedEyeParallel extends ParallelAlgorithm{
 		
 		
 		CL.clEnqueueReadBuffer(commandQueue, memResult, 
-				CL.CL_TRUE, 0, paddedResultData.length * Sizeof.cl_float,
+				CL.CL_TRUE, 0, accumulator.length * Sizeof.cl_float,
 				ptrResult, 0, null, null);
 		
+		int[] newResult = new int[accumulator.length];
+	
 		
-		
+		if(paddedData.length > 1) {
+			averageChannels(accumulator, newResult, context, commandQueue, device, program);
+		}
 
 	
 		CL.clReleaseKernel(kernel);
@@ -121,7 +131,7 @@ public class RedEyeParallel extends ParallelAlgorithm{
 		
 		
 		
-		return paddedResultData;
+		
 	}
 	
 }
