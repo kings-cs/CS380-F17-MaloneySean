@@ -41,10 +41,12 @@ public class RedEyeParallel extends ParallelAlgorithm{
 		
 		int[] averages = averageChannels(data, context, commandQueue, device, program);
 	
-		for(int i = 0; i < averages.length; i++) {
-			System.out.println(averages[i]);
-		}
+		//TODO: SOMETHING IS WRONG
 		
+		//System.out.println(averages.length);
+		System.out.println(averages[0]);
+		System.out.println(averages[1]);
+		System.out.println(averages[2]);
 		
 		CL.clReleaseProgram(program);
 		
@@ -70,7 +72,7 @@ public class RedEyeParallel extends ParallelAlgorithm{
 		cl_program padProgram = buildProgram("Kernels/Scan_Kernel", context);
 		padArray(data, paddedData, padSize, maxSize, context, commandQueue, device, padProgram);
 		
-		int[] paddedResultData = new int[paddedData.length];
+		int[] paddedResultData = new int[3];
 		
 		int[] dimensions = {data.length};
 		

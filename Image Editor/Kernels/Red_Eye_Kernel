@@ -48,10 +48,12 @@ for(int space = group_size / 2; space >= 1; space = space / 2){
 
 //result[i] = red_local[local_number];
 
+int elements = dimensions[0];
+
 if(i == get_global_size(0) - 1){
-	result[0] = red_local[local_number];
-	result[1] = blue_local[local_number];
-	result[2] = green_local[local_number];
+	result[0] = red_local[local_number] / elements;
+	result[1] = blue_local[local_number] / elements;
+	result[2] = green_local[local_number] / elements;
 }
 
 }

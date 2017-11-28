@@ -13,13 +13,14 @@ import org.junit.Before;
 import org.junit.Test;
 
 import ohCrop.editingAlgorithms.RedEyeParallel;
+import ohCrop.utilAlgorithms.ParallelAlgorithm;
 import ohCrop.utilAlgorithms.ParallelSetUp;
 
 /**
  * Class to test functionality of pieces used in red eye removal.
  * @author Sean Maloney
  */
-public class RedEyeTest {
+public class RedEyeTest extends ParallelAlgorithm{
 
 	/**
 	 * Enables OpenCL exceptions.
@@ -36,7 +37,7 @@ public class RedEyeTest {
 	public void testAverageChannels() {
 		//int[] data = {1, 2, 3, 4, 5, 6};
 		
-		File currentPicture = new File("Images//crop.png");
+		File currentPicture = new File("Images//Red Eye Template.png");
 		BufferedImage original = null;
 		try {
 			BufferedImage ri = ImageIO.read(currentPicture);
@@ -51,7 +52,30 @@ public class RedEyeTest {
 		}
 		
 		
-
+		int[] data = strip(original);
+		
+		int redAvg = 0;
+		int blueAvg = 0;
+		int greenAvg = 0;
+		
+		for(int i = 0; i < data.length; i++) {
+			int pixel = data[i];
+			int red = (pixel & RED_MASK) >> RED_OFFSET;
+			int green = (pixel & GREEN_MASK) >> GREEN_OFFSET;
+			int blue = (pixel & BLUE_MASK) >> BLUE_OFFSET;
+		
+			redAvg += red;
+			blueAvg += blue;
+			greenAvg += green;
+		}
+		
+		redAvg = redAvg / data.length;
+		blueAvg = blueAvg / data.length;
+		greenAvg = greenAvg / data.length;
+		
+		System.out.println("R: " + redAvg);
+		System.out.println("B: " + blueAvg);
+		System.out.println("G: " + greenAvg);
 		
 		int[] result = new int[3];
 		
