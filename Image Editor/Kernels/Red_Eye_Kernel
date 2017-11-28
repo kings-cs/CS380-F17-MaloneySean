@@ -1,30 +1,20 @@
-__kernel void average_channels(__global const int * data, __global int * result, __global int * dimensions,  __local int * red_local,
- __local int * blue_local, __local int * green_local){
-int RED_MASK = 0x00ff0000;
-int RED_OFFSET = 16;
-int GREEN_MASK = 0x0000ff00;
-int GREEN_OFFSET = 8;
-int BLUE_MASK = 0x000000ff;
-int BLUE_OFFSET = 0;
-
+__kernel void average_channels(__global const int * redData, __global int * result, __local int * red_local){
 int group_id = get_group_id(0);
 int group_size   = get_local_size(0);
 int local_number = get_local_id(0);
 
 int i = (group_id * group_size) + local_number;
 
-int pixel = data[i];
+int red = redData[i];
 
 
-int red = (pixel & RED_MASK) >> RED_OFFSET;
-int green = (pixel & GREEN_MASK) >> GREEN_OFFSET;
-int blue = (pixel & BLUE_MASK) >> BLUE_OFFSET;
+
 
 
 
 red_local[local_number] = red;
-blue_local[local_number] = blue;
-green_local[local_number] = green;
+//blue_local[local_number] = blue;
+//green_local[local_number] = green;
 
 barrier(CLK_LOCAL_MEM_FENCE);	
 
@@ -36,8 +26,8 @@ for(int space = group_size / 2; space >= 1; space = space / 2){
 		int j = distance * (2 * local_number + 2) - 1;
 		
 		red_local[j] += red_local[i];
-		blue_local[j] += blue_local[i];
-		green_local[j] += green_local[i];
+		//blue_local[j] += blue_local[i];
+		//green_local[j] += green_local[i];
 	}
 	distance = distance * 2;
 	barrier(CLK_LOCAL_MEM_FENCE);
@@ -46,9 +36,40 @@ for(int space = group_size / 2; space >= 1; space = space / 2){
 
 
 if(group_size - 1 == local_number){
-	result[group_id] = red_local[local_number] + red;
+	result[group_id] = red_local[local_number];
 }
 
+}
+
+__kernel void seperate_channels(__global const int * data, __global int * redData, __global int * blueData, __global int * greenData){
+int RED_MASK = 0x00ff0000;
+int RED_OFFSET = 16;
+int GREEN_MASK = 0x0000ff00;
+int GREEN_OFFSET = 8;
+int BLUE_MASK = 0x000000ff;
+int BLUE_OFFSET = 0;
+
+
+int group_id = get_group_id(0);
+int group_size   = get_local_size(0);
+int local_number = get_local_id(0);
+
+int i = (group_id * group_size) + local_number;
+
+
+int pixel = data[i];
+
+int red = (pixel & RED_MASK) >> RED_OFFSET;
+int green = (pixel & GREEN_MASK) >> GREEN_OFFSET;
+int blue = (pixel & BLUE_MASK) >> BLUE_OFFSET;
+
+
+redData[i] = red;
+blueData[i] = blue;
+greenData[i] = green;
+
+
 
 
 }
+

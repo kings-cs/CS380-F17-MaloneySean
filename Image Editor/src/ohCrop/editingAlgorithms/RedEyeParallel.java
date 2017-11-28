@@ -37,21 +37,95 @@ public class RedEyeParallel extends ParallelAlgorithm{
 		cl_program program = buildProgram("Kernels/Red_Eye_Kernel", context);
 		int[] data = strip(original);
 		
+		int[] rgbAvergaes = new int[3];
 		
 		
-		averageChannels(data, resultData, context, commandQueue, device, program);
-	
-		//TODO: SOMETHING IS WRONG
-		
-		//System.out.println(averages.length);
-		System.out.println(resultData[0]);
-//		System.out.println(averages[1]);
-//		System.out.println(averages[2]);
+		getChannelAverages(rgbAvergaes, data, context, commandQueue, device, program);
 		
 		CL.clReleaseProgram(program);
 		
+	
+	}
+	
+	
+	/**
+	 * Helper method to compute the averages of each color channel.
+	 * 
+	 * @param rgbAverages An array containing the red avergae at index 0, green at index 1, and blue at index 2.
+	 * @param data The original image data.
+	 * @param context The OpenCL context.
+	 * @param commandQueue The OpenCL commandQueue.
+	 * @param device The OpenCl device.
+	 * @param program The OpenCL program.
+	 */
+	public static void getChannelAverages(int[] rgbAverages, int[] data, cl_context context, cl_command_queue commandQueue, cl_device_id device, cl_program program) {
+		int[] redChannel = new int[data.length];
+		int[] blueChannel = new int[data.length];
+		int[] greenChannel = new int[data.length];
+		
+		seperateChannels(data, redChannel, blueChannel, greenChannel, context, commandQueue, device, program);
+		
+		int[] redSum = averageChannels(redChannel, context, commandQueue, device, program);
+		int[] blueSum = averageChannels(blueChannel, context, commandQueue, device, program);
+		int[] greenSum = averageChannels(greenChannel, context, commandQueue, device, program);
+		
+		rgbAverages[0] = redSum[0] / data.length;
+		rgbAverages[1] = greenSum[0] / data.length;
+		rgbAverages[2] = blueSum[0] / data.length;
+	}
+	
+	/**
+	 * Seperates the individual channels of an image.
+	 * 
+	 * @param data The original source data from the image.
+	 * @param redChannel The redChannel only.
+	 * @param blueChannel The blueChannel only.
+	 * @param greenChannel The greenChannel only.
+	 * @param context The OpenCL context.
+	 * @param commandQueue The OpenCL commandQueue.
+	 * @param device The OpenCL device.
+	 * @param program The OpenCL program.
+	 */
+	private static void seperateChannels(int[] data, int[] redChannel, int[] blueChannel, int[] greenChannel,
+			cl_context context, cl_command_queue commandQueue, cl_device_id device, cl_program program) {
+		
+		int globalSize = data.length;
+		int localSize = calculateLocalSize(globalSize, device);
+		
+		long[] globalWorkSize = new long[] {globalSize};
+		long[] localWorkSize = new long[] {localSize};
+		
+		int[][] params = {data, redChannel, blueChannel, greenChannel};
+		
+		Pointer[] pointers = createPointers(params);
+		Pointer ptrRed = pointers[1];
+		Pointer ptrBlue = pointers[2];
+		Pointer ptrGreen = pointers[3];
+		
+		cl_mem[] objects = createMemObjects(params, pointers, context);
+		cl_mem memRed = objects[1];
+		cl_mem memBlue = objects[2];
+		cl_mem memGreen = objects[3];
+		
+		cl_kernel kernel = CL.clCreateKernel(program, "seperate_channels", null);
+		setKernelArgs(objects, kernel);
+
+		CL.clEnqueueNDRangeKernel(commandQueue, kernel, 1, null,
+				globalWorkSize, localWorkSize, 
+				0, null, null);
 		
 		
+		CL.clEnqueueReadBuffer(commandQueue, memRed, 
+				CL.CL_TRUE, 0, redChannel.length * Sizeof.cl_float,
+				ptrRed, 0, null, null);
+		
+		CL.clEnqueueReadBuffer(commandQueue, memBlue, 
+				CL.CL_TRUE, 0, blueChannel.length * Sizeof.cl_float,
+				ptrBlue, 0, null, null);
+		
+		CL.clEnqueueReadBuffer(commandQueue, memGreen, 
+				CL.CL_TRUE, 0, greenChannel.length * Sizeof.cl_float,
+				ptrGreen, 0, null, null);
 	}
 	
 	/**
@@ -59,18 +133,18 @@ public class RedEyeParallel extends ParallelAlgorithm{
 	 * @param context The OpenCL context used.
 	 * @param commandQueue The OpenCL commandQueue used.
 	 * @param device The OpenCL device used.
-	 * @param data The image to be modified.
+	 * @param redData The image to be modified.
 	 * @param program The OpenCL program used.
 	 * @return An array containing the three averages.
 	 */
-	private static void averageChannels(int[] data, int[] result, cl_context context, cl_command_queue commandQueue, cl_device_id device, cl_program program) {
+	private static int[] averageChannels(int[] redData, cl_context context, cl_command_queue commandQueue, cl_device_id device, cl_program program) {
 				
 		int maxSize = getMaxWorkGroupSize(device);
-		int padSize = getPadSize(data, maxSize);
+		int padSize = getPadSize(redData, maxSize);
 		int[] paddedData = new int[padSize];
 		
 		cl_program padProgram = buildProgram("Kernels/Scan_Kernel", context);
-		padArray(data, paddedData, padSize, maxSize, context, commandQueue, device, padProgram);
+		padArray(redData, paddedData, padSize, maxSize, context, commandQueue, device, padProgram);
 		
 		
 		int globalSize = paddedData.length;
@@ -81,13 +155,13 @@ public class RedEyeParallel extends ParallelAlgorithm{
 		long[] localWorkSize = new long[] {localSize};
 		
 		
-		int[] accumulator = new int[globalSize / localSize];
+		int[] result = new int[globalSize / localSize];
 //		int[] blueResult = new int[globalSize / localSize];
 //		int[] greenResult = new int[globalSize / localSize];
 		
-		int[] dimensions = {data.length};
 		
-		int[][] params = {paddedData, accumulator, dimensions};
+		
+		int[][] params = {paddedData, result};
 		
 		Pointer[] pointers = createPointers(params);
 		Pointer ptrResult = pointers[1];
@@ -103,9 +177,9 @@ public class RedEyeParallel extends ParallelAlgorithm{
 		
 		
 		
-		CL.clSetKernelArg(kernel, 3, Sizeof.cl_int * localWorkSize[0], null);
-		CL.clSetKernelArg(kernel, 4, Sizeof.cl_int * localWorkSize[0], null);
-		CL.clSetKernelArg(kernel, 5, Sizeof.cl_int * localWorkSize[0], null);
+		CL.clSetKernelArg(kernel, 2, Sizeof.cl_int * localWorkSize[0], null);
+//		CL.clSetKernelArg(kernel, 3, Sizeof.cl_int * localWorkSize[0], null);
+//		CL.clSetKernelArg(kernel, 4, Sizeof.cl_int * localWorkSize[0], null);
 		
 		CL.clEnqueueNDRangeKernel(commandQueue, kernel, 1, null,
 				globalWorkSize, localWorkSize, 
@@ -113,24 +187,26 @@ public class RedEyeParallel extends ParallelAlgorithm{
 		
 		
 		CL.clEnqueueReadBuffer(commandQueue, memResult, 
-				CL.CL_TRUE, 0, accumulator.length * Sizeof.cl_float,
+				CL.CL_TRUE, 0, result.length * Sizeof.cl_float,
 				ptrResult, 0, null, null);
 		
-		int[] newResult = new int[accumulator.length];
+		int[] newResult = result;
 	
 		
-		if(paddedData.length > 1) {
-			averageChannels(accumulator, newResult, context, commandQueue, device, program);
+		if(result.length > 1) {
+			newResult = averageChannels(newResult, context, commandQueue, device, program);
 		}
-
+		
+		
 	
+		
 		CL.clReleaseKernel(kernel);
 		CL.clReleaseProgram(padProgram);
 		releaseMemObject(objects);
 		
 		
 		
-		
+		return newResult;
 		
 	}
 	

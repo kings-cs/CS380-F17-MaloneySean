@@ -1,5 +1,7 @@
 package ohCrop.tests;
 
+import static org.junit.Assert.assertEquals;
+
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -9,6 +11,7 @@ import javax.imageio.ImageIO;
 import javax.swing.JOptionPane;
 
 import org.jocl.CL;
+import org.jocl.cl_program;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -75,20 +78,25 @@ public class RedEyeTest extends ParallelAlgorithm{
 		blueAvg = blueAvg / data.length;
 		greenAvg = greenAvg / data.length;
 		
-		System.out.println("R: " + redAvg);
-		System.out.println("B: " + blueAvg);
-		System.out.println("G: " + greenAvg);
+		
 		
 		int[] result = new int[3];
 		
 		ParallelSetUp setup = new ParallelSetUp();
 		
-		RedEyeParallel.redEyeRemoval(setup.getContext(), setup.getCommandQueue(), setup.getDevice(), original, result);
 		
-//		
-//		for(int i = 0; i < result.length; i++) {
-//			System.out.println(result[i]);
-//		}
+		cl_program program = buildProgram("Kernels/Red_Eye_Kernel", setup.getContext());
+
+		RedEyeParallel.getChannelAverages(result, data, setup.getContext(), setup.getCommandQueue(), setup.getDevice(), program);
+		
+		CL.clReleaseProgram(program);
+		
+		
+		
+		assertEquals("The red average should equal: " + redAvg, redAvg, result[0]);
+		assertEquals("The green average should equal: " + greenAvg, greenAvg, result[1]);
+		assertEquals("The blue average should equal: " + blueAvg, blueAvg, result[2]);
+		
 	}
 	
 }
