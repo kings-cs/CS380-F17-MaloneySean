@@ -63,6 +63,7 @@ public class RedEyeParallel extends ParallelAlgorithm{
 		int[] blueChannel = new int[data.length];
 		int[] greenChannel = new int[data.length];
 		
+		//TODO: You're silly and forgot that you already have a kernel for seperating, refactor this later if you have time.
 		seperateChannels(data, redChannel, blueChannel, greenChannel, context, commandQueue, device, program);
 		
 		int[] redSum = averageChannels(redChannel, context, commandQueue, device, program);
