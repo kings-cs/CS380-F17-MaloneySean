@@ -41,6 +41,34 @@ if(group_size - 1 == local_number){
 
 }
 
+
+
+__kernel void calculate_differences(__global const int * redChannel, __global const int * greenChannel, __global const int * blueChannel,
+  __global int * redResult, __global int * greenResult, __global int * blueResult, __global int * average){
+
+int group_id = get_group_id(0);
+int group_size   = get_local_size(0);
+int local_number = get_local_id(0);
+
+int i = (group_id * group_size) + local_number;
+
+int red = redChannel[i];
+int green = greenChannel[i];
+int blue = blueChannel[i];
+
+
+int redAvg = average[0];
+int greenAvg = average[1];
+int blueAvg = average[2];
+
+redResult[i] = red - redAvg; 
+greenResult[i] = green - greenAvg;
+blueResult[i] = blue - blueAvg;
+
+}
+
+
+
 __kernel void seperate_channels(__global const int * data, __global int * redData, __global int * blueData, __global int * greenData){
 int RED_MASK = 0x00ff0000;
 int RED_OFFSET = 16;
@@ -72,4 +100,5 @@ greenData[i] = green;
 
 
 }
+
 

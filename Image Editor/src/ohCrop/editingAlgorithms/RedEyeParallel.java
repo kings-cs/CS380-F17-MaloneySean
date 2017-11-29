@@ -39,40 +39,22 @@ public class RedEyeParallel extends ParallelAlgorithm{
 		
 		int[] rgbAvergaes = new int[3];
 		
-		
-		getChannelAverages(rgbAvergaes, data, context, commandQueue, device, program);
-		
-		CL.clReleaseProgram(program);
-		
-	
-	}
-	
-	
-	/**
-	 * Helper method to compute the averages of each color channel.
-	 * 
-	 * @param rgbAverages An array containing the red avergae at index 0, green at index 1, and blue at index 2.
-	 * @param data The original image data.
-	 * @param context The OpenCL context.
-	 * @param commandQueue The OpenCL commandQueue.
-	 * @param device The OpenCl device.
-	 * @param program The OpenCL program.
-	 */
-	public static void getChannelAverages(int[] rgbAverages, int[] data, cl_context context, cl_command_queue commandQueue, cl_device_id device, cl_program program) {
 		int[] redChannel = new int[data.length];
 		int[] blueChannel = new int[data.length];
 		int[] greenChannel = new int[data.length];
 		
-		//TODO: You're silly and forgot that you already have a kernel for seperating, refactor this later if you have time.
-		seperateChannels(data, redChannel, blueChannel, greenChannel, context, commandQueue, device, program);
+		getChannelAverages(rgbAvergaes, data, redChannel, blueChannel, greenChannel, 
+				context, commandQueue, device, program);
 		
-		int[] redSum = averageChannels(redChannel, context, commandQueue, device, program);
-		int[] blueSum = averageChannels(blueChannel, context, commandQueue, device, program);
-		int[] greenSum = averageChannels(greenChannel, context, commandQueue, device, program);
+		int[] differenceSums = new int[3];
 		
-		rgbAverages[0] = redSum[0] / data.length;
-		rgbAverages[1] = greenSum[0] / data.length;
-		rgbAverages[2] = blueSum[0] / data.length;
+		int[][] channels = {redChannel, greenChannel, blueChannel};
+		sumDifferences(channels, differenceSums, rgbAvergaes, context, commandQueue, device, program);
+		
+		
+		CL.clReleaseProgram(program);
+		
+	
 	}
 	
 	/**
@@ -129,6 +111,38 @@ public class RedEyeParallel extends ParallelAlgorithm{
 				ptrGreen, 0, null, null);
 	}
 	
+	
+	/**
+	 * Helper method to compute the averages of each color channel.
+	 * 
+	 * @param rgbAverages An array containing the red avergae at index 0, green at index 1, and blue at index 2.
+	 * @param data The original image data.
+	 * @param redChannel outputs as the red channel.
+	 * @param blueChannel outputs as the blue channel.
+	 * @param greenChannel outputs as the green channel.
+	 * @param context The OpenCL context.
+	 * @param commandQueue The OpenCL commandQueue.
+	 * @param device The OpenCl device.
+	 * @param program The OpenCL program.
+	 */
+	public static void getChannelAverages(int[] rgbAverages, int[] data, int[] redChannel, int[] blueChannel, int[] greenChannel,
+			cl_context context, cl_command_queue commandQueue, cl_device_id device, cl_program program) {
+		
+		
+		//TODO: You're silly and forgot that you already have a kernel for seperating, refactor this later if you have time.
+		seperateChannels(data, redChannel, blueChannel, greenChannel, context, commandQueue, device, program);
+		
+		int[] redSum = reduce(redChannel, context, commandQueue, device, program);
+		int[] blueSum = reduce(blueChannel, context, commandQueue, device, program);
+		int[] greenSum = reduce(greenChannel, context, commandQueue, device, program);
+		
+		rgbAverages[0] = redSum[0] / data.length;
+		rgbAverages[1] = greenSum[0] / data.length;
+		rgbAverages[2] = blueSum[0] / data.length;
+	}
+	
+
+	
 	/**
 	 * Averages the RGB color channels of a given input.
 	 * @param context The OpenCL context used.
@@ -138,7 +152,7 @@ public class RedEyeParallel extends ParallelAlgorithm{
 	 * @param program The OpenCL program used.
 	 * @return An array containing the three averages.
 	 */
-	private static int[] averageChannels(int[] redData, cl_context context, cl_command_queue commandQueue, cl_device_id device, cl_program program) {
+	private static int[] reduce(int[] redData, cl_context context, cl_command_queue commandQueue, cl_device_id device, cl_program program) {
 				
 		int maxSize = getMaxWorkGroupSize(device);
 		int padSize = getPadSize(redData, maxSize);
@@ -195,7 +209,7 @@ public class RedEyeParallel extends ParallelAlgorithm{
 	
 		
 		if(result.length > 1) {
-			newResult = averageChannels(newResult, context, commandQueue, device, program);
+			newResult = reduce(newResult, context, commandQueue, device, program);
 		}
 		
 		
@@ -209,6 +223,102 @@ public class RedEyeParallel extends ParallelAlgorithm{
 		
 		return newResult;
 		
+	}
+	
+	/**
+	 * Helper method to calculate the differences between the individual pixels in the template and the channel averages.
+	 * @param data A two-dimensional arrays containing the arrays for the red, green, and blue channels.
+	 * @param results A two-dimensional array containing the differences for the red, green, and blue channels.
+	 * @param average An array containing the individual channel averages, red at index 0, green at index 1, and blue at index 2.
+	 * @param context The OpenCL context.
+	 * @param commandQueue The OpenCL commandQueue.
+	 * @param device The OpenCL device.
+	 * @param program The OpenCL program.
+	 */
+	private static void differenceFromAvg(int[][] data, int[][] results, int[] average, cl_context context, cl_command_queue commandQueue, cl_device_id device, cl_program program) {
+		int[] redChannel = data[0];
+		int[] greenChannel = data[1];
+		int[] blueChannel = data[2];
+		
+		
+		int[] redResult = results[0];
+		int[] greenResult = results[1];
+		int[] blueResult = results[2];
+		
+		int globalSize = redChannel.length;
+		int localSize = calculateLocalSize(globalSize, device);
+		
+		long[] globalWorkSize = new long[] {globalSize};
+		long[] localWorkSize = new long[] {localSize};
+		
+		int[][] params = {redChannel, greenChannel, blueChannel, redResult,
+				greenResult, blueResult, average};
+		Pointer[] pointers = createPointers(params);
+		Pointer ptrRedResult = pointers[3];
+		Pointer ptrGreenResult = pointers[4];
+		Pointer ptrBlueResult = pointers[5];
+		
+		cl_mem[] objects = createMemObjects(params, pointers, context);
+		cl_mem memRedResult = objects[3];
+		cl_mem memGreenResult = objects[4];
+		cl_mem memBlueResult = objects[5];
+		
+		cl_kernel kernel = CL.clCreateKernel(program, "calculate_differences", null);
+		
+		setKernelArgs(objects, kernel);
+		
+		CL.clEnqueueNDRangeKernel(commandQueue, kernel, 1, null,
+				globalWorkSize, localWorkSize, 
+				0, null, null);
+		
+		CL.clEnqueueReadBuffer(commandQueue, memRedResult, 
+				CL.CL_TRUE, 0, redResult.length * Sizeof.cl_float,
+				ptrRedResult, 0, null, null);
+		
+		CL.clEnqueueReadBuffer(commandQueue, memGreenResult, 
+				CL.CL_TRUE, 0, greenResult.length * Sizeof.cl_float,
+				ptrGreenResult, 0, null, null);
+		
+		CL.clEnqueueReadBuffer(commandQueue, memBlueResult, 
+				CL.CL_TRUE, 0, blueResult.length * Sizeof.cl_float,
+				ptrBlueResult, 0, null, null);
+	}
+	
+	/**
+	 * Helper method to calculate the sum of the differnce between the individual pixels and their averages.
+	 * @param data A two-dimensional arrays containing the arrays for the red, green, and blue channels.
+	 * @param result An array containing the sums, the red sum at index 0, green at index 1, and blue at index 2.
+	 * @param averages An array containing the averages, the red at index 0, green at index 1, and blue at index 2.
+	 * @param context The OpenCL context.
+	 * @param commandQueue The OpenCL commandQueue.
+	 * @param device The OpenCL device.
+	 * @param program The OpenCL program.
+	 */
+	private static void sumDifferences(int[][] data, int[] result, int[] averages, cl_context context, cl_command_queue commandQueue, cl_device_id device, cl_program program) {
+		
+		int[] redDiffs = new int[data.length];
+		int[] greenDiffs = new int[data.length];
+		int[] blueDiffs = new int[data.length];
+		
+		
+		int[][] results = {redDiffs, greenDiffs, blueDiffs};
+		
+		
+		
+		differenceFromAvg(data, results, averages, context, commandQueue, device, program);
+
+		
+		int[] redSumDiff = reduce(redDiffs, context, commandQueue, device, program);
+		int[] greenSumDiff = reduce(greenDiffs, context, commandQueue, device, program);
+		int[] blueSumDiff = reduce(blueDiffs, context, commandQueue, device, program);
+		
+		System.out.println(redSumDiff[0]);
+		System.out.println(greenSumDiff[0]);
+		System.out.println(blueSumDiff[0]);
+		
+		result[0] = redSumDiff[0];
+		result[1] = greenSumDiff[0];
+		result[2] = blueSumDiff[0];
 	}
 	
 }
