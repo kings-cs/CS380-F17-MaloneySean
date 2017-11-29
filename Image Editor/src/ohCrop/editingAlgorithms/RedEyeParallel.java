@@ -275,6 +275,7 @@ public class RedEyeParallel extends ParallelAlgorithm{
 				CL.CL_TRUE, 0, redResult.length * Sizeof.cl_float,
 				ptrRedResult, 0, null, null);
 		
+		
 		CL.clEnqueueReadBuffer(commandQueue, memGreenResult, 
 				CL.CL_TRUE, 0, greenResult.length * Sizeof.cl_float,
 				ptrGreenResult, 0, null, null);
@@ -294,11 +295,11 @@ public class RedEyeParallel extends ParallelAlgorithm{
 	 * @param device The OpenCL device.
 	 * @param program The OpenCL program.
 	 */
-	private static void sumDifferences(int[][] data, int[] result, int[] averages, cl_context context, cl_command_queue commandQueue, cl_device_id device, cl_program program) {
+	public static void sumDifferences(int[][] data, int[] result, int[] averages, cl_context context, cl_command_queue commandQueue, cl_device_id device, cl_program program) {
 		
-		int[] redDiffs = new int[data.length];
-		int[] greenDiffs = new int[data.length];
-		int[] blueDiffs = new int[data.length];
+		int[] redDiffs = new int[data[0].length];
+		int[] greenDiffs = new int[data[0].length];
+		int[] blueDiffs = new int[data[0].length];
 		
 		
 		int[][] results = {redDiffs, greenDiffs, blueDiffs};
@@ -312,9 +313,9 @@ public class RedEyeParallel extends ParallelAlgorithm{
 		int[] greenSumDiff = reduce(greenDiffs, context, commandQueue, device, program);
 		int[] blueSumDiff = reduce(blueDiffs, context, commandQueue, device, program);
 		
-		System.out.println(redSumDiff[0]);
-		System.out.println(greenSumDiff[0]);
-		System.out.println(blueSumDiff[0]);
+//		System.out.println(redSumDiff[0]);
+//		System.out.println(greenSumDiff[0]);
+//		System.out.println(blueSumDiff[0]);
 		
 		result[0] = redSumDiff[0];
 		result[1] = greenSumDiff[0];

@@ -151,37 +151,47 @@ public class RedEyeTest extends ParallelAlgorithm{
 	@Test
 	public void testSumDifference() {
 		int[] data = strip(original);
-		int[] resultData = new int[data.length];
+		//int[] resultData = new int[data.length];
 		
 		
-		int[] result = new int[3];
+		int[] averages = new int[3];
 
 		int[] redChannel = new int[data.length];
 		int[] greenChannel = new int[data.length];
 		int[] blueChannel = new int[data.length];
 		
 		
-		RedEyeParallel.getChannelAverages(result, data, redChannel, blueChannel, greenChannel, context, commandQueue, device, program);
+		RedEyeParallel.getChannelAverages(averages, data, redChannel, blueChannel, greenChannel, context, commandQueue, device, program);
 		
-		int redAvg = result[0];
-		int greenAvg = result[1];
-		int blueAvg = result[2];
+		int redAvg = averages[0];
+		int greenAvg = averages[1];
+		int blueAvg = averages[2];
 		
 		int redDiff = 0;
 		int greenDiff = 0;
 		int blueDiff = 0;
+	
 		
 		for(int i = 0; i < redChannel.length; i++) {
+			
+			
+			
 			redDiff += redChannel[i] - redAvg;
 			greenDiff += greenChannel[i] - greenAvg;
 			blueDiff += blueChannel[i] - blueAvg;
 		}
+
+		int[] result = new int[3];
+		int[][] channelData = {redChannel, greenChannel, blueChannel};
 		
-		System.out.println("RED DIFF: " + redDiff);
-		System.out.println("GREEN DIFF: " + greenDiff);
-		System.out.println("BLUE DIFF: " + blueDiff);
 		
-		RedEyeParallel.redEyeRemoval(context, commandQueue, device, original, resultData);
+		RedEyeParallel.sumDifferences(channelData, result, averages, context, commandQueue, device, program);
+		
+		
+		assertEquals("The red sum of differences should equal: " + redDiff, redDiff, result[0]);
+		assertEquals("The green sum of differences should equal: " + greenDiff, greenDiff, result[1]);
+		assertEquals("The blue sum of differences should equal: " + blueDiff, blueDiff, result[2]);
+		
 		
 		CL.clReleaseProgram(program);
 		
