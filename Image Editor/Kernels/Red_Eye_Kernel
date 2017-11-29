@@ -92,7 +92,9 @@ int templateHeight = dimArray[3];
 				
 int maxColTrav = templateWidth / 2;
 int maxRowTrav = templateHeight / 2;
-int templateSize = (maxColTrav * maxRowTrav);
+int templateSize = (templateWidth * templateHeight);
+
+int divisor = templateSize;
 
 int row = i / width;
 int col = i % width;
@@ -105,25 +107,21 @@ for(int i = row - maxRowTrav; i <= row + maxRowTrav; i++) {
 						
 						
 						
-		if(newRow < 0) {
-			newRow = 0;
+		
+				
+				
+		if(newRow < 0 || newRow > height - 1 || newCol < 0 || newCol > width - 1){
+			divisor--;
 		}
-		else if(newRow > height - 1) {
-			newRow = height - 1;
-		}
-						
-		if(newCol < 0) {
-			newCol = 0;
-		}
-		else if(newCol > width - 1) {
-			newCol = width - 1;
-		}
-						
-		int currentIndex = newRow * width + newCol;
+		else{
+			int currentIndex = newRow * width + newCol;
 					
-		newRed += sourceRed[currentIndex];
-		newGreen += sourceGreen[currentIndex];
-		newBlue += sourceBlue[currentIndex];
+			newRed += sourceRed[currentIndex];
+			newGreen += sourceGreen[currentIndex];
+			newBlue += sourceBlue[currentIndex];	
+		}
+						
+		
 						
 		count++;
 	}
@@ -131,9 +129,9 @@ for(int i = row - maxRowTrav; i <= row + maxRowTrav; i++) {
 				
 
 				
-redAverages[i] = (int) newRed / templateSize;
-greenAverages[i] = (int) newGreen / templateSize;
-blueAverages[i] = (int) newBlue / templateSize;
+redAverages[i] = (int) newRed / divisor;
+greenAverages[i] = (int) newGreen / divisor;
+blueAverages[i] = (int) newBlue / divisor;
 
 }
 
