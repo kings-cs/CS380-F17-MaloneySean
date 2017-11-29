@@ -29,6 +29,11 @@ import ohCrop.utilAlgorithms.ParallelSetUp;
 public class RedEyeTest extends ParallelAlgorithm{
 
 	/**
+	 * The template being used.
+	 */
+	private BufferedImage template;
+	
+	/**
 	 * The image being used.
 	 */
 	private BufferedImage original;
@@ -66,15 +71,32 @@ public class RedEyeTest extends ParallelAlgorithm{
 		CL.setExceptionsEnabled(true);
 		
 		
-		File currentPicture = new File("Images//Red Eye Template.png");
+		File templateFile = new File("Images//Red Eye Template.png");
+		 template = null;
+		File originalFile = new File("Images//Red Eye Original.png");
 		 original = null;
-		try {
-			BufferedImage ri = ImageIO.read(currentPicture);
-			original = ImageIO.read(currentPicture);
-			original = new BufferedImage(ri.getWidth(), ri.getHeight(), BufferedImage.TYPE_INT_ARGB);
-			Graphics g = original.getGraphics();
-			g.drawImage(ri, 0 , 0 , null );			
 		
+		try {
+			BufferedImage ri = ImageIO.read(templateFile);
+			template = ImageIO.read(templateFile);
+			template = new BufferedImage(ri.getWidth(), ri.getHeight(), BufferedImage.TYPE_INT_ARGB);
+			Graphics g = template.getGraphics();
+			g.drawImage(ri, 0 , 0 , null );		
+			
+		
+		} catch (IOException e) {
+			JOptionPane.showMessageDialog(null, "The Image Could Not Be Read From A File At The Given Path", "Oops", 
+					JOptionPane.ERROR_MESSAGE);
+		}
+		
+		
+		try {
+			BufferedImage oRi = ImageIO.read(originalFile);
+			original = ImageIO.read(originalFile);
+			original = new BufferedImage(oRi.getWidth(), oRi.getHeight(), BufferedImage.TYPE_INT_ARGB);
+			Graphics gO = template.getGraphics();
+			gO.drawImage(oRi, 0 , 0 , null );	
+			
 		} catch (IOException e) {
 			JOptionPane.showMessageDialog(null, "The Image Could Not Be Read From A File At The Given Path", "Oops", 
 					JOptionPane.ERROR_MESSAGE);
@@ -100,7 +122,7 @@ public class RedEyeTest extends ParallelAlgorithm{
 		
 		
 		
-		int[] data = strip(original);
+		int[] data = strip(template);
 		
 		
 		
@@ -150,7 +172,7 @@ public class RedEyeTest extends ParallelAlgorithm{
 	 */
 	@Test
 	public void testSumDifference() {
-		int[] data = strip(original);
+		int[] data = strip(template);
 		//int[] resultData = new int[data.length];
 		
 		
@@ -195,6 +217,23 @@ public class RedEyeTest extends ParallelAlgorithm{
 		
 		CL.clReleaseProgram(program);
 		
+	}
+	
+	/**
+	 * Tests that the channels get averaged correctly according to the template.
+	 */
+	@Test
+	public void testAveragesFromTemplate() {
+		int[] data = strip(original);
+		
+		for(int i = 0; i < data.length; i++) {
+			System.out.println(data[i]);
+		}
+		
+//		int[] templateData = strip(template);
+		int[] resultData = new int[data.length];
+		
+		RedEyeParallel.redEyeRemoval(context, commandQueue, device, template, original, resultData);
 	}
 	
 }

@@ -29,7 +29,8 @@ public class RedEyeParallel extends ParallelAlgorithm{
 	 * @param context The OpenCL context used.
 	 * @param commandQueue The OpenCL commandQueue used.
 	 * @param device The OpenCL device used.
-	 * @param template The image to be modified.
+	 * @param template The template used to modify the image.
+	 * @param original The image to be modified.
 	 * @param resultData The result of 
 	 */
 	public static void redEyeRemoval(cl_context context, cl_command_queue commandQueue, cl_device_id device, BufferedImage template, BufferedImage original, int[] resultData) {
@@ -37,15 +38,15 @@ public class RedEyeParallel extends ParallelAlgorithm{
 		cl_program program = buildProgram("Kernels/Red_Eye_Kernel", context);
 		
 		//Template Stuff
-		int[] temlateData = strip(template);
+		int[] templateData = strip(template);
 		
 		int[] rgbTemplateAvergaes = new int[3];
 		
-		int[] redTemplateChannel = new int[temlateData.length];
-		int[] blueTemplateChannel = new int[temlateData.length];
-		int[] greenTemplateChannel = new int[temlateData.length];
+		int[] redTemplateChannel = new int[templateData.length];
+		int[] blueTemplateChannel = new int[templateData.length];
+		int[] greenTemplateChannel = new int[templateData.length];
 		
-		getChannelAverages(rgbTemplateAvergaes, temlateData, redTemplateChannel, blueTemplateChannel, greenTemplateChannel, 
+		getChannelAverages(rgbTemplateAvergaes, templateData, redTemplateChannel, blueTemplateChannel, greenTemplateChannel, 
 				context, commandQueue, device, program);
 		
 		int[] differenceSums = new int[3];
@@ -61,7 +62,23 @@ public class RedEyeParallel extends ParallelAlgorithm{
 		int[] blueSourceChannel = new int[data.length];
 		
 		seperateChannels(data, redSourceChannel, blueSourceChannel, greenSourceChannel, context, commandQueue, device, program);
+		
+		
 		int[][] sourceChannels = {redSourceChannel, greenSourceChannel, blueSourceChannel};
+		
+		
+		int[] redAveragesFromTemplate = new int[data.length];
+		int[] greenAveragesFromTemplate = new int[data.length];
+		int[] blueAveragesFromTemplate = new int[data.length];
+		int[][] resultAverages = {redAveragesFromTemplate, greenAveragesFromTemplate, blueAveragesFromTemplate};
+		
+		int[] dimensions = {original.getWidth(), original.getHeight(), template.getWidth(), template.getHeight()};
+		
+		averageImageWithTemplate(sourceChannels, templateChannels, resultAverages, dimensions,
+				context, commandQueue, device, program);
+		
+		
+		
 		
 		
 		CL.clReleaseProgram(program);
@@ -353,7 +370,7 @@ public class RedEyeParallel extends ParallelAlgorithm{
 		long[] globalWorkSize = new long[] {globalSize};
 		long[] localWorkSize = new long[] {localSize};
 		
-		int[][] params = {sourceRed, templateRed, redAverages};
+		int[][] params = {sourceRed, templateRed, redAverages, dimensions};
 		Pointer[] pointers = createPointers(params);
 		Pointer ptrRedAverage = pointers[2];
 		
@@ -372,6 +389,10 @@ public class RedEyeParallel extends ParallelAlgorithm{
 				CL.CL_TRUE, 0, redAverages.length * Sizeof.cl_float,
 				ptrRedAverage, 0, null, null);
 		
+	
+//		for(int i = 0; i < redAverages.length; i++) {
+//			System.out.println(redAverages[i]);
+//		}
 		
 	}
 	

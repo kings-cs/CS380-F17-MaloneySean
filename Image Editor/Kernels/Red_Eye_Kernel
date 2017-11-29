@@ -68,13 +68,69 @@ blueResult[i] = blue - blueAvg;
 }
 
 
-__kernel void average_with_template(__global const int * sourceRed, __global const int * templateRed, __global int * redAverages){
+__kernel void average_with_template(__global const int * sourceRed, __global const int * templateRed, __global int * redAverages,
+__global int * dimArray){
 
 int group_id = get_group_id(0);
 int group_size   = get_local_size(0);
 int local_number = get_local_id(0);
 
 int i = (group_id * group_size) + local_number;
+
+int count = 0;
+				
+float newRed = 0;
+float newBlue = 0;
+float newGreen = 0;
+
+int width = dimArray[0];
+int height = dimArray[1];
+int templateWidth = dimArray[2];
+int templateHeight = dimArray[3];
+				
+				
+int maxColTrav = templateWidth / 2;
+int maxRowTrav = templateHeight / 2;
+int templateSize = (maxColTrav * maxRowTrav);
+
+int row = i / width;
+int col = i % width;
+				
+for(int i = row - maxRowTrav; i <= row + maxRowTrav; i++) {
+	for(int j = col - maxColTrav; j <= col + maxColTrav; j++) {
+					
+		int newRow = i;
+		int newCol = j;
+						
+						
+						
+		if(newRow < 0) {
+			newRow = 0;
+		}
+		else if(newRow > height - 1) {
+			newRow = height - 1;
+		}
+						
+		if(newCol < 0) {
+			newCol = 0;
+		}
+		else if(newCol > width - 1) {
+			newCol = width - 1;
+		}
+						
+		int currentIndex = newRow * width + newCol;
+					
+		newRed += sourceRed[currentIndex];
+
+						
+		count++;
+	}
+}
+				
+
+				
+redAverages[i] = (int) newRed;
+
 
 }
 
