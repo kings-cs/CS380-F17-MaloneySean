@@ -233,4 +233,118 @@ public class RedEyeTest extends ParallelAlgorithm{
 		RedEyeParallel.redEyeRemoval(context, commandQueue, device, template, original, resultData);
 	}
 	
+	private void calculateSumDiffsFromAverage(int[][] sourceChannels, int[][] averages, int[] dimArray) {
+		//TODO: RUN THIS
+		
+		int[] sourceRed = sourceChannels[0];
+		int[] sourceGreen = sourceChannels[1];
+		int[] sourceBlue = sourceChannels[2];
+		
+		int[] redAverages = averages[0];
+		int[] greenAverages = averages[1];
+		int[] blueAverages = averages[2];
+		
+		
+		
+		int width = dimArray[0];
+		int height = dimArray[1];
+		int templateWidth = dimArray[2];
+		int templateHeight = dimArray[3];
+		
+		
+		int maxColTrav = templateWidth / 2;
+		int maxRowTrav = templateHeight / 2;
+		int templateSize = (templateWidth * templateHeight);
+
+		
+		
+		for(int index = 0; index < sourceRed.length; index++) {
+			int count = 0;
+			
+			int newRed = 0;
+			int newBlue = 0;
+			int newGreen = 0;
+			
+			int divisor = templateSize;
+			
+			int row = index / width;
+			int col = index % width;
+							
+			for(int i = row - maxRowTrav; i <= row + maxRowTrav; i++) {
+				for(int j = col - maxColTrav; j <= col + maxColTrav; j++) {
+								
+					int newRow = i;
+					int newCol = j;
+									
+									
+									
+					
+							
+							
+					if(newRow < 0 || newRow > height - 1 || newCol < 0 || newCol > width - 1){
+						divisor--;
+					}
+					else{
+						int currentIndex = newRow * width + newCol;
+								
+						newRed += sourceRed[currentIndex];
+						newGreen += sourceGreen[currentIndex];
+						newBlue += sourceBlue[currentIndex];	
+					}
+									
+					
+									
+					count++;
+				}
+			}
+							
+
+							
+			redAverages[index] = newRed / divisor;
+			greenAverages[index] = newGreen / divisor;
+			blueAverages[index] = newBlue / divisor;
+
+
+			count = 0;
+
+			int redDiff = 0;
+			int greenDiff = 0;
+			int blueDiff = 0;
+
+			for(int i = row - maxRowTrav; i <= row + maxRowTrav; i++) {
+				for(int j = col - maxColTrav; j <= col + maxColTrav; j++) {
+								
+					int newRow = i;
+					int newCol = j;
+									
+									
+									
+					
+							
+							
+					if(newRow < 0 || newRow > height - 1 || newCol < 0 || newCol > width - 1){
+						//Legit Nothing
+					}
+					else{
+						int currentIndex = newRow * width + newCol;
+								
+						int currentRed = sourceRed[currentIndex] - redAverages[index];		
+						redDiff += currentRed;
+
+					}
+									
+					
+									
+					count++;
+				}
+			}
+
+
+			redAverages[index] = redDiff;
+			
+			
+		}
+		
+	}
+	
 }

@@ -78,11 +78,11 @@ int local_number = get_local_id(0);
 
 int index = (group_id * group_size) + local_number;
 
-int count = 0;
+
 				
-float newRed = 0;
-float newBlue = 0;
-float newGreen = 0;
+int newRed = 0;
+int newBlue = 0;
+int newGreen = 0;
 
 int width = dimArray[0];
 int height = dimArray[1];
@@ -123,22 +123,22 @@ for(int i = row - maxRowTrav; i <= row + maxRowTrav; i++) {
 						
 		
 						
-		count++;
+		
 	}
 }
 				
 
 				
-redAverages[index] = (int) newRed / divisor;
-greenAverages[index] = (int) newGreen / divisor;
-blueAverages[index] = (int) newBlue / divisor;
+redAverages[index] = newRed / divisor;
+greenAverages[index] = newGreen / divisor;
+blueAverages[index] = newBlue / divisor;
 
 
-count = 0;
 
-float redDiff = 0;
-float greenDiff = 0;
-float blueDiff = 0;
+
+int redDiff = 0;
+int greenDiff = 0;
+int blueDiff = 0;
 
 for(int i = row - maxRowTrav; i <= row + maxRowTrav; i++) {
 	for(int j = col - maxColTrav; j <= col + maxColTrav; j++) {
@@ -164,12 +164,12 @@ for(int i = row - maxRowTrav; i <= row + maxRowTrav; i++) {
 						
 		
 						
-		count++;
+		
 	}
 }
 
 
-redAverages[index] = (int) redDiff;
+redAverages[index] = redDiff;
 
 }
 
