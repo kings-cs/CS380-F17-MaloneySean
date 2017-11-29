@@ -74,7 +74,7 @@ public class RedEyeParallel extends ParallelAlgorithm{
 		
 		int[] dimensions = {original.getWidth(), original.getHeight(), template.getWidth(), template.getHeight()};
 		
-		averageImageWithTemplate(sourceChannels, templateChannels, resultAverages, dimensions,
+		averageImageWithTemplate(sourceChannels, resultAverages, dimensions,
 				context, commandQueue, device, program);
 		
 		
@@ -349,19 +349,29 @@ public class RedEyeParallel extends ParallelAlgorithm{
 		result[2] = blueSumDiff[0];
 	}
 	
-	private static void averageImageWithTemplate(int[][] sourceChannels, int[][] templateChannels, int[][] resultAverages, int[] dimensions,
+	/**
+	 * Calculates the average per channel for the portion of the image overlapped by the template.
+	 * @param sourceChannels The color channels from the source image.
+	 * @param resultAverages The resulting averages for each pixel.
+	 * @param dimensions An array containing the dimensions of the original image and the template.
+	 * @param context The OpenCL context.
+	 * @param commandQueue The OpenCL command queue.
+	 * @param device The OpenCL device.
+	 * @param program The OpenCL program.
+	 */
+	private static void averageImageWithTemplate(int[][] sourceChannels,  int[][] resultAverages, int[] dimensions,
 			cl_context context, cl_command_queue commandQueue, cl_device_id device, cl_program program) {
 		int[] sourceRed = sourceChannels[0];
-//		int[] sourceGreen = sourceChannels[1];
-//		int[] sourceBlue = sourceChannels[2];
+		int[] sourceGreen = sourceChannels[1];
+		int[] sourceBlue = sourceChannels[2];
 		
-		int[] templateRed = templateChannels[0];
+//		int[] templateRed = templateChannels[0];
 //		int[] templateGreen = templateChannels[1];
 //		int[] templateBlue = templateChannels[2];
 		
 		int[] redAverages = resultAverages[0];
-//		int[] greenAverages = resultAverages[1];
-//		int[] blueAverages = resultAverages[2];
+		int[] greenAverages = resultAverages[1];
+		int[] blueAverages = resultAverages[2];
 		
 		int globalSize = sourceRed.length;
 		int localSize = calculateLocalSize(globalSize, device);
@@ -370,12 +380,17 @@ public class RedEyeParallel extends ParallelAlgorithm{
 		long[] globalWorkSize = new long[] {globalSize};
 		long[] localWorkSize = new long[] {localSize};
 		
-		int[][] params = {sourceRed, templateRed, redAverages, dimensions};
+		int[][] params = {sourceRed, sourceGreen, sourceBlue, 
+				redAverages, greenAverages, blueAverages, dimensions};
 		Pointer[] pointers = createPointers(params);
-		Pointer ptrRedAverage = pointers[2];
+		Pointer ptrRedAverage = pointers[3];
+		Pointer ptrGreenAverage = pointers[4];
+		Pointer ptrBlueAverage = pointers[5];
 		
 		cl_mem[] objects = createMemObjects(params, pointers, context);
-		cl_mem memRedAverage = objects[2];
+		cl_mem memRedAverage = objects[3];
+		cl_mem memGreenAverage = objects[4];
+		cl_mem memBlueAverage = objects[5];
 		
 		cl_kernel kernel = CL.clCreateKernel(program, "average_with_template", null);
 		setKernelArgs(objects, kernel);
@@ -389,10 +404,18 @@ public class RedEyeParallel extends ParallelAlgorithm{
 				CL.CL_TRUE, 0, redAverages.length * Sizeof.cl_float,
 				ptrRedAverage, 0, null, null);
 		
+		CL.clEnqueueReadBuffer(commandQueue, memGreenAverage, 
+				CL.CL_TRUE, 0, greenAverages.length * Sizeof.cl_float,
+				ptrGreenAverage, 0, null, null);
+		
+		CL.clEnqueueReadBuffer(commandQueue, memBlueAverage, 
+				CL.CL_TRUE, 0, blueAverages.length * Sizeof.cl_float,
+				ptrBlueAverage, 0, null, null);
+		
 	
-//		for(int i = 0; i < redAverages.length; i++) {
-//			System.out.println(redAverages[i]);
-//		}
+		for(int i = 0; i < redAverages.length; i++) {
+			System.out.println(redAverages[i]);
+		}
 		
 	}
 	

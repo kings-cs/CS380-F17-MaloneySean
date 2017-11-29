@@ -68,7 +68,8 @@ blueResult[i] = blue - blueAvg;
 }
 
 
-__kernel void average_with_template(__global const int * sourceRed, __global const int * templateRed, __global int * redAverages,
+__kernel void average_with_template(__global const int * sourceRed, __global const int * sourceGreen, __global const int * sourceBlue, 
+ __global int * redAverages, __global int * greenAverages, __global int * blueAverages,
 __global int * dimArray){
 
 int group_id = get_group_id(0);
@@ -121,7 +122,8 @@ for(int i = row - maxRowTrav; i <= row + maxRowTrav; i++) {
 		int currentIndex = newRow * width + newCol;
 					
 		newRed += sourceRed[currentIndex];
-
+		newGreen += sourceGreen[currentIndex];
+		newBlue += sourceBlue[currentIndex];
 						
 		count++;
 	}
@@ -129,8 +131,9 @@ for(int i = row - maxRowTrav; i <= row + maxRowTrav; i++) {
 				
 
 				
-redAverages[i] = (int) newRed;
-
+redAverages[i] = (int) newRed / templateSize;
+greenAverages[i] = (int) newGreen / templateSize;
+blueAverages[i] = (int) newBlue / templateSize;
 
 }
 

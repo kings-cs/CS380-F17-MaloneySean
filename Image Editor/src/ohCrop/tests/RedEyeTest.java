@@ -94,7 +94,7 @@ public class RedEyeTest extends ParallelAlgorithm{
 			BufferedImage oRi = ImageIO.read(originalFile);
 			original = ImageIO.read(originalFile);
 			original = new BufferedImage(oRi.getWidth(), oRi.getHeight(), BufferedImage.TYPE_INT_ARGB);
-			Graphics gO = template.getGraphics();
+			Graphics gO = original.getGraphics();
 			gO.drawImage(oRi, 0 , 0 , null );	
 			
 		} catch (IOException e) {
@@ -225,10 +225,7 @@ public class RedEyeTest extends ParallelAlgorithm{
 	@Test
 	public void testAveragesFromTemplate() {
 		int[] data = strip(original);
-		
-		for(int i = 0; i < data.length; i++) {
-			System.out.println(data[i]);
-		}
+	
 		
 //		int[] templateData = strip(template);
 		int[] resultData = new int[data.length];
