@@ -76,7 +76,7 @@ int group_id = get_group_id(0);
 int group_size   = get_local_size(0);
 int local_number = get_local_id(0);
 
-int i = (group_id * group_size) + local_number;
+int index = (group_id * group_size) + local_number;
 
 int count = 0;
 				
@@ -96,8 +96,8 @@ int templateSize = (templateWidth * templateHeight);
 
 int divisor = templateSize;
 
-int row = i / width;
-int col = i % width;
+int row = index / width;
+int col = index % width;
 				
 for(int i = row - maxRowTrav; i <= row + maxRowTrav; i++) {
 	for(int j = col - maxColTrav; j <= col + maxColTrav; j++) {
@@ -129,12 +129,49 @@ for(int i = row - maxRowTrav; i <= row + maxRowTrav; i++) {
 				
 
 				
-redAverages[i] = (int) newRed / divisor;
-greenAverages[i] = (int) newGreen / divisor;
-blueAverages[i] = (int) newBlue / divisor;
+redAverages[index] = (int) newRed / divisor;
+greenAverages[index] = (int) newGreen / divisor;
+blueAverages[index] = (int) newBlue / divisor;
 
+
+count = 0;
+
+float redDiff = 0;
+float greenDiff = 0;
+float blueDiff = 0;
+
+for(int i = row - maxRowTrav; i <= row + maxRowTrav; i++) {
+	for(int j = col - maxColTrav; j <= col + maxColTrav; j++) {
+					
+		int newRow = i;
+		int newCol = j;
+						
+						
+						
+		
+				
+				
+		if(newRow < 0 || newRow > height - 1 || newCol < 0 || newCol > width - 1){
+			//Legit Nothing
+		}
+		else{
+			int currentIndex = newRow * width + newCol;
+					
+			int currentRed = sourceRed[currentIndex] - redAverages[index];		
+			redDiff += currentRed;
+
+		}
+						
+		
+						
+		count++;
+	}
 }
 
+
+redAverages[index] = (int) redDiff;
+
+}
 
 
 
