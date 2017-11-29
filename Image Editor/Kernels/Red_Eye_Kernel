@@ -68,6 +68,41 @@ blueResult[i] = blue - blueAvg;
 }
 
 
+__kernel void average_with_template(__global const int * sourceRed, __global const int * templateRed, __global int * redAverages){
+
+int group_id = get_group_id(0);
+int group_size   = get_local_size(0);
+int local_number = get_local_id(0);
+
+int i = (group_id * group_size) + local_number;
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 __kernel void seperate_channels(__global const int * data, __global int * redData, __global int * blueData, __global int * greenData){
 int RED_MASK = 0x00ff0000;

@@ -29,27 +29,39 @@ public class RedEyeParallel extends ParallelAlgorithm{
 	 * @param context The OpenCL context used.
 	 * @param commandQueue The OpenCL commandQueue used.
 	 * @param device The OpenCL device used.
-	 * @param original The image to be modified.
+	 * @param template The image to be modified.
 	 * @param resultData The result of 
 	 */
-	public static void redEyeRemoval(cl_context context, cl_command_queue commandQueue, cl_device_id device, BufferedImage original, int[] resultData) {
+	public static void redEyeRemoval(cl_context context, cl_command_queue commandQueue, cl_device_id device, BufferedImage template, BufferedImage original, int[] resultData) {
 		
 		cl_program program = buildProgram("Kernels/Red_Eye_Kernel", context);
-		int[] data = strip(original);
 		
-		int[] rgbAvergaes = new int[3];
+		//Template Stuff
+		int[] temlateData = strip(template);
 		
-		int[] redChannel = new int[data.length];
-		int[] blueChannel = new int[data.length];
-		int[] greenChannel = new int[data.length];
+		int[] rgbTemplateAvergaes = new int[3];
 		
-		getChannelAverages(rgbAvergaes, data, redChannel, blueChannel, greenChannel, 
+		int[] redTemplateChannel = new int[temlateData.length];
+		int[] blueTemplateChannel = new int[temlateData.length];
+		int[] greenTemplateChannel = new int[temlateData.length];
+		
+		getChannelAverages(rgbTemplateAvergaes, temlateData, redTemplateChannel, blueTemplateChannel, greenTemplateChannel, 
 				context, commandQueue, device, program);
 		
 		int[] differenceSums = new int[3];
 		
-		int[][] channels = {redChannel, greenChannel, blueChannel};
-		sumDifferences(channels, differenceSums, rgbAvergaes, context, commandQueue, device, program);
+		int[][] templateChannels = {redTemplateChannel, greenTemplateChannel, blueTemplateChannel};
+		sumDifferences(templateChannels, differenceSums, rgbTemplateAvergaes, context, commandQueue, device, program);
+		
+		
+		//Image Stuff
+		int[] data = strip(original);
+		int[] redSourceChannel = new int[data.length];
+		int[] greenSourceChannel = new int[data.length];
+		int[] blueSourceChannel = new int[data.length];
+		
+		seperateChannels(data, redSourceChannel, blueSourceChannel, greenSourceChannel, context, commandQueue, device, program);
+		int[][] sourceChannels = {redSourceChannel, greenSourceChannel, blueSourceChannel};
 		
 		
 		CL.clReleaseProgram(program);
@@ -313,13 +325,54 @@ public class RedEyeParallel extends ParallelAlgorithm{
 		int[] greenSumDiff = reduce(greenDiffs, context, commandQueue, device, program);
 		int[] blueSumDiff = reduce(blueDiffs, context, commandQueue, device, program);
 		
-//		System.out.println(redSumDiff[0]);
-//		System.out.println(greenSumDiff[0]);
-//		System.out.println(blueSumDiff[0]);
+
 		
 		result[0] = redSumDiff[0];
 		result[1] = greenSumDiff[0];
 		result[2] = blueSumDiff[0];
+	}
+	
+	private static void averageImageWithTemplate(int[][] sourceChannels, int[][] templateChannels, int[][] resultAverages, int[] dimensions,
+			cl_context context, cl_command_queue commandQueue, cl_device_id device, cl_program program) {
+		int[] sourceRed = sourceChannels[0];
+//		int[] sourceGreen = sourceChannels[1];
+//		int[] sourceBlue = sourceChannels[2];
+		
+		int[] templateRed = templateChannels[0];
+//		int[] templateGreen = templateChannels[1];
+//		int[] templateBlue = templateChannels[2];
+		
+		int[] redAverages = resultAverages[0];
+//		int[] greenAverages = resultAverages[1];
+//		int[] blueAverages = resultAverages[2];
+		
+		int globalSize = sourceRed.length;
+		int localSize = calculateLocalSize(globalSize, device);
+		
+		
+		long[] globalWorkSize = new long[] {globalSize};
+		long[] localWorkSize = new long[] {localSize};
+		
+		int[][] params = {sourceRed, templateRed, redAverages};
+		Pointer[] pointers = createPointers(params);
+		Pointer ptrRedAverage = pointers[2];
+		
+		cl_mem[] objects = createMemObjects(params, pointers, context);
+		cl_mem memRedAverage = objects[2];
+		
+		cl_kernel kernel = CL.clCreateKernel(program, "average_with_template", null);
+		setKernelArgs(objects, kernel);
+		
+		CL.clEnqueueNDRangeKernel(commandQueue, kernel, 1, null,
+				globalWorkSize, localWorkSize, 
+				0, null, null);
+		
+		
+		CL.clEnqueueReadBuffer(commandQueue, memRedAverage, 
+				CL.CL_TRUE, 0, redAverages.length * Sizeof.cl_float,
+				ptrRedAverage, 0, null, null);
+		
+		
 	}
 	
 }
