@@ -33,6 +33,8 @@ public class RadixSort extends ParallelAlgorithm {
 	 *            The sorted data.
 	 * @param resultKeys
 	 * 			  The sorted keys.
+	 * @param bitCount
+	 * 			  The max amount of bits that a value to be sorted has.
 	 * @param context
 	 *            The Open CL context.
 	 * @param commandQueue
@@ -41,7 +43,7 @@ public class RadixSort extends ParallelAlgorithm {
 	 *            The Open CL device.
 	 * @return The amount of time taken to sort.
 	 */
-	public static long sort(int[] data, int[]keys, int[] result, int[] resultKeys, cl_context context, cl_command_queue commandQueue,
+	public static long sort(int[] data, int[]keys, int[] result, int[] resultKeys, int bitCount, cl_context context, cl_command_queue commandQueue,
 			cl_device_id device) {
 		TIME = 0;
 		CL.setExceptionsEnabled(true);
@@ -52,7 +54,7 @@ public class RadixSort extends ParallelAlgorithm {
 
 		int[] sorting = data;
 		int[] sortingKeys = keys;
-		for (int i = 0; i < 32; i++) {
+		for (int i = 0; i < bitCount; i++) {
 			int currentBitPosition = i;
 
 			int[] p = new int[sorting.length];

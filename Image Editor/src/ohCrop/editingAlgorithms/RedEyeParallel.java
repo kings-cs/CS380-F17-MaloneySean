@@ -16,6 +16,7 @@ import org.jocl.cl_program;
 
 
 import ohCrop.utilAlgorithms.ParallelAlgorithm;
+import ohCrop.utilAlgorithms.RadixSort;
 
 /**
  * Algorithm to remove Red Eye's from images.
@@ -542,13 +543,23 @@ public class RedEyeParallel extends ParallelAlgorithm{
 		
 		convertNccToPosInt(nccArray, minNcc, nccInts, context, commandQueue, device, program);
 		
-		
-		for(int i = 0; i < nccInts.length; i++) {
-			
-			System.out.println(nccInts[i]);
-		}
+	
 
+		int[] keys = new int[nccInts.length];
+		int[] sortedNcc = new int[nccInts.length];
+		int[] sortedKeys = new int[nccInts.length];
 		
+		//TODO: MODIFY KERNEL TO INITALIZE THESE IN PARALLEL
+		for(int i = 0; i < keys.length; i++) {
+			keys[i] = i;
+		}
+		
+		
+		RadixSort.sort(nccInts, keys, sortedNcc, sortedKeys, 14, context, commandQueue, device);
+		
+		for(int i = 0; i < sortedNcc.length; i++) {
+			System.out.println("V: " + sortedNcc[i] + " K: " + sortedKeys[i]);
+		}
 		
 		releaseMemObject(objects);
 		

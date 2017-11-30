@@ -40,7 +40,7 @@ public class SortTest {
 		
 		int[] results = new int[data.length];
 		int[] resultsKeys = new int[data.length];
-		long time = RadixSort.sort(data, keys, results, resultsKeys, setup.getContext(), setup.getCommandQueue(), setup.getDevice());
+		long time = RadixSort.sort(data, keys, results, resultsKeys, 32, setup.getContext(), setup.getCommandQueue(), setup.getDevice());
 		
 		
 		
@@ -78,7 +78,7 @@ public class SortTest {
 		
 		int[] results = new int[data.length];
 		int[] resultsKeys = new int[data.length];
-		long time = RadixSort.sort(data, keys, results, resultsKeys, setup.getContext(), setup.getCommandQueue(), setup.getDevice());
+		long time = RadixSort.sort(data, keys, results, resultsKeys, 32, setup.getContext(), setup.getCommandQueue(), setup.getDevice());
 		
 		for(int i = 0; i < data.length; i++) {
 			assertEquals("The value at index " + i + " should be : " + expected[i], expected[i], results[i]);
@@ -114,7 +114,7 @@ public class SortTest {
 		
 		int[] results = new int[data.length];
 		int[] resultsKeys = new int[data.length];
-		long time = RadixSort.sort(data, keys, results, resultsKeys, setup.getContext(), setup.getCommandQueue(), setup.getDevice());
+		long time = RadixSort.sort(data, keys, results, resultsKeys, 32, setup.getContext(), setup.getCommandQueue(), setup.getDevice());
 		
 		
 		for(int i = 0; i < data.length; i++) {
