@@ -172,18 +172,18 @@ public class RedEyeTest extends ParallelAlgorithm{
 	 */
 	@Test
 	public void testSumDifference() {
-		int[] data = strip(template);
+		int[] templateData = strip(template);
 		//int[] resultData = new int[data.length];
 		
 		
 		int[] averages = new int[3];
 
-		int[] redChannel = new int[data.length];
-		int[] greenChannel = new int[data.length];
-		int[] blueChannel = new int[data.length];
+		int[] redChannel = new int[templateData.length];
+		int[] greenChannel = new int[templateData.length];
+		int[] blueChannel = new int[templateData.length];
 		
 		
-		RedEyeParallel.getChannelAverages(averages, data, redChannel, blueChannel, greenChannel, context, commandQueue, device, program);
+		RedEyeParallel.getChannelAverages(averages, templateData, redChannel, blueChannel, greenChannel, context, commandQueue, device, program);
 		
 		int redAvg = averages[0];
 		int greenAvg = averages[1];
@@ -198,23 +198,31 @@ public class RedEyeTest extends ParallelAlgorithm{
 			
 			
 			
-			redDiff += redChannel[i] - redAvg;
-			greenDiff += greenChannel[i] - greenAvg;
-			blueDiff += blueChannel[i] - blueAvg;
+			redDiff += (redChannel[i] - redAvg) * (redChannel[i] - redAvg);
+			greenDiff += (greenChannel[i] - greenAvg) * (greenChannel[i] - greenAvg);
+			blueDiff += (blueChannel[i] - blueAvg) * (blueChannel[i] - blueAvg);
 		}
 
 		int[] result = new int[3];
 		int[][] channelData = {redChannel, greenChannel, blueChannel};
+		int[] redUnsquared = new int[templateData.length];
+		int[] greenUnsquared = new int[templateData.length];
+		int[] blueUnsquared = new int[templateData.length];
+		int[][] unsquared = {redUnsquared, greenUnsquared, blueUnsquared};
 		
 		
-		RedEyeParallel.sumDifferences(channelData, result, averages, context, commandQueue, device, program);
+		RedEyeParallel.sumDifferences(channelData, result, unsquared, averages, context, commandQueue, device, program);
 		
 		
 		assertEquals("The red sum of differences should equal: " + redDiff, redDiff, result[0]);
 		assertEquals("The green sum of differences should equal: " + greenDiff, greenDiff, result[1]);
 		assertEquals("The blue sum of differences should equal: " + blueDiff, blueDiff, result[2]);
 		
+//		for(int i = 0; i < redUnsquared.length; i++) {
+//			System.out.println(redUnsquared[i]);
+//		}
 		
+	
 		CL.clReleaseProgram(program);
 		
 	}
@@ -223,7 +231,7 @@ public class RedEyeTest extends ParallelAlgorithm{
 	 * Tests that the channels get averaged correctly according to the template.
 	 */
 	@Test
-	public void testAveragesFromTemplate() {
+	public void testSumDifferencesFromTemplate() {
 		int[] data = strip(original);
 	
 		
@@ -231,120 +239,135 @@ public class RedEyeTest extends ParallelAlgorithm{
 		int[] resultData = new int[data.length];
 		
 		RedEyeParallel.redEyeRemoval(context, commandQueue, device, template, original, resultData);
+		
+	
+		
 	}
 	
-	private void calculateSumDiffsFromAverage(int[][] sourceChannels, int[][] averages, int[] dimArray) {
-		//TODO: RUN THIS
-		
-		int[] sourceRed = sourceChannels[0];
-		int[] sourceGreen = sourceChannels[1];
-		int[] sourceBlue = sourceChannels[2];
-		
-		int[] redAverages = averages[0];
-		int[] greenAverages = averages[1];
-		int[] blueAverages = averages[2];
-		
-		
-		
-		int width = dimArray[0];
-		int height = dimArray[1];
-		int templateWidth = dimArray[2];
-		int templateHeight = dimArray[3];
-		
-		
-		int maxColTrav = templateWidth / 2;
-		int maxRowTrav = templateHeight / 2;
-		int templateSize = (templateWidth * templateHeight);
-
-		
-		
-		for(int index = 0; index < sourceRed.length; index++) {
-			int count = 0;
-			
-			int newRed = 0;
-			int newBlue = 0;
-			int newGreen = 0;
-			
-			int divisor = templateSize;
-			
-			int row = index / width;
-			int col = index % width;
-							
-			for(int i = row - maxRowTrav; i <= row + maxRowTrav; i++) {
-				for(int j = col - maxColTrav; j <= col + maxColTrav; j++) {
-								
-					int newRow = i;
-					int newCol = j;
-									
-									
-									
-					
-							
-							
-					if(newRow < 0 || newRow > height - 1 || newCol < 0 || newCol > width - 1){
-						divisor--;
-					}
-					else{
-						int currentIndex = newRow * width + newCol;
-								
-						newRed += sourceRed[currentIndex];
-						newGreen += sourceGreen[currentIndex];
-						newBlue += sourceBlue[currentIndex];	
-					}
-									
-					
-									
-					count++;
-				}
-			}
-							
-
-							
-			redAverages[index] = newRed / divisor;
-			greenAverages[index] = newGreen / divisor;
-			blueAverages[index] = newBlue / divisor;
-
-
-			count = 0;
-
-			int redDiff = 0;
-			int greenDiff = 0;
-			int blueDiff = 0;
-
-			for(int i = row - maxRowTrav; i <= row + maxRowTrav; i++) {
-				for(int j = col - maxColTrav; j <= col + maxColTrav; j++) {
-								
-					int newRow = i;
-					int newCol = j;
-									
-									
-									
-					
-							
-							
-					if(newRow < 0 || newRow > height - 1 || newCol < 0 || newCol > width - 1){
-						//Legit Nothing
-					}
-					else{
-						int currentIndex = newRow * width + newCol;
-								
-						int currentRed = sourceRed[currentIndex] - redAverages[index];		
-						redDiff += currentRed;
-
-					}
-									
-					
-									
-					count++;
-				}
-			}
-
-
-			redAverages[index] = redDiff;
-			
-			
-		}
-		
-	}
+//	/**
+//	 * Private helper that was supposed to do shit but probably isnt gonna get used.
+//	 * @param sourceChannels The source channels.
+//	 * @param averages The averages.
+//	 * @param dimArray The dimArrays.
+//	 */
+//	private void calculateSumDiffsFromAverage(int[][] sourceChannels, int[][] averages, int[] dimArray) {
+//		//TODO: Delete help?
+//		
+//		int[] sourceRed = sourceChannels[0];
+//		int[] sourceGreen = sourceChannels[1];
+//		int[] sourceBlue = sourceChannels[2];
+//		
+//		int[] redAverages = averages[0];
+//		int[] greenAverages = averages[1];
+//		int[] blueAverages = averages[2];
+//		
+//		
+//		
+//		int width = dimArray[0];
+//		int height = dimArray[1];
+//		int templateWidth = dimArray[2];
+//		int templateHeight = dimArray[3];
+//		
+//		
+//		int maxColTrav = templateWidth / 2;
+//		int maxRowTrav = templateHeight / 2;
+//		int templateSize = (templateWidth * templateHeight);
+//
+//		
+//		
+//		for(int index = 0; index < sourceRed.length; index++) {
+//			
+//			
+//			int newRed = 0;
+//			int newBlue = 0;
+//			int newGreen = 0;
+//			
+//			int divisor = templateSize;
+//			
+//			int row = index / width;
+//			int col = index % width;
+//							
+//			for(int i = row - maxRowTrav; i <= row + maxRowTrav; i++) {
+//				for(int j = col - maxColTrav; j <= col + maxColTrav; j++) {
+//								
+//					int newRow = i;
+//					int newCol = j;
+//									
+//									
+//									
+//					
+//							
+//							
+//					if(newRow < 0 || newRow > height - 1 || newCol < 0 || newCol > width - 1){
+//						divisor--;
+//					}
+//					else{
+//						int currentIndex = newRow * width + newCol;
+//								
+//						newRed += sourceRed[currentIndex];
+//						newGreen += sourceGreen[currentIndex];
+//						newBlue += sourceBlue[currentIndex];	
+//					}
+//									
+//					
+//									
+//				
+//				}
+//			}
+//							
+//
+//							
+//			redAverages[index] = newRed / divisor;
+//			greenAverages[index] = newGreen / divisor;
+//			blueAverages[index] = newBlue / divisor;
+//
+//
+//		
+//
+//			int redDiff = 0;
+//			int greenDiff = 0;
+//			int blueDiff = 0;
+//
+//			for(int i = row - maxRowTrav; i <= row + maxRowTrav; i++) {
+//				for(int j = col - maxColTrav; j <= col + maxColTrav; j++) {
+//								
+//					int newRow = i;
+//					int newCol = j;
+//									
+//									
+//									
+//					
+//							
+//							
+//					if(newRow < 0 || newRow > height - 1 || newCol < 0 || newCol > width - 1){
+//						//Legit Nothing
+//					}
+//					else{
+//						int currentIndex = newRow * width + newCol;
+//								
+//						int currentRed = sourceRed[currentIndex] - redAverages[index];		
+//						int currentGreen = sourceGreen[currentIndex] - greenAverages[index];
+//						int currentBlue = sourceBlue[currentIndex] - blueAverages[index];
+//						
+//						redDiff += (currentRed * currentRed);
+//						greenDiff += (currentGreen * currentGreen);
+//						blueDiff += (currentBlue * currentBlue);
+//
+//					}
+//									
+//					
+//									
+//					
+//				}
+//			}
+//
+//
+//			redAverages[index] = redDiff;
+//			greenAverages[index] = greenDiff;
+//			blueAverages[index] = blueDiff;
+//			
+//		}
+//		
+//	}
 	
 }
