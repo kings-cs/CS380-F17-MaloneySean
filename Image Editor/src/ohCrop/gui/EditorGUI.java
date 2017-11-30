@@ -41,6 +41,7 @@ import ohCrop.editingAlgorithms.GrayScaleParallel;
 import ohCrop.editingAlgorithms.HistogramEqualizationParallel;
 import ohCrop.editingAlgorithms.TransformationParallel;
 import ohCrop.editingAlgorithms.MosaicParallel;
+import ohCrop.editingAlgorithms.RedEyeParallel;
 import ohCrop.editingAlgorithms.SepiaParallel;
 import ohCrop.editingAlgorithms.Sepia;
 import ohCrop.utilAlgorithms.ParallelSetUp;
@@ -192,6 +193,11 @@ public class EditorGUI extends JFrame{
 	private JButton atomicParallelHist;
 	
 	/**
+	 * Button used to remove red eyes from an image.
+	 */
+	private JButton redEyeParallel;
+	
+	/**
 	 * JPanel used to display an image.
 	 */
 	private JPanel canvas;
@@ -339,6 +345,7 @@ public class EditorGUI extends JFrame{
 		histogramEq = new JButton("Histogram Equalization");
 		histogramEqParallel = new JButton("Histogram Equalization (Parallel)");
 		atomicParallelHist = new JButton("Histogram Eq. (Atomic Parallel)");
+		redEyeParallel = new JButton("Red Eye (Parallel)");
 		
 		//****************Bottom Panel*****************************
 		JPanel bottomPanel = new JPanel();
@@ -377,6 +384,7 @@ public class EditorGUI extends JFrame{
 		toolBar.add(histogramEq);
 		toolBar.add(histogramEqParallel);
 		toolBar.add(atomicParallelHist);
+		toolBar.add(redEyeParallel);
 		this.add(toolBar, BorderLayout.NORTH);
 		
 		
@@ -394,6 +402,7 @@ public class EditorGUI extends JFrame{
 		histogramEq.addActionListener(ae);
 		histogramEqParallel.addActionListener(ae);
 		atomicParallelHist.addActionListener(ae);
+		redEyeParallel.addActionListener(ae);
 		exit.addActionListener(ae);
 		open.addActionListener(ae);
 		close.addActionListener(ae);
@@ -606,6 +615,44 @@ public class EditorGUI extends JFrame{
 				
 				paintImage(resizedImage);
 			}
+	}
+	
+	/**
+	 * Private helper to prompt for a template needed in red eye reduction.
+	 * @return The template.
+	 */
+	private BufferedImage templatePrompt() {
+		JFileChooser fileChooser = new JFileChooser();
+		int result = fileChooser.showOpenDialog(null);
+		
+		BufferedImage template = null;
+		
+		if(result == JFileChooser.APPROVE_OPTION){
+			String filePath = fileChooser.getSelectedFile().getPath();
+			File templateFile = new File(filePath);
+			
+			BufferedImage ri;
+			try {
+				ri = ImageIO.read(templateFile);
+				template = ImageIO.read(templateFile);
+				template = new BufferedImage(ri.getWidth(), ri.getHeight(), BufferedImage.TYPE_INT_ARGB);
+				Graphics g = template.getGraphics();
+				g.drawImage(ri, 0 , 0 , null );		
+				
+				
+				
+			} catch (IOException e) {
+				JOptionPane.showMessageDialog(null, "The Image Could Not Be Read From A File At The Given Path", "Oops", 
+						JOptionPane.ERROR_MESSAGE);
+			}
+			
+			
+		}
+		else{
+			JOptionPane.showMessageDialog(null, "Image Location Not Properly Selected", "Oops", 
+					JOptionPane.ERROR_MESSAGE);
+		}
+		return template;
 	}
 	
 	/**
@@ -942,6 +989,26 @@ public class EditorGUI extends JFrame{
 				preZoomImage = histoEqualized;
 				
 				paintImage(histoEqualized);
+				
+				
+				setZoom(preEditZoom * 100);
+			}
+			else if(action.getSource() == redEyeParallel) {
+				changeMade = true;
+				double preEditZoom = zoomAmount;
+				
+				JOptionPane.showMessageDialog(null, "Select Template Location", "Oops", 
+						JOptionPane.ERROR_MESSAGE);
+				BufferedImage template = templatePrompt();
+				
+				BufferedImage redEyesRemoved =  RedEyeParallel.redEyeRemoval(parallelControl.getContext(),
+						parallelControl.getCommandQueue(), parallelControl.getDevice(), 
+						template, preZoomImage);
+				
+				
+				preZoomImage = redEyesRemoved;
+				
+				paintImage(redEyesRemoved);
 				
 				
 				setZoom(preEditZoom * 100);
