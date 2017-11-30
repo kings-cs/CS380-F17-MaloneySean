@@ -231,14 +231,14 @@ public class RedEyeTest extends ParallelAlgorithm{
 	 * Tests that the channels get averaged correctly according to the template.
 	 */
 	@Test
-	public void testSumDifferencesFromTemplate() {
-		int[] data = strip(original);
+	public void testRedEye() {
+		
 	
 		
-//		int[] templateData = strip(template);
-		int[] resultData = new int[data.length];
+
+	
 		
-		RedEyeParallel.redEyeRemoval(context, commandQueue, device, template, original, resultData);
+		RedEyeParallel.redEyeRemoval(context, commandQueue, device, template, original);
 		
 	
 		

@@ -36,10 +36,12 @@ public class RedEyeParallel extends ParallelAlgorithm{
 	 * @param device The OpenCL device used.
 	 * @param template The template used to modify the image.
 	 * @param original The image to be modified.
-	 * @param resultData The result of 
+	 * @return The image with removed red eyes. 
 	 */
-	public static void redEyeRemoval(cl_context context, cl_command_queue commandQueue, cl_device_id device, BufferedImage template, BufferedImage original, int[] resultData) {
+	public static BufferedImage redEyeRemoval(cl_context context, cl_command_queue commandQueue, cl_device_id device, BufferedImage template, BufferedImage original) {
 		TIME = 0;
+		
+		BufferedImage result = null;
 		
 		cl_program program = buildProgram("Kernels/Red_Eye_Kernel", context);
 		
@@ -89,17 +91,28 @@ public class RedEyeParallel extends ParallelAlgorithm{
 		float[] nccArray = new float[data.length];
 		//int[] nccArray = new int[data.length];
 		
-		calculateNcc(sourceChannels, resultAverages, unsquared, differenceSums, dimensions, nccArray,
+		//int[] sortedNcc = new int[nccArray.length];
+		int[] sortedKeys = new int[nccArray.length];
+		calculateNcc(sourceChannels, resultAverages, unsquared, differenceSums, dimensions, nccArray, sortedKeys,
 				context, commandQueue, device, program);
 		
 		
+		int centerIndex = sortedKeys[sortedKeys.length - 1];
+		//System.out.println(centerIndex);
+		//TODO: Get rid of this and just do data.
+		int[] resultData = data.clone();
+		reduceRedness(data, resultData, centerIndex, templateData.length,
+				context, commandQueue, device, program);
 		
+		
+		result = wrapUp(resultData, original);
 		
 		
 		CL.clReleaseProgram(program);
 		
-		System.out.println("TIME: " + TIME);
+		System.out.println("TIME: " + (TIME / 1000000.0));
 	
+		return result;
 	}
 	
 	/**
@@ -414,12 +427,13 @@ public class RedEyeParallel extends ParallelAlgorithm{
 	 * @param templateDiffs The sum of the differences for each channel in the template. 
 	 * @param dimensions An array containing the dimensions of the original image and the template.
 	 * @param nccArray The resulting ncc values.
+	 * @param sortedKeys The sorted key values.
 	 * @param context The OpenCL context.
 	 * @param commandQueue The OpenCL command queue.
 	 * @param device The OpenCL device.
 	 * @param program The OpenCL program.
 	 */
-	private static void calculateNcc(int[][] sourceChannels,  int[][] resultAverages, int[][] unsquared, int[]templateDiffs, int[] dimensions, float[]nccArray,
+	private static void calculateNcc(int[][] sourceChannels,  int[][] resultAverages, int[][] unsquared, int[]templateDiffs, int[] dimensions, float[]nccArray, int[] sortedKeys,
 			cl_context context, cl_command_queue commandQueue, cl_device_id device, cl_program program) {
 		int[] sourceRed = sourceChannels[0];
 		int[] sourceGreen = sourceChannels[1];
@@ -565,20 +579,73 @@ public class RedEyeParallel extends ParallelAlgorithm{
 	
 
 		
-		int[] sortedNcc = new int[nccInts.length];
-		int[] sortedKeys = new int[nccInts.length];
-		
+	
+		int[] sortedNcc = new int[nccArray.length];
 
 			
 		
 		TIME += RadixSort.sort(nccInts, keys, sortedNcc, sortedKeys, 14, context, commandQueue, device);
+	
+//		for(int i = 0; i < sortedNcc.length; i++) {
+//			System.out.println("V: " + sortedNcc[i] + " K: " + sortedKeys[i]);
+//		}
 		
-		for(int i = 0; i < sortedNcc.length; i++) {
-			System.out.println("V: " + sortedNcc[i] + " K: " + sortedKeys[i]);
-		}
+//		for(int i = 0; i < redProductDiffs.length; i++) {
+//			System.out.println(redProductDiffs[i]);
+//		}
+//		
 		
 		releaseMemObject(objects);
 		
+	}
+	
+	
+	/**
+	 * Reduces the redness of the appropriate pixels.
+	 * @param data The source data.
+	 * @param result The result data.
+	 * @param centerIndex The center index.
+	 * @param templateSize The template size.
+	 * @param context The OpenCL context.
+	 * @param commandQueue The OpenCL command Queue.
+	 * @param device The OpenCL device.
+	 * @param program The OpenCL program.
+	 */
+	private static void reduceRedness(int[] data, int[] result, int centerIndex, int templateSize,
+			cl_context context, cl_command_queue commandQueue, cl_device_id device, cl_program program) {
+		
+		int globalSize = templateSize;
+		int localSize = calculateLocalSize(globalSize, device);
+		
+		long[] globalWorkSize = new long[] {globalSize};
+		long[] localWorkSize = new long[] {localSize};
+		
+		int shift = centerIndex - (templateSize / 2);
+		
+		int[] dimensions = {shift};
+		int[][] params = {data, dimensions, result};
+		
+		Pointer[] pointers = createPointers(params);
+		Pointer ptrResult = pointers[2];
+		
+		cl_mem[] objects = createMemObjects(params, pointers, context);
+		cl_mem memResult = objects[2];
+		
+		cl_kernel kernel = CL.clCreateKernel(program, "reduce_redness", null);
+		setKernelArgs(objects, kernel);
+		
+		long startTime = System.nanoTime();
+		CL.clEnqueueNDRangeKernel(commandQueue, kernel, 1, null,
+				globalWorkSize, localWorkSize, 
+				0, null, null);
+		long endTime = System.nanoTime();
+		TIME += endTime - startTime;
+		
+		CL.clEnqueueReadBuffer(commandQueue, memResult, 
+				CL.CL_TRUE, 0, result.length * Sizeof.cl_float,
+				ptrResult, 0, null, null);
+		
+		releaseMemObject(objects);
 	}
 	
 

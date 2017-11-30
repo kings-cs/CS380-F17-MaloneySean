@@ -331,6 +331,42 @@ resultData[i] = (currentNcc + -min) * 1000;
 }
 
 
+__kernel void reduce_redness(__global const int * data, __global const int * dimensions, __global int * result){
+
+int ALPHA_MASK = 0xff000000;
+int ALPHA_OFFSET = 24;
+int RED_MASK = 0x00ff0000;
+int RED_OFFSET = 16;
+int GREEN_MASK = 0x0000ff00;
+int GREEN_OFFSET = 8;
+int BLUE_MASK = 0x000000ff;
+int BLUE_OFFSET = 0;
+
+
+
+int i = (get_group_id(0) * get_local_size(0)) + get_local_id(0);
+
+int shift = dimensions[0];
+
+int index = i + shift;
+
+
+int pixel = data[index];
+
+int alpha = (pixel & ALPHA_MASK) >> ALPHA_OFFSET;
+int red = (pixel & RED_MASK) >> RED_OFFSET;
+int green = (pixel & GREEN_MASK) >> GREEN_OFFSET;
+int blue = (pixel & BLUE_MASK) >> BLUE_OFFSET;
+
+int newRed = (blue + green) / 2;
+
+int newPixel = (alpha << ALPHA_OFFSET) | (newRed << RED_OFFSET) |
+						(green << GREEN_OFFSET) | (blue << BLUE_OFFSET);
+						
+
+result[index] = newPixel;
+}
+
 
 
 
