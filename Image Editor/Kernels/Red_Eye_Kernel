@@ -83,11 +83,8 @@ blueUnsquared[i] = blueDiff;
 
 
 __kernel void calculate_ncc(__global const int * sourceRed, __global const int * sourceGreen, __global const int * sourceBlue, 
- __global int * redAverages, __global int * greenAverages, __global int * blueAverages,
 __global int * dimArray,
-__global int * redSumDiffs, __global int * greenSumDiffs, __global int * blueSumDiffs,
 __global int * redUnsquared, __global int * greenUnsquared, __global int * blueUnsquared,
-__global int * redProductDiffs, __global int * greenProductDiffs, __global int * blueProductDiffs,
 __global int * redTemplateDiffs, __global int * greenTemplateDiffs, __global int * blueTemplateDiffs,
 __global float * nccArray) {
 
@@ -148,9 +145,6 @@ for(int i = row - maxRowTrav; i <= row + maxRowTrav; i++) {
 				
 
 				
-//redAverages[index] = newRed / divisor;
-//greenAverages[index] = newGreen / divisor;
-//blueAverages[index] = newBlue / divisor;
 
 int redAverage = newRed / divisor;
 int greenAverage = newGreen / divisor;
@@ -209,13 +203,8 @@ for(int i = row - maxRowTrav; i <= row + maxRowTrav; i++) {
 }
 
 
-redSumDiffs[index] = redDiff;
-greenSumDiffs[index] = greenDiff;
-blueSumDiffs[index] = blueDiff;
 
-redProductDiffs[index] = redProductDiff;
-greenProductDiffs[index] = greenProductDiff;
-blueProductDiffs[index] = blueProductDiff;
+
 
 
 float redTemplateDiffSqrt = sqrt((float) redTemplateDiffs[0]);
@@ -237,7 +226,6 @@ float blueNcc = blueProductDiff / blueSqrtProduct;
 
 float ncc = (redNcc * greenNcc * blueNcc);
 
-//int resultNcc = (ncc + MAXFLOAT) * 1000;
 
 nccArray[index] = ncc;
 

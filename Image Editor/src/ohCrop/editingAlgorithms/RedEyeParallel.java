@@ -81,11 +81,6 @@ public class RedEyeParallel extends ParallelAlgorithm{
 		int[][] sourceChannels = {redSourceChannel, greenSourceChannel, blueSourceChannel};
 		
 		
-		int[] redAveragesFromTemplate = new int[data.length];
-		int[] greenAveragesFromTemplate = new int[data.length];
-		int[] blueAveragesFromTemplate = new int[data.length];
-		int[][] resultAverages = {redAveragesFromTemplate, greenAveragesFromTemplate, blueAveragesFromTemplate};
-		
 		int[] dimensions = {original.getWidth(), original.getHeight(), template.getWidth(), template.getHeight()};
 		
 		float[] nccArray = new float[data.length];
@@ -93,11 +88,13 @@ public class RedEyeParallel extends ParallelAlgorithm{
 		
 		//int[] sortedNcc = new int[nccArray.length];
 		int[] sortedKeys = new int[nccArray.length];
-		calculateNcc(sourceChannels, resultAverages, unsquared, differenceSums, dimensions, nccArray, sortedKeys,
+		calculateNcc(sourceChannels, unsquared, differenceSums, dimensions, nccArray, sortedKeys,
 				context, commandQueue, device, program);
 		
 		
 		int centerIndex = sortedKeys[sortedKeys.length - 1];
+		
+		
 		//System.out.println(centerIndex);
 		//TODO: Get rid of this and just do data.
 		int[] resultData = data.clone();
@@ -425,7 +422,6 @@ public class RedEyeParallel extends ParallelAlgorithm{
 	/**
 	 * Calculates the average per channel for the portion of the image overlapped by the template.
 	 * @param sourceChannels The color channels from the source image.
-	 * @param resultAverages The resulting averages for each pixel.
 	 * @param unsquared The unsquared values of a pixel in the template and the associated average.
 	 * @param templateDiffs The sum of the differences for each channel in the template. 
 	 * @param dimensions An array containing the dimensions of the original image and the template.
@@ -436,19 +432,12 @@ public class RedEyeParallel extends ParallelAlgorithm{
 	 * @param device The OpenCL device.
 	 * @param program The OpenCL program.
 	 */
-	private static void calculateNcc(int[][] sourceChannels,  int[][] resultAverages, int[][] unsquared, int[]templateDiffs, int[] dimensions, float[]nccArray, int[] sortedKeys,
+	private static void calculateNcc(int[][] sourceChannels, int[][] unsquared, int[]templateDiffs, int[] dimensions, float[]nccArray, int[] sortedKeys,
 			cl_context context, cl_command_queue commandQueue, cl_device_id device, cl_program program) {
 		int[] sourceRed = sourceChannels[0];
 		int[] sourceGreen = sourceChannels[1];
 		int[] sourceBlue = sourceChannels[2];
 		
-//		int[] templateRed = templateChannels[0];
-//		int[] templateGreen = templateChannels[1];
-//		int[] templateBlue = templateChannels[2];
-		
-		int[] redAverages = resultAverages[0];
-		int[] greenAverages = resultAverages[1];
-		int[] blueAverages = resultAverages[2];
 		
 		int globalSize = sourceRed.length;
 		int localSize = calculateLocalSize(globalSize, device);
@@ -457,58 +446,29 @@ public class RedEyeParallel extends ParallelAlgorithm{
 		long[] localWorkSize = new long[] {localSize};
 		
 		
-		int[] redSumDiffs = new int[sourceRed.length];
-		int[] greenSumDiffs = new int[sourceGreen.length];
-		int[] blueSumDiffs = new int[sourceBlue.length];
-		
 		int[] redUnsquared = unsquared[0];
 		int[] greenUnsquared = unsquared[1];
 		int[] blueUnsquared = unsquared[2];
 		
 		
-		int[] redProductDiffs = new int[sourceRed.length];
-		int[] greenProductDiffs = new int[sourceGreen.length];
-		int[] blueProductDiffs = new int[sourceBlue.length];
 		
 		int[] redTemplateDiffs = {templateDiffs[0]};
 		int[] greenTemplateDiffs = {templateDiffs[1]};
 		int[] blueTemplateDiffs = {templateDiffs[2]};
 		
 		int[][] params = {sourceRed, sourceGreen, sourceBlue, 
-				redAverages, greenAverages, blueAverages, dimensions,
-				redSumDiffs, greenSumDiffs, blueSumDiffs,
+				dimensions,
 				redUnsquared, greenUnsquared, blueUnsquared,
-				redProductDiffs, greenProductDiffs, blueProductDiffs,
 				redTemplateDiffs, greenTemplateDiffs, blueTemplateDiffs /*,nccArray*/};
 		
 		
 		Pointer[] pointers = createPointers(params);
-		Pointer ptrRedAverage = pointers[3];
-		Pointer ptrGreenAverage = pointers[4];
-		Pointer ptrBlueAverage = pointers[5];
-		
-		Pointer ptrRedSumDiffs = pointers[7];
-		Pointer ptrGreenSumDiffs = pointers[8];
-		Pointer ptrBlueSumDiffs = pointers[9];
-		
-		Pointer ptrRedProductDiffs = pointers[13];
-		Pointer ptrGreenProductDiffs = pointers[14];
-		Pointer ptrBlueProductDiffs = pointers[15];
+	
 		
 		Pointer ptrNcc = Pointer.to(nccArray);
 		
 		cl_mem[] objects = createMemObjects(params, pointers, context);
-		cl_mem memRedAverage = objects[3];
-		cl_mem memGreenAverage = objects[4];
-		cl_mem memBlueAverage = objects[5];
-		
-		cl_mem memRedSumDiffs = objects[7];
-		cl_mem memGreenSumDiffs = objects[8];
-		cl_mem memBlueSumDiffs = objects[9];
-		
-		cl_mem memRedProductDiffs = objects[13];
-		cl_mem memGreenProductDiffs = objects[14];
-		cl_mem memBlueProductDiffs = objects[15];
+	
 		
 		//cl_mem memNcc = objects[19];
 		
@@ -518,7 +478,7 @@ public class RedEyeParallel extends ParallelAlgorithm{
 		cl_kernel kernel = CL.clCreateKernel(program, "calculate_ncc", null);
 		setKernelArgs(objects, kernel);
 		
-		CL.clSetKernelArg(kernel, 19, Sizeof.cl_mem, Pointer.to(memNcc));
+		CL.clSetKernelArg(kernel, objects.length, Sizeof.cl_mem, Pointer.to(memNcc));
 		
 		long startTime = System.nanoTime();
 		CL.clEnqueueNDRangeKernel(commandQueue, kernel, 1, null,
@@ -526,45 +486,7 @@ public class RedEyeParallel extends ParallelAlgorithm{
 				0, null, null);
 		long endTime = System.nanoTime();
 		TIME += endTime - startTime;
-		
-		//TODO: A Lot of these read buffers are gonna get removed
-		
-//		CL.clEnqueueReadBuffer(commandQueue, memRedAverage, 
-//				CL.CL_TRUE, 0, redAverages.length * Sizeof.cl_float,
-//				ptrRedAverage, 0, null, null);
-//		
-//		CL.clEnqueueReadBuffer(commandQueue, memGreenAverage, 
-//				CL.CL_TRUE, 0, greenAverages.length * Sizeof.cl_float,
-//				ptrGreenAverage, 0, null, null);
-//		
-//		CL.clEnqueueReadBuffer(commandQueue, memBlueAverage, 
-//				CL.CL_TRUE, 0, blueAverages.length * Sizeof.cl_float,
-//				ptrBlueAverage, 0, null, null);
-//		
-//		CL.clEnqueueReadBuffer(commandQueue, memRedSumDiffs, 
-//				CL.CL_TRUE, 0, redSumDiffs.length * Sizeof.cl_float,
-//				ptrRedSumDiffs, 0, null, null);
-//		
-//		CL.clEnqueueReadBuffer(commandQueue, memGreenSumDiffs, 
-//				CL.CL_TRUE, 0, greenSumDiffs.length * Sizeof.cl_float,
-//				ptrGreenSumDiffs, 0, null, null);
-//		
-//		CL.clEnqueueReadBuffer(commandQueue, memBlueSumDiffs, 
-//				CL.CL_TRUE, 0, blueSumDiffs.length * Sizeof.cl_float,
-//				ptrBlueSumDiffs, 0, null, null);
-//
-//		
-//		CL.clEnqueueReadBuffer(commandQueue, memRedProductDiffs, 
-//				CL.CL_TRUE, 0, redProductDiffs.length * Sizeof.cl_float,
-//				ptrRedProductDiffs, 0, null, null);
-//		
-//		CL.clEnqueueReadBuffer(commandQueue, memGreenProductDiffs, 
-//				CL.CL_TRUE, 0, greenProductDiffs.length * Sizeof.cl_float,
-//				ptrGreenProductDiffs, 0, null, null);
-//		
-//		CL.clEnqueueReadBuffer(commandQueue, memBlueProductDiffs, 
-//				CL.CL_TRUE, 0, blueProductDiffs.length * Sizeof.cl_float,
-//				ptrBlueProductDiffs, 0, null, null);
+	
 		
 		CL.clEnqueueReadBuffer(commandQueue, memNcc, 
 				CL.CL_TRUE, 0, nccArray.length * Sizeof.cl_float,
