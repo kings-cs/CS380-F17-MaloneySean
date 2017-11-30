@@ -316,7 +316,17 @@ else{
 
 
 
+__kernel void convert_ncc(__global const float * nccData, __global float * minValue, __global int * resultData){
 
+int i = (get_group_id(0) * get_local_size(0)) + get_local_id(0);
+
+float min = minValue[0];
+
+float currentNcc = nccData[i];
+
+resultData[i] = (currentNcc + -min) * 1000;
+
+}
 
 
 

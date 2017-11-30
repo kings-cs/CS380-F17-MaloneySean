@@ -538,11 +538,15 @@ public class RedEyeParallel extends ParallelAlgorithm{
 		
 		float[] minNcc = getMinNcc(nccArray, context, commandQueue, device, program);
 	
+		int[] nccInts = new int[nccArray.length];
 		
-//		for(int i = 0; i < redProductDiffs.length; i++) {
-//			
-//			System.out.println(redProductDiffs[i]);
-//		}
+		convertNccToPosInt(nccArray, minNcc, nccInts, context, commandQueue, device, program);
+		
+		
+		for(int i = 0; i < nccInts.length; i++) {
+			
+			System.out.println(nccInts[i]);
+		}
 
 		
 		
@@ -551,8 +555,25 @@ public class RedEyeParallel extends ParallelAlgorithm{
 	}
 	
 
-	private void convertNccToPosInt(float[] nccArray, float[] minNcc, int[] resultData,
+	/**
+	 * Converts an array of ncc values stored as floats to be postive integers.
+	 * @param nccArray The array of ncc values.
+	 * @param minNcc The smallest ncc value.
+	 * @param resultData The resulting integers.
+	 * @param context The OpenCL context.
+	 * @param commandQueue The OpenCL command queue.
+	 * @param device The OpenCL device.
+	 * @param program The OpenCL program.
+	 */
+	private static void convertNccToPosInt(float[] nccArray, float[] minNcc, int[] resultData,
 			cl_context context, cl_command_queue commandQueue, cl_device_id device, cl_program program) {
+		
+		
+		int globalSize = nccArray.length;
+		int localSize = calculateLocalSize(globalSize, device);
+		
+		long[] globalWorkSize = new long[] {globalSize};
+		long[] localWorkSize = new long[] {localSize};
 		
 		Pointer ptrNccArray = Pointer.to(nccArray);
 		Pointer ptrMinNcc = Pointer.to(minNcc);
@@ -568,9 +589,16 @@ public class RedEyeParallel extends ParallelAlgorithm{
 		
 		cl_mem[] objects = {memPaddedData, memMinNcc, memResultData};
 		
-		cl_kernel kernel = CL.clCreateKernel(program, "pad_float_min", null);
+		cl_kernel kernel = CL.clCreateKernel(program, "convert_ncc", null);
 		setKernelArgs(objects, kernel);
 		
+		CL.clEnqueueNDRangeKernel(commandQueue, kernel, 1, null,
+				globalWorkSize, localWorkSize, 
+				0, null, null);
+		
+		CL.clEnqueueReadBuffer(commandQueue, memResultData, 
+				CL.CL_TRUE, 0, resultData.length * Sizeof.cl_float,
+				ptrResultData, 0, null, null);
 		
 	}
 	
