@@ -24,6 +24,10 @@ import ohCrop.utilAlgorithms.RadixSort;
  */
 public class RedEyeParallel extends ParallelAlgorithm{
 
+	/**
+	 * Field to keep track of the time taken across all kernels.
+	 */
+	private static long TIME;
 	
 	/**
 	 * Removes Red Eyes from the given image.
@@ -35,6 +39,7 @@ public class RedEyeParallel extends ParallelAlgorithm{
 	 * @param resultData The result of 
 	 */
 	public static void redEyeRemoval(cl_context context, cl_command_queue commandQueue, cl_device_id device, BufferedImage template, BufferedImage original, int[] resultData) {
+		TIME = 0;
 		
 		cl_program program = buildProgram("Kernels/Red_Eye_Kernel", context);
 		
@@ -93,6 +98,7 @@ public class RedEyeParallel extends ParallelAlgorithm{
 		
 		CL.clReleaseProgram(program);
 		
+		System.out.println("TIME: " + TIME);
 	
 	}
 	
@@ -131,10 +137,13 @@ public class RedEyeParallel extends ParallelAlgorithm{
 		
 		cl_kernel kernel = CL.clCreateKernel(program, "seperate_channels", null);
 		setKernelArgs(objects, kernel);
-
+		
+		long startTime = System.nanoTime();
 		CL.clEnqueueNDRangeKernel(commandQueue, kernel, 1, null,
 				globalWorkSize, localWorkSize, 
 				0, null, null);
+		long endTime = System.nanoTime();
+		TIME += endTime - startTime;
 		
 		
 		CL.clEnqueueReadBuffer(commandQueue, memRed, 
@@ -237,9 +246,12 @@ public class RedEyeParallel extends ParallelAlgorithm{
 //		CL.clSetKernelArg(kernel, 3, Sizeof.cl_int * localWorkSize[0], null);
 //		CL.clSetKernelArg(kernel, 4, Sizeof.cl_int * localWorkSize[0], null);
 		
+		long startTime = System.nanoTime();
 		CL.clEnqueueNDRangeKernel(commandQueue, kernel, 1, null,
 				globalWorkSize, localWorkSize, 
 				0, null, null);
+		long endTime = System.nanoTime();
+		TIME += endTime - startTime;
 		
 		
 		CL.clEnqueueReadBuffer(commandQueue, memResult, 
@@ -320,9 +332,12 @@ public class RedEyeParallel extends ParallelAlgorithm{
 		
 		setKernelArgs(objects, kernel);
 		
+		long startTime = System.nanoTime();
 		CL.clEnqueueNDRangeKernel(commandQueue, kernel, 1, null,
 				globalWorkSize, localWorkSize, 
 				0, null, null);
+		long endTime = System.nanoTime();
+		TIME += endTime - startTime;
 		
 		CL.clEnqueueReadBuffer(commandQueue, memRedResult, 
 				CL.CL_TRUE, 0, redResult.length * Sizeof.cl_float,
@@ -488,9 +503,12 @@ public class RedEyeParallel extends ParallelAlgorithm{
 		
 		CL.clSetKernelArg(kernel, 19, Sizeof.cl_mem, Pointer.to(memNcc));
 		
+		long startTime = System.nanoTime();
 		CL.clEnqueueNDRangeKernel(commandQueue, kernel, 1, null,
 				globalWorkSize, localWorkSize, 
 				0, null, null);
+		long endTime = System.nanoTime();
+		TIME += endTime - startTime;
 		
 		//TODO: A Lot of these read buffers are gonna get removed
 		
@@ -553,7 +571,7 @@ public class RedEyeParallel extends ParallelAlgorithm{
 
 			
 		
-		RadixSort.sort(nccInts, keys, sortedNcc, sortedKeys, 14, context, commandQueue, device);
+		TIME += RadixSort.sort(nccInts, keys, sortedNcc, sortedKeys, 14, context, commandQueue, device);
 		
 		for(int i = 0; i < sortedNcc.length; i++) {
 			System.out.println("V: " + sortedNcc[i] + " K: " + sortedKeys[i]);
@@ -605,9 +623,12 @@ public class RedEyeParallel extends ParallelAlgorithm{
 		cl_kernel kernel = CL.clCreateKernel(program, "convert_ncc", null);
 		setKernelArgs(objects, kernel);
 		
+		long startTime = System.nanoTime();
 		CL.clEnqueueNDRangeKernel(commandQueue, kernel, 1, null,
 				globalWorkSize, localWorkSize, 
 				0, null, null);
+		long endTime = System.nanoTime();
+		TIME += endTime - startTime;
 		
 		CL.clEnqueueReadBuffer(commandQueue, memResultData, 
 				CL.CL_TRUE, 0, resultData.length * Sizeof.cl_float,
@@ -678,10 +699,12 @@ public class RedEyeParallel extends ParallelAlgorithm{
 		
 		CL.clSetKernelArg(kernel, 2, Sizeof.cl_float * localWorkSize[0], null);
 
-		
+		long startTime = System.nanoTime();
 		CL.clEnqueueNDRangeKernel(commandQueue, kernel, 1, null,
 				globalWorkSize, localWorkSize, 
 				0, null, null);
+		long endTime = System.nanoTime();
+		TIME += endTime - startTime;
 		
 		
 		CL.clEnqueueReadBuffer(commandQueue, memResult, 
@@ -742,7 +765,10 @@ public class RedEyeParallel extends ParallelAlgorithm{
 		long[] globalWorkSize = new long[] { nccArray.length };
 		long[] localWorkSize = new long[] { calculateLocalSize(nccArray.length, device) };
 	
+		long startTime = System.nanoTime();
 		CL.clEnqueueNDRangeKernel(commandQueue, kernel, 1, null, globalWorkSize, localWorkSize, 0, null, null);
+		long endTime = System.nanoTime();
+		TIME += endTime - startTime;
 		
 		CL.clEnqueueReadBuffer(commandQueue, memResult, CL.CL_TRUE, 0, paddedNcc.length * Sizeof.cl_float,
 				ptrResult, 0, null, null);
