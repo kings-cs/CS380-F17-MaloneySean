@@ -26,7 +26,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 //import javax.swing.JSlider;
-import javax.swing.JToolBar;
+//import javax.swing.JToolBar;
 
 import org.jocl.CL;
 import org.jocl.cl_device_id;
@@ -108,14 +108,44 @@ public class EditorGUI extends JFrame{
 	private JMenuItem saveAs;
 	
 	/**
+	 * Menu Item used to perform gray scale editing.
+	 */
+	private JMenuItem grayFile;
+	
+	/**
+	 * Menu Item used to perform sepia scale.
+	 */
+	private JMenuItem sepiaFile;
+	
+	/**
+	 * Menu Item used to perform blur.
+	 */
+	private JMenuItem blurFile;
+	
+	/**
+	 * Menu Item used to perform mosaic.
+	 */
+	private JMenuItem mosaicFile;
+	
+	/**
+	 * Menu Item used to perform histogram equalization.
+	 */
+	private JMenuItem histogramFile;
+	
+	/**
+	 * Menu Item used perform red eyes.
+	 */
+	private JMenuItem redEyeFile;
+	
+	/**
 	 * The Pane that will be used to display the image being modified.
 	 */
 	private JScrollPane display;
 	
-	/**
-	 * Tool bar used to perform various functions on the displayed image.
-	 */
-	private JToolBar toolBar;
+//	/**
+//	 * Tool bar used to perform various functions on the displayed image.
+//	 */
+//	private JToolBar toolBar;
 	
 	/**
 	 * Menu Item used to flip an image horizontally.
@@ -288,6 +318,24 @@ public class EditorGUI extends JFrame{
 			deviceList.addItem(current);
 		}
 		
+		
+		//****************Tool Bar*****************************
+//		toolBar = new JToolBar("Tool Bar");
+//		toolBar.setFloatable(true);
+		grayScale = new JButton("Gray Scale");
+		grayScaleParallel = new JButton("Gray Scale (Parallel)");
+		sepiaTone = new JButton("Sepia Tone");
+		sepiaToneParallel = new JButton("Sepia Tone (Parallel)");
+		blur = new JButton("Blur");
+		blurParallel = new JButton("Blur (Parallel)");
+		mosaic = new JButton("Mosaic");
+		mosaicParallel = new JButton("Mosaic (Parallel)");
+		histogramEq = new JButton("Histogram Equalization");
+		histogramEqParallel = new JButton("Histogram Equalization (Parallel)");
+		atomicParallelHist = new JButton("Histogram Eq. (Atomic Parallel)");
+		redEyeParallel = new JButton("Red Eye (Parallel)");
+		
+		
 		//****************Menu Bar*****************************
 		JMenuBar menuBar = new JMenuBar();
 		file = new JMenu("File");
@@ -309,6 +357,13 @@ public class EditorGUI extends JFrame{
 		rotateRight = new JMenuItem("Rotate Right");
 		rotateLeft = new JMenuItem("Rotate Left");
 		
+		grayFile = new JMenu("Gray Scale");
+		sepiaFile = new JMenu("Sepia");
+		blurFile = new JMenu("Blur");
+		mosaicFile = new JMenu("Mosaic");
+		histogramFile = new JMenu("Histogram Equalization");
+		redEyeFile = new JMenu("Red Eye");
+		
 		menuBar.add(file);
 		file.add(exit);
 		file.add(open);
@@ -327,25 +382,35 @@ public class EditorGUI extends JFrame{
 		transform.add(rotateRight);
 		transform.add(rotateLeft);
 		
+		menuBar.add(grayFile);
+		grayFile.add(grayScale);
+		grayFile.add(grayScaleParallel);
+		
+		menuBar.add(sepiaFile);
+		sepiaFile.add(sepiaTone);
+		sepiaFile.add(sepiaToneParallel);
+		
+		menuBar.add(blurFile);
+		blurFile.add(blur);
+		blurFile.add(blurParallel);
+		
+		menuBar.add(mosaicFile);
+		mosaicFile.add(mosaic);
+		mosaicFile.add(mosaicParallel);
+		
+		menuBar.add(histogramFile);
+		histogramFile.add(histogramEq);
+		histogramFile.add(histogramEqParallel);
+		histogramFile.add(atomicParallelHist);
+		
+		menuBar.add(redEyeFile);
+		redEyeFile.add(redEyeParallel);
+		
 		//selectDevice.add(deviceList);
 		
 		this.setJMenuBar(menuBar);
 		
-		//****************Tool Bar*****************************
-		toolBar = new JToolBar("Tool Bar");
-		toolBar.setFloatable(true);
-		grayScale = new JButton("Gray Scale");
-		grayScaleParallel = new JButton("Gray Scale (Parallel)");
-		sepiaTone = new JButton("Sepia Tone");
-		sepiaToneParallel = new JButton("Sepia Tone (Parallel)");
-		blur = new JButton("Blur");
-		blurParallel = new JButton("Blur (Parallel)");
-		mosaic = new JButton("Mosaic");
-		mosaicParallel = new JButton("Mosaic (Parallel)");
-		histogramEq = new JButton("Histogram Equalization");
-		histogramEqParallel = new JButton("Histogram Equalization (Parallel)");
-		atomicParallelHist = new JButton("Histogram Eq. (Atomic Parallel)");
-		redEyeParallel = new JButton("Red Eye (Parallel)");
+
 		
 		//****************Bottom Panel*****************************
 		JPanel bottomPanel = new JPanel();
@@ -373,19 +438,19 @@ public class EditorGUI extends JFrame{
 		zoomAmount = 1;
 		preZoomImage = image;
 		
-		toolBar.add(grayScale);
-		toolBar.add(grayScaleParallel);
-		toolBar.add(sepiaTone);
-		toolBar.add(sepiaToneParallel);
-		toolBar.add(blur);
-		toolBar.add(blurParallel);
-		toolBar.add(mosaic);
-		toolBar.add(mosaicParallel);
-		toolBar.add(histogramEq);
-		toolBar.add(histogramEqParallel);
-		toolBar.add(atomicParallelHist);
-		toolBar.add(redEyeParallel);
-		this.add(toolBar, BorderLayout.NORTH);
+//		toolBar.add(grayScale);
+//		toolBar.add(grayScaleParallel);
+//		toolBar.add(sepiaTone);
+//		toolBar.add(sepiaToneParallel);
+//		toolBar.add(blur);
+//		toolBar.add(blurParallel);
+//		toolBar.add(mosaic);
+//		toolBar.add(mosaicParallel);
+//		toolBar.add(histogramEq);
+//		toolBar.add(histogramEqParallel);
+//		toolBar.add(atomicParallelHist);
+//		toolBar.add(redEyeParallel);
+//		this.add(toolBar, BorderLayout.NORTH);
 		
 		
 
