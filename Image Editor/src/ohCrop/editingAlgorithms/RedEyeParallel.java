@@ -80,8 +80,8 @@ public class RedEyeParallel extends ParallelAlgorithm{
 		
 		int[] dimensions = {original.getWidth(), original.getHeight(), template.getWidth(), template.getHeight()};
 		
-		float[] nccArray = new float[data.length];
-		//int[] nccArray = new int[data.length];
+		//float[] nccArray = new float[data.length];
+		int[] nccArray = new int[data.length];
 		
 		calculateNcc(sourceChannels, resultAverages, unsquared, differenceSums, dimensions, nccArray,
 				context, commandQueue, device, program);
@@ -403,7 +403,7 @@ public class RedEyeParallel extends ParallelAlgorithm{
 	 * @param device The OpenCL device.
 	 * @param program The OpenCL program.
 	 */
-	private static void calculateNcc(int[][] sourceChannels,  int[][] resultAverages, int[][] unsquared, int[]templateDiffs, int[] dimensions, float[]nccArray,
+	private static void calculateNcc(int[][] sourceChannels,  int[][] resultAverages, int[][] unsquared, int[]templateDiffs, int[] dimensions, int[]nccArray,
 			cl_context context, cl_command_queue commandQueue, cl_device_id device, cl_program program) {
 		int[] sourceRed = sourceChannels[0];
 		int[] sourceGreen = sourceChannels[1];
@@ -480,7 +480,7 @@ public class RedEyeParallel extends ParallelAlgorithm{
 		//cl_mem memNcc = objects[19];
 		
 		cl_mem memNcc = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
-				Sizeof.cl_float * nccArray.length, ptrNcc, null);
+				Sizeof.cl_int * nccArray.length, ptrNcc, null);
 		
 		cl_kernel kernel = CL.clCreateKernel(program, "calculate_ncc", null);
 		setKernelArgs(objects, kernel);

@@ -235,9 +235,9 @@ float blueNcc = blueProductDiff / blueSqrtProduct;
 
 float ncc = (redNcc * greenNcc * blueNcc);
 
-int resultNcc = (ncc + -INFINITY) * 1000;
+int resultNcc = (ncc + MAXFLOAT) * 1000;
 
-nccArray[index] = ncc;
+nccArray[index] = resultNcc;
 
 }
 
