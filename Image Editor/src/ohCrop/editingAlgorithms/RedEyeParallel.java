@@ -234,9 +234,6 @@ public class RedEyeParallel extends ParallelAlgorithm{
 		
 		
 		int[] result = new int[globalSize / localSize];
-//		int[] blueResult = new int[globalSize / localSize];
-//		int[] greenResult = new int[globalSize / localSize];
-		
 		
 		
 		int[][] params = {paddedData, result};
@@ -256,8 +253,6 @@ public class RedEyeParallel extends ParallelAlgorithm{
 		
 		
 		CL.clSetKernelArg(kernel, 2, Sizeof.cl_int * localWorkSize[0], null);
-//		CL.clSetKernelArg(kernel, 3, Sizeof.cl_int * localWorkSize[0], null);
-//		CL.clSetKernelArg(kernel, 4, Sizeof.cl_int * localWorkSize[0], null);
 		
 		long startTime = System.nanoTime();
 		CL.clEnqueueNDRangeKernel(commandQueue, kernel, 1, null,
