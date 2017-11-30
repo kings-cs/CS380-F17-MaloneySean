@@ -997,11 +997,28 @@ public class EditorGUI extends JFrame{
 				changeMade = true;
 				double preEditZoom = zoomAmount;
 				
-				JOptionPane.showMessageDialog(null, "Select Template Location", "Oops", 
-						JOptionPane.ERROR_MESSAGE);
+				JOptionPane.showMessageDialog(null, "Select Template Location", "Choose Template File", 
+						JOptionPane.INFORMATION_MESSAGE);
 				BufferedImage template = templatePrompt();
 				
 				int eyeCount = 2;
+				
+				
+
+				try {
+					eyeCount = Integer.parseInt(JOptionPane.showInputDialog("Enter Number of Red Eyes: ", 0));
+
+				} catch (NumberFormatException e) {
+					JOptionPane.showMessageDialog(null, "Only Numeric Characters May Be Entered, Setting Count to 2");
+				}
+				
+				if(eyeCount <= 0) {
+					JOptionPane.showMessageDialog(null, "Eye Count Must Be Greater Than 0, Setting Count to 2");
+				}
+				
+				
+				
+				
 				BufferedImage redEyesRemoved =  RedEyeParallel.redEyeRemoval(parallelControl.getContext(),
 						parallelControl.getCommandQueue(), parallelControl.getDevice(), 
 						template, preZoomImage, eyeCount);
