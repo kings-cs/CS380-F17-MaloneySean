@@ -4,6 +4,8 @@ package ohCrop.editingAlgorithms;
 
 import java.awt.image.BufferedImage;
 
+import javax.swing.JOptionPane;
+
 import org.jocl.CL;
 import org.jocl.Pointer;
 import org.jocl.Sizeof;
@@ -36,9 +38,11 @@ public class RedEyeParallel extends ParallelAlgorithm{
 	 * @param device The OpenCL device used.
 	 * @param template The template used to modify the image.
 	 * @param original The image to be modified.
+	 * @param eyeCount The amount of eyes to be changed.
 	 * @return The image with removed red eyes. 
 	 */
-	public static BufferedImage redEyeRemoval(cl_context context, cl_command_queue commandQueue, cl_device_id device, BufferedImage template, BufferedImage original) {
+	public static BufferedImage redEyeRemoval(cl_context context, cl_command_queue commandQueue, cl_device_id device, BufferedImage template, BufferedImage original,
+			int eyeCount) {
 		TIME = 0;
 		
 		BufferedImage result = null;
@@ -46,8 +50,9 @@ public class RedEyeParallel extends ParallelAlgorithm{
 		cl_program program = buildProgram("Kernels/Red_Eye_Kernel", context);
 		
 		//Template Stuff
+		BufferedImage current = original;
 		int[] templateData = strip(template);
-		
+		for(int i = 0; i < eyeCount; i++) {
 		int[] rgbTemplateAvergaes = new int[3];
 		
 		int[] redTemplateChannel = new int[templateData.length];
@@ -70,7 +75,7 @@ public class RedEyeParallel extends ParallelAlgorithm{
 		
 		
 		//Image Stuff
-		int[] data = strip(original);
+		int[] data = strip(current);
 		int[] redSourceChannel = new int[data.length];
 		int[] greenSourceChannel = new int[data.length];
 		int[] blueSourceChannel = new int[data.length];
@@ -81,12 +86,10 @@ public class RedEyeParallel extends ParallelAlgorithm{
 		int[][] sourceChannels = {redSourceChannel, greenSourceChannel, blueSourceChannel};
 		
 		
-		int[] dimensions = {original.getWidth(), original.getHeight(), template.getWidth(), template.getHeight()};
+		int[] dimensions = {current.getWidth(), current.getHeight(), template.getWidth(), template.getHeight()};
 		
 		float[] nccArray = new float[data.length];
-		//int[] nccArray = new int[data.length];
-		
-		//int[] sortedNcc = new int[nccArray.length];
+
 		int[] sortedKeys = new int[nccArray.length];
 		calculateNcc(sourceChannels, unsquared, differenceSums, dimensions, nccArray, sortedKeys,
 				context, commandQueue, device, program);
@@ -94,23 +97,23 @@ public class RedEyeParallel extends ParallelAlgorithm{
 		
 		int centerIndex = sortedKeys[sortedKeys.length - 1];
 		
+
+		int[] resultData = data;
+		int[] dimArray = {current.getWidth(), current.getHeight(), template.getWidth(), template.getHeight(), centerIndex};
 		
-		//System.out.println(centerIndex);
-		//TODO: Get rid of this and just do data.
-		int[] resultData = data.clone();
-		//int[] dimArray = {original.getWidth(), original.getHeight(), template.getWidth(), template.getHeight(), centerIndex};
-		
-		int[] dimArray = {centerIndex - (templateData.length / 2)};
 		reduceRedness(data, resultData, dimArray, templateData.length,
 				context, commandQueue, device, program);
 		
 		
-		result = wrapUp(resultData, original);
-		
+		result = wrapUp(resultData, current);
+		current = result;
+		}
 		
 		CL.clReleaseProgram(program);
 		
-		System.out.println("TIME: " + (TIME / 1000000.0));
+	
+		double miliSeconds = TIME / 1000000.0;
+		JOptionPane.showMessageDialog(null, "Time Taken: " + miliSeconds + " (ms)");
 	
 		return result;
 	}
@@ -192,7 +195,7 @@ public class RedEyeParallel extends ParallelAlgorithm{
 			cl_context context, cl_command_queue commandQueue, cl_device_id device, cl_program program) {
 		
 		
-		//TODO: You're silly and forgot that you already have a kernel for seperating, refactor this later if you have time.
+		
 		seperateChannels(data, redChannel, blueChannel, greenChannel, context, commandQueue, device, program);
 		
 		int[] redSum = reduce(redChannel, context, commandQueue, device, program);
@@ -540,9 +543,7 @@ public class RedEyeParallel extends ParallelAlgorithm{
 		long[] globalWorkSize = new long[] {globalSize};
 		long[] localWorkSize = new long[] {localSize};
 		
-		//int shift = centerIndex - (templateSize / 2);
-		
-		//int[] dimensions = {shift};
+
 		int[][] params = {data, dimensions, result};
 		
 		Pointer[] pointers = createPointers(params);
@@ -625,6 +626,7 @@ public class RedEyeParallel extends ParallelAlgorithm{
 				CL.CL_TRUE, 0, keys.length * Sizeof.cl_float,
 				ptrKeys, 0, null, null);
 		
+		releaseMemObject(objects);
 	}
 	
 	

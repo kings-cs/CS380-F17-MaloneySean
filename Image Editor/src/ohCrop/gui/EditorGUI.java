@@ -1001,9 +1001,10 @@ public class EditorGUI extends JFrame{
 						JOptionPane.ERROR_MESSAGE);
 				BufferedImage template = templatePrompt();
 				
+				int eyeCount = 2;
 				BufferedImage redEyesRemoved =  RedEyeParallel.redEyeRemoval(parallelControl.getContext(),
 						parallelControl.getCommandQueue(), parallelControl.getDevice(), 
-						template, preZoomImage);
+						template, preZoomImage, eyeCount);
 				
 				
 				preZoomImage = redEyesRemoved;

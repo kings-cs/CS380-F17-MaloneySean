@@ -238,7 +238,7 @@ public class RedEyeTest extends ParallelAlgorithm{
 
 	
 		
-		RedEyeParallel.redEyeRemoval(context, commandQueue, device, template, original);
+		RedEyeParallel.redEyeRemoval(context, commandQueue, device, template, original, 2);
 		
 	
 		

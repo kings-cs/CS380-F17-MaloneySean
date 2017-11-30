@@ -336,9 +336,30 @@ int BLUE_OFFSET = 0;
 
 int i = (get_group_id(0) * get_local_size(0)) + get_local_id(0);
 
-int shift = dimensions[0];
+int image_width = dimensions[0];
+int image_height = dimensions[1];
 
-int index = i + shift;
+int template_width = dimensions[2];
+int template_height = dimensions[3];
+
+int center_index = dimensions[4];
+
+
+
+int template_row = i / template_width;
+int template_col = i % template_width;
+
+
+int image_row = center_index / image_width;
+int image_col = center_index % image_width;
+
+int corner_row = image_row - (template_height / 2);
+int corner_col = image_col - (template_width / 2);
+
+int pixel_row = corner_row + template_row;
+int pixel_col = corner_col + template_col;
+
+int index = pixel_row * image_width + pixel_col;
 
 
 int pixel = data[index];
@@ -348,6 +369,7 @@ int red = (pixel & RED_MASK) >> RED_OFFSET;
 int green = (pixel & GREEN_MASK) >> GREEN_OFFSET;
 int blue = (pixel & BLUE_MASK) >> BLUE_OFFSET;
 
+if(red > (green + blue)){
 int newRed = (blue + green) / 2;
 
 int newPixel = (alpha << ALPHA_OFFSET) | (newRed << RED_OFFSET) |
@@ -355,6 +377,7 @@ int newPixel = (alpha << ALPHA_OFFSET) | (newRed << RED_OFFSET) |
 						
 
 result[index] = newPixel;
+}
 }
 
 
