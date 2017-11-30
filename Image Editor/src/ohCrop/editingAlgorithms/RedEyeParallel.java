@@ -101,7 +101,10 @@ public class RedEyeParallel extends ParallelAlgorithm{
 		//System.out.println(centerIndex);
 		//TODO: Get rid of this and just do data.
 		int[] resultData = data.clone();
-		reduceRedness(data, resultData, centerIndex, templateData.length,
+		//int[] dimArray = {original.getWidth(), original.getHeight(), template.getWidth(), template.getHeight(), centerIndex};
+		
+		int[] dimArray = {centerIndex - (templateData.length / 2)};
+		reduceRedness(data, resultData, dimArray, templateData.length,
 				context, commandQueue, device, program);
 		
 		
@@ -526,42 +529,42 @@ public class RedEyeParallel extends ParallelAlgorithm{
 		
 		//TODO: A Lot of these read buffers are gonna get removed
 		
-		CL.clEnqueueReadBuffer(commandQueue, memRedAverage, 
-				CL.CL_TRUE, 0, redAverages.length * Sizeof.cl_float,
-				ptrRedAverage, 0, null, null);
-		
-		CL.clEnqueueReadBuffer(commandQueue, memGreenAverage, 
-				CL.CL_TRUE, 0, greenAverages.length * Sizeof.cl_float,
-				ptrGreenAverage, 0, null, null);
-		
-		CL.clEnqueueReadBuffer(commandQueue, memBlueAverage, 
-				CL.CL_TRUE, 0, blueAverages.length * Sizeof.cl_float,
-				ptrBlueAverage, 0, null, null);
-		
-		CL.clEnqueueReadBuffer(commandQueue, memRedSumDiffs, 
-				CL.CL_TRUE, 0, redSumDiffs.length * Sizeof.cl_float,
-				ptrRedSumDiffs, 0, null, null);
-		
-		CL.clEnqueueReadBuffer(commandQueue, memGreenSumDiffs, 
-				CL.CL_TRUE, 0, greenSumDiffs.length * Sizeof.cl_float,
-				ptrGreenSumDiffs, 0, null, null);
-		
-		CL.clEnqueueReadBuffer(commandQueue, memBlueSumDiffs, 
-				CL.CL_TRUE, 0, blueSumDiffs.length * Sizeof.cl_float,
-				ptrBlueSumDiffs, 0, null, null);
-
-		
-		CL.clEnqueueReadBuffer(commandQueue, memRedProductDiffs, 
-				CL.CL_TRUE, 0, redProductDiffs.length * Sizeof.cl_float,
-				ptrRedProductDiffs, 0, null, null);
-		
-		CL.clEnqueueReadBuffer(commandQueue, memGreenProductDiffs, 
-				CL.CL_TRUE, 0, greenProductDiffs.length * Sizeof.cl_float,
-				ptrGreenProductDiffs, 0, null, null);
-		
-		CL.clEnqueueReadBuffer(commandQueue, memBlueProductDiffs, 
-				CL.CL_TRUE, 0, blueProductDiffs.length * Sizeof.cl_float,
-				ptrBlueProductDiffs, 0, null, null);
+//		CL.clEnqueueReadBuffer(commandQueue, memRedAverage, 
+//				CL.CL_TRUE, 0, redAverages.length * Sizeof.cl_float,
+//				ptrRedAverage, 0, null, null);
+//		
+//		CL.clEnqueueReadBuffer(commandQueue, memGreenAverage, 
+//				CL.CL_TRUE, 0, greenAverages.length * Sizeof.cl_float,
+//				ptrGreenAverage, 0, null, null);
+//		
+//		CL.clEnqueueReadBuffer(commandQueue, memBlueAverage, 
+//				CL.CL_TRUE, 0, blueAverages.length * Sizeof.cl_float,
+//				ptrBlueAverage, 0, null, null);
+//		
+//		CL.clEnqueueReadBuffer(commandQueue, memRedSumDiffs, 
+//				CL.CL_TRUE, 0, redSumDiffs.length * Sizeof.cl_float,
+//				ptrRedSumDiffs, 0, null, null);
+//		
+//		CL.clEnqueueReadBuffer(commandQueue, memGreenSumDiffs, 
+//				CL.CL_TRUE, 0, greenSumDiffs.length * Sizeof.cl_float,
+//				ptrGreenSumDiffs, 0, null, null);
+//		
+//		CL.clEnqueueReadBuffer(commandQueue, memBlueSumDiffs, 
+//				CL.CL_TRUE, 0, blueSumDiffs.length * Sizeof.cl_float,
+//				ptrBlueSumDiffs, 0, null, null);
+//
+//		
+//		CL.clEnqueueReadBuffer(commandQueue, memRedProductDiffs, 
+//				CL.CL_TRUE, 0, redProductDiffs.length * Sizeof.cl_float,
+//				ptrRedProductDiffs, 0, null, null);
+//		
+//		CL.clEnqueueReadBuffer(commandQueue, memGreenProductDiffs, 
+//				CL.CL_TRUE, 0, greenProductDiffs.length * Sizeof.cl_float,
+//				ptrGreenProductDiffs, 0, null, null);
+//		
+//		CL.clEnqueueReadBuffer(commandQueue, memBlueProductDiffs, 
+//				CL.CL_TRUE, 0, blueProductDiffs.length * Sizeof.cl_float,
+//				ptrBlueProductDiffs, 0, null, null);
 		
 		CL.clEnqueueReadBuffer(commandQueue, memNcc, 
 				CL.CL_TRUE, 0, nccArray.length * Sizeof.cl_float,
@@ -604,14 +607,14 @@ public class RedEyeParallel extends ParallelAlgorithm{
 	 * Reduces the redness of the appropriate pixels.
 	 * @param data The source data.
 	 * @param result The result data.
-	 * @param centerIndex The center index.
+	 * @param dimensions Original height, width and template height, width and The center index.
 	 * @param templateSize The template size.
 	 * @param context The OpenCL context.
 	 * @param commandQueue The OpenCL command Queue.
 	 * @param device The OpenCL device.
 	 * @param program The OpenCL program.
 	 */
-	private static void reduceRedness(int[] data, int[] result, int centerIndex, int templateSize,
+	private static void reduceRedness(int[] data, int[] result, int[] dimensions, int templateSize,
 			cl_context context, cl_command_queue commandQueue, cl_device_id device, cl_program program) {
 		
 		int globalSize = templateSize;
@@ -620,9 +623,9 @@ public class RedEyeParallel extends ParallelAlgorithm{
 		long[] globalWorkSize = new long[] {globalSize};
 		long[] localWorkSize = new long[] {localSize};
 		
-		int shift = centerIndex - (templateSize / 2);
+		//int shift = centerIndex - (templateSize / 2);
 		
-		int[] dimensions = {shift};
+		//int[] dimensions = {shift};
 		int[][] params = {data, dimensions, result};
 		
 		Pointer[] pointers = createPointers(params);

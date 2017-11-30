@@ -148,11 +148,13 @@ for(int i = row - maxRowTrav; i <= row + maxRowTrav; i++) {
 				
 
 				
-redAverages[index] = newRed / divisor;
-greenAverages[index] = newGreen / divisor;
-blueAverages[index] = newBlue / divisor;
+//redAverages[index] = newRed / divisor;
+//greenAverages[index] = newGreen / divisor;
+//blueAverages[index] = newBlue / divisor;
 
-
+int redAverage = newRed / divisor;
+int greenAverage = newGreen / divisor;
+int blueAverage = newBlue / divisor;
 
 
 int redDiff = 0;
@@ -182,9 +184,9 @@ for(int i = row - maxRowTrav; i <= row + maxRowTrav; i++) {
 		else{
 			int currentIndex = newRow * width + newCol;
 					
-			int currentRed = sourceRed[currentIndex] - redAverages[index];		
-			int currentGreen = sourceGreen[currentIndex] - greenAverages[index];
-			int currentBlue = sourceBlue[currentIndex] - blueAverages[index];
+			int currentRed = sourceRed[currentIndex] - redAverage;		
+			int currentGreen = sourceGreen[currentIndex] - greenAverage;
+			int currentBlue = sourceBlue[currentIndex] - blueAverage;
 			
 			redDiff += (currentRed * currentRed);
 			greenDiff += (currentGreen * currentGreen);
