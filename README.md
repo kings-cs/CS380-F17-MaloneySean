@@ -78,6 +78,8 @@ once the project has been imported into a workspace.
    Histogram Equalization (Parallel): Performs a Histogram Equalization on a blurry image, computed in parallel.
    
    Histogram Equalization (Atomic Parallel): Performs a Histogram Equalization on a blurry image, computed in parallel and uses atomic operations in the computation of the Histogram.   
+   
+   Red Eye Removal (Parallel): Removes red eyes from an image based on a template chosen by the user which they are prompted to enter. Additionally, the user will be prompted to enter the number of red eyes to be removed from the image.
       
    A separate panel at the bottom of the main window contains additional zoom controls and a device selector. Here, the current level of zoom is displayed and to the 
    left of this text are buttons labeled as + and -. The + will zoom in the picture by 10% and the - will zoom out by 10%. If the current level of
@@ -278,6 +280,12 @@ Editing Algorithm Timing:
 		<th>Histogram Eq. Parallel (Atomics)</th>
 		<th>401x268</th>
 		<th>0.571614 (ms)</th>
+		<th>GeForce GTX 745</th>
+	</tr>
+	<tr>
+		<th>Red Eye Removal Parallel</th>
+		<th>424x520</th>
+		<th>2478.001242 (ms)</th>
 		<th>GeForce GTX 745</th>
 	</tr>
 	
