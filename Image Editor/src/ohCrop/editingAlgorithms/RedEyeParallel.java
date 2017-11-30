@@ -80,8 +80,8 @@ public class RedEyeParallel extends ParallelAlgorithm{
 		
 		int[] dimensions = {original.getWidth(), original.getHeight(), template.getWidth(), template.getHeight()};
 		
-		//float[] nccArray = new float[data.length];
-		int[] nccArray = new int[data.length];
+		float[] nccArray = new float[data.length];
+		//int[] nccArray = new int[data.length];
 		
 		calculateNcc(sourceChannels, resultAverages, unsquared, differenceSums, dimensions, nccArray,
 				context, commandQueue, device, program);
@@ -195,7 +195,7 @@ public class RedEyeParallel extends ParallelAlgorithm{
 	private static int[] reduce(int[] redData, cl_context context, cl_command_queue commandQueue, cl_device_id device, cl_program program) {
 				
 		int maxSize = getMaxWorkGroupSize(device);
-		int padSize = getPadSize(redData, maxSize);
+		int padSize = getPadSize(redData.length, maxSize);
 		int[] paddedData = new int[padSize];
 		
 		cl_program padProgram = buildProgram("Kernels/Scan_Kernel", context);
@@ -403,7 +403,7 @@ public class RedEyeParallel extends ParallelAlgorithm{
 	 * @param device The OpenCL device.
 	 * @param program The OpenCL program.
 	 */
-	private static void calculateNcc(int[][] sourceChannels,  int[][] resultAverages, int[][] unsquared, int[]templateDiffs, int[] dimensions, int[]nccArray,
+	private static void calculateNcc(int[][] sourceChannels,  int[][] resultAverages, int[][] unsquared, int[]templateDiffs, int[] dimensions, float[]nccArray,
 			cl_context context, cl_command_queue commandQueue, cl_device_id device, cl_program program) {
 		int[] sourceRed = sourceChannels[0];
 		int[] sourceGreen = sourceChannels[1];
@@ -480,7 +480,7 @@ public class RedEyeParallel extends ParallelAlgorithm{
 		//cl_mem memNcc = objects[19];
 		
 		cl_mem memNcc = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
-				Sizeof.cl_int * nccArray.length, ptrNcc, null);
+				Sizeof.cl_float * nccArray.length, ptrNcc, null);
 		
 		cl_kernel kernel = CL.clCreateKernel(program, "calculate_ncc", null);
 		setKernelArgs(objects, kernel);
@@ -536,14 +536,175 @@ public class RedEyeParallel extends ParallelAlgorithm{
 		
 		
 		
-		for(int i = 0; i < nccArray.length; i++) {
-			
-			System.out.println(nccArray[i]);
-		}
+		float[] minNcc = getMinNcc(nccArray, context, commandQueue, device, program);
+	
+		
+//		for(int i = 0; i < redProductDiffs.length; i++) {
+//			
+//			System.out.println(redProductDiffs[i]);
+//		}
+
 		
 		
 		releaseMemObject(objects);
 		
+	}
+	
+
+	private void convertNccToPosInt(float[] nccArray, float[] minNcc, int[] resultData,
+			cl_context context, cl_command_queue commandQueue, cl_device_id device, cl_program program) {
+		
+		Pointer ptrNccArray = Pointer.to(nccArray);
+		Pointer ptrMinNcc = Pointer.to(minNcc);
+		Pointer ptrResultData = Pointer.to(resultData);
+		
+		cl_mem memPaddedData = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
+				Sizeof.cl_float * nccArray.length, ptrNccArray, null);
+		cl_mem memMinNcc = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
+				Sizeof.cl_float * minNcc.length, ptrMinNcc, null);
+		cl_mem memResultData = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
+				Sizeof.cl_int * resultData.length, ptrResultData, null);
+		
+		
+		cl_mem[] objects = {memPaddedData, memMinNcc, memResultData};
+		
+		cl_kernel kernel = CL.clCreateKernel(program, "pad_float_min", null);
+		setKernelArgs(objects, kernel);
+		
+		
+	}
+	
+	
+	/**
+	 * Helper to get the minimum of all the ncc values, stored in an array of floats.
+	 * @param nccArray The array of ncc values.
+	 * @param context The OpenCL context.
+	 * @param commandQueue The OpenCL command queue.
+	 * @param device The OpenCL device.
+	 * @param program The OpenCL program.
+	 * @return A single element array containing the min.
+	 */
+	private static float[] getMinNcc(float[] nccArray, cl_context context, cl_command_queue commandQueue, cl_device_id device, cl_program program) {
+		
+		int maxSize = getMaxWorkGroupSize(device);
+		int padSize = getPadSize(nccArray.length, maxSize);
+		float[] paddedData = new float[padSize];
+		
+		
+		
+
+		padNccForMin(nccArray, paddedData, padSize, context, commandQueue, device, program);
+		
+		
+		int globalSize = paddedData.length;
+		int localSize = calculateLocalSize(globalSize, device);
+		
+		
+		long[] globalWorkSize = new long[] {globalSize};
+		long[] localWorkSize = new long[] {localSize};
+		
+		
+		float[] result = new float[globalSize / localSize];
+
+		
+		
+
+		
+		
+		Pointer ptrPaddedData = Pointer.to(paddedData);
+		Pointer ptrResult = Pointer.to(result);
+		
+		
+		cl_mem memPaddedData = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
+				Sizeof.cl_float * paddedData.length, ptrPaddedData, null);
+		cl_mem memResult = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
+				Sizeof.cl_float * result.length, ptrResult, null);
+		
+		cl_mem objects[] = {memPaddedData, memResult};
+		
+		
+		cl_kernel kernel = CL.clCreateKernel(program, "min_float_reduce", null);
+		
+		setKernelArgs(objects, kernel);
+		
+		
+		
+		
+		
+		CL.clSetKernelArg(kernel, 2, Sizeof.cl_float * localWorkSize[0], null);
+
+		
+		CL.clEnqueueNDRangeKernel(commandQueue, kernel, 1, null,
+				globalWorkSize, localWorkSize, 
+				0, null, null);
+		
+		
+		CL.clEnqueueReadBuffer(commandQueue, memResult, 
+				CL.CL_TRUE, 0, result.length * Sizeof.cl_float,
+				ptrResult, 0, null, null);
+		
+		float[] newResult = result;
+	
+		
+		if(result.length > 1) {
+			newResult = getMinNcc(newResult, context, commandQueue, device, program);
+		}
+		
+		
+	
+		
+		CL.clReleaseKernel(kernel);
+		releaseMemObject(objects);
+		
+		
+		
+		return newResult;
+		
+	}
+	
+	
+	/**
+	 * Pads an array of floats with positive infinity so that it can be min reduced.
+	 * @param nccArray The array to be padded.
+	 * @param paddedNcc The padded array.
+	 * @param padSize The size to pad to.
+	 * @param context The OpenCL context.
+	 * @param commandQueue The OpenCL command queue.
+	 * @param device The OpenCL device.
+	 * @param program The OpenCL program.
+	 */
+	private static void padNccForMin(float[] nccArray, float[] paddedNcc, int padSize,
+			cl_context context, cl_command_queue commandQueue, cl_device_id device, cl_program program) {
+		int[] padSizeArray = {padSize};
+		
+		Pointer ptrNcc = Pointer.to(nccArray);
+		Pointer ptrResult = Pointer.to(paddedNcc);
+		Pointer ptrPadSize = Pointer.to(padSizeArray);
+		
+		cl_mem memNcc = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
+				Sizeof.cl_float * nccArray.length, ptrNcc, null);
+		cl_mem memResult = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
+				Sizeof.cl_float * paddedNcc.length, ptrResult, null);
+		cl_mem memPadSize = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
+				Sizeof.cl_float * padSizeArray.length, ptrPadSize, null);
+		
+		
+		cl_mem[] objects = {memNcc, memResult, memPadSize};
+		
+		cl_kernel kernel = CL.clCreateKernel(program, "pad_float_min", null);
+		setKernelArgs(objects, kernel);
+		
+		long[] globalWorkSize = new long[] { nccArray.length };
+		long[] localWorkSize = new long[] { calculateLocalSize(nccArray.length, device) };
+	
+		CL.clEnqueueNDRangeKernel(commandQueue, kernel, 1, null, globalWorkSize, localWorkSize, 0, null, null);
+		
+		CL.clEnqueueReadBuffer(commandQueue, memResult, CL.CL_TRUE, 0, paddedNcc.length * Sizeof.cl_float,
+				ptrResult, 0, null, null);
+	
+		
+		
+		releaseMemObject(objects);
 	}
 	
 }

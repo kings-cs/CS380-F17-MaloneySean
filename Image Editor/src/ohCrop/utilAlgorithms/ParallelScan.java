@@ -42,7 +42,7 @@ public class ParallelScan extends ParallelAlgorithm{
 		
 		int maxSize = getMaxWorkGroupSize(device);
 		
-		int padSize = getPadSize(data, maxSize);
+		int padSize = getPadSize(data.length, maxSize);
 		int[] paddedData = new int[padSize];
 		TIME += padArray(data, paddedData, padSize, maxSize, context, commandQueue, device, program);
 		

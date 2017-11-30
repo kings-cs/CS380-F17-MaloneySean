@@ -160,14 +160,14 @@ public class ParallelAlgorithm extends ImageAlgorithm{
 	
 	/**
 	 * Private helper method to calculate the size that an array should be padded to.
-	 * @param data The data to be padded.
+	 * @param dataLength The original array length.
 	 * @param maxSize The max size of a work group as set by the OpenCL device.
 	 * @return The size to be padded to.
 	 */
-	protected static int getPadSize(int[] data, int maxSize) {
+	protected static int getPadSize(int dataLength, int maxSize) {
 		int result = 0;
-		int newSize = data.length;
-		if(data.length > maxSize) {
+		int newSize = dataLength;
+		if(dataLength > maxSize) {
 			while(newSize % maxSize != 0) {
 				newSize++;
 			}
@@ -180,7 +180,7 @@ public class ParallelAlgorithm extends ImageAlgorithm{
 			if(check != 0) {
 				int powerSize = 1;
 				
-				while(powerSize < data.length) {
+				while(powerSize < dataLength) {
 					powerSize *= 2;
 				}
 				
