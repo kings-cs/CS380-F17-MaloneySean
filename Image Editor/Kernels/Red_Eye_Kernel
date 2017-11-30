@@ -316,9 +316,11 @@ else{
 
 
 
-__kernel void convert_ncc(__global const float * nccData, __global float * minValue, __global int * resultData){
+__kernel void convert_ncc(__global const float * nccData, __global float * minValue, __global int * resultData, __global int * keys){
 
 int i = (get_group_id(0) * get_local_size(0)) + get_local_id(0);
+
+keys[i] = i;
 
 float min = minValue[0];
 

@@ -540,20 +540,18 @@ public class RedEyeParallel extends ParallelAlgorithm{
 		float[] minNcc = getMinNcc(nccArray, context, commandQueue, device, program);
 	
 		int[] nccInts = new int[nccArray.length];
+		int[] keys = new int[nccInts.length];
 		
-		convertNccToPosInt(nccArray, minNcc, nccInts, context, commandQueue, device, program);
+		convertNccToPosInt(nccArray, minNcc, nccInts, keys, context, commandQueue, device, program);
 		
 	
 
-		int[] keys = new int[nccInts.length];
+		
 		int[] sortedNcc = new int[nccInts.length];
 		int[] sortedKeys = new int[nccInts.length];
 		
-		//TODO: MODIFY KERNEL TO INITALIZE THESE IN PARALLEL
-		for(int i = 0; i < keys.length; i++) {
-			keys[i] = i;
-		}
-		
+
+			
 		
 		RadixSort.sort(nccInts, keys, sortedNcc, sortedKeys, 14, context, commandQueue, device);
 		
@@ -567,16 +565,17 @@ public class RedEyeParallel extends ParallelAlgorithm{
 	
 
 	/**
-	 * Converts an array of ncc values stored as floats to be postive integers.
+	 * Converts an array of ncc values stored as floats to be positive integers.
 	 * @param nccArray The array of ncc values.
 	 * @param minNcc The smallest ncc value.
 	 * @param resultData The resulting integers.
+	 * @param keys An empty array to be intialized to contain keys to be sorted.
 	 * @param context The OpenCL context.
 	 * @param commandQueue The OpenCL command queue.
 	 * @param device The OpenCL device.
 	 * @param program The OpenCL program.
 	 */
-	private static void convertNccToPosInt(float[] nccArray, float[] minNcc, int[] resultData,
+	private static void convertNccToPosInt(float[] nccArray, float[] minNcc, int[] resultData, int[] keys,
 			cl_context context, cl_command_queue commandQueue, cl_device_id device, cl_program program) {
 		
 		
@@ -589,6 +588,7 @@ public class RedEyeParallel extends ParallelAlgorithm{
 		Pointer ptrNccArray = Pointer.to(nccArray);
 		Pointer ptrMinNcc = Pointer.to(minNcc);
 		Pointer ptrResultData = Pointer.to(resultData);
+		Pointer ptrKeys = Pointer.to(keys);
 		
 		cl_mem memPaddedData = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
 				Sizeof.cl_float * nccArray.length, ptrNccArray, null);
@@ -596,9 +596,11 @@ public class RedEyeParallel extends ParallelAlgorithm{
 				Sizeof.cl_float * minNcc.length, ptrMinNcc, null);
 		cl_mem memResultData = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
 				Sizeof.cl_int * resultData.length, ptrResultData, null);
+		cl_mem memKeys = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
+				Sizeof.cl_int * keys.length, ptrKeys, null);
 		
 		
-		cl_mem[] objects = {memPaddedData, memMinNcc, memResultData};
+		cl_mem[] objects = {memPaddedData, memMinNcc, memResultData, memKeys};
 		
 		cl_kernel kernel = CL.clCreateKernel(program, "convert_ncc", null);
 		setKernelArgs(objects, kernel);
@@ -610,6 +612,10 @@ public class RedEyeParallel extends ParallelAlgorithm{
 		CL.clEnqueueReadBuffer(commandQueue, memResultData, 
 				CL.CL_TRUE, 0, resultData.length * Sizeof.cl_float,
 				ptrResultData, 0, null, null);
+		
+		CL.clEnqueueReadBuffer(commandQueue, memKeys, 
+				CL.CL_TRUE, 0, keys.length * Sizeof.cl_float,
+				ptrKeys, 0, null, null);
 		
 	}
 	
@@ -744,6 +750,5 @@ public class RedEyeParallel extends ParallelAlgorithm{
 		
 		
 		releaseMemObject(objects);
-	}
-	
+	}	
 }
