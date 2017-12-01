@@ -1065,36 +1065,39 @@ public class EditorGUI extends JFrame{
 				JOptionPane.showMessageDialog(null, "Select Template Location", "Choose Template File", 
 						JOptionPane.INFORMATION_MESSAGE);
 				BufferedImage template = templatePrompt();
-				
-				int eyeCount = 2;
-				
-				
 
-				try {
-					eyeCount = Integer.parseInt(JOptionPane.showInputDialog("Enter Number of Red Eyes: ", 0));
+				if(template != null) {
 
-				} catch (NumberFormatException e) {
-					JOptionPane.showMessageDialog(null, "Only Numeric Characters May Be Entered, Setting Count to 2");
+					int eyeCount = 2;
+
+
+
+					try {
+						eyeCount = Integer.parseInt(JOptionPane.showInputDialog("Enter Number of Red Eyes: ", 0));
+
+					} catch (NumberFormatException e) {
+						JOptionPane.showMessageDialog(null, "Only Numeric Characters May Be Entered, Setting Count to 2");
+					}
+
+					if(eyeCount <= 0) {
+						JOptionPane.showMessageDialog(null, "Eye Count Must Be Greater Than 0, Setting Count to 2");
+					}
+
+
+
+
+					BufferedImage redEyesRemoved =  RedEyeParallel.redEyeRemoval(parallelControl.getContext(),
+							parallelControl.getCommandQueue(), parallelControl.getDevice(), 
+							template, preZoomImage, eyeCount);
+
+
+					preZoomImage = redEyesRemoved;
+
+					paintImage(redEyesRemoved);
+
+
+					setZoom(preEditZoom * 100);
 				}
-				
-				if(eyeCount <= 0) {
-					JOptionPane.showMessageDialog(null, "Eye Count Must Be Greater Than 0, Setting Count to 2");
-				}
-				
-				
-				
-				
-				BufferedImage redEyesRemoved =  RedEyeParallel.redEyeRemoval(parallelControl.getContext(),
-						parallelControl.getCommandQueue(), parallelControl.getDevice(), 
-						template, preZoomImage, eyeCount);
-				
-				
-				preZoomImage = redEyesRemoved;
-				
-				paintImage(redEyesRemoved);
-				
-				
-				setZoom(preEditZoom * 100);
 			}
 			else if(action.getSource() == flipHorizontal) {
 				changeMade = true;
