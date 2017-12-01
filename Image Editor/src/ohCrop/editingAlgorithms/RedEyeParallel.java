@@ -507,16 +507,12 @@ public class RedEyeParallel extends ParallelAlgorithm{
 
 			
 		
-		TIME += RadixSort.sort(nccInts, keys, sortedNcc, sortedKeys, 14, context, commandQueue, device);
+		long radixTime = RadixSort.sort(nccInts, keys, sortedNcc, sortedKeys, 14, context, commandQueue, device);
 	
-//		for(int i = 0; i < sortedNcc.length; i++) {
-//			System.out.println("V: " + sortedNcc[i] + " K: " + sortedKeys[i]);
-//		}
+//		System.out.println(radixTime / 1000000.0);
 		
-//		for(int i = 0; i < redProductDiffs.length; i++) {
-//			System.out.println(redProductDiffs[i]);
-//		}
-//		
+		TIME += radixTime;
+
 		
 		releaseMemObject(objects);
 		
