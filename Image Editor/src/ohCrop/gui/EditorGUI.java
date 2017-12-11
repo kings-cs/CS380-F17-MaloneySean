@@ -138,6 +138,11 @@ public class EditorGUI extends JFrame{
 	private JMenuItem redEyeFile;
 	
 	/**
+	 * Menu Item used to perform seamless clones.
+	 */
+	private JMenuItem cloneFile;
+	
+	/**
 	 * The Pane that will be used to display the image being modified.
 	 */
 	private JScrollPane display;
@@ -226,6 +231,11 @@ public class EditorGUI extends JFrame{
 	 * Button used to remove red eyes from an image.
 	 */
 	private JButton redEyeParallel;
+	
+	/**
+	 * Button used to perform seamless cloning on two images.
+	 */
+	private JButton cloneParallel;
 	
 	/**
 	 * JPanel used to display an image.
@@ -334,6 +344,7 @@ public class EditorGUI extends JFrame{
 		histogramEqParallel = new JButton("Histogram Equalization (Parallel)");
 		atomicParallelHist = new JButton("Histogram Eq. (Atomic Parallel)");
 		redEyeParallel = new JButton("Red Eye (Parallel)");
+		cloneParallel = new JButton("Seamless Clone (Parallel)");
 		
 		
 		//****************Menu Bar*****************************
@@ -363,6 +374,7 @@ public class EditorGUI extends JFrame{
 		mosaicFile = new JMenu("Mosaic");
 		histogramFile = new JMenu("Histogram Equalization");
 		redEyeFile = new JMenu("Red Eye");
+		cloneFile = new JMenu("Seamless Clone");
 		
 		menuBar.add(file);
 		file.add(exit);
@@ -405,6 +417,9 @@ public class EditorGUI extends JFrame{
 		
 		menuBar.add(redEyeFile);
 		redEyeFile.add(redEyeParallel);
+		
+		menuBar.add(cloneFile);
+		cloneFile.add(cloneParallel);
 		
 		//selectDevice.add(deviceList);
 		
@@ -468,6 +483,7 @@ public class EditorGUI extends JFrame{
 		histogramEqParallel.addActionListener(ae);
 		atomicParallelHist.addActionListener(ae);
 		redEyeParallel.addActionListener(ae);
+		cloneParallel.addActionListener(ae);
 		exit.addActionListener(ae);
 		open.addActionListener(ae);
 		close.addActionListener(ae);
@@ -1098,6 +1114,9 @@ public class EditorGUI extends JFrame{
 
 					setZoom(preEditZoom * 100);
 				}
+			}
+			else if(action.getSource() == cloneParallel) {
+				//TODO: FILL THIS OUT
 			}
 			else if(action.getSource() == flipHorizontal) {
 				changeMade = true;
