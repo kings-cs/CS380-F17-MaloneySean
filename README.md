@@ -291,6 +291,12 @@ Editing Algorithm Timing:
 		<th>2478.001242 (ms)</th>
 		<th>GeForce GTX 745</th>
 	</tr>
+	<tr>
+		<th>Seamless Clone Parallel</th>
+		<th>500x333 (200 Iterations)</th>
+		<th>450.91665(ms)</th>
+		<th>GeForce GTX 745</th>
+	</tr>
 	
 </table>
 
