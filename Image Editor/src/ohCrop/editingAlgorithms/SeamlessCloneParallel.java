@@ -83,7 +83,7 @@ public class SeamlessCloneParallel extends ParallelAlgorithm {
 		
 		cl_mem[] objects = {memAlpha, memMask};
 		
-		cl_kernel kernel = CL.clCreateKernel(program, "seperate_channels", null);
+		cl_kernel kernel = CL.clCreateKernel(program, "generate_mask", null);
 		setKernelArgs(objects, kernel);
 		
 		long startTime = System.nanoTime();

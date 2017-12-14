@@ -10,7 +10,7 @@ int INTERIOR = 0;
 
 
 
-__kernel void seperate_channels(__global const int * data, __global  * redData, __global float * blueData, __global float * greenData, __global float * alphaData){
+__kernel void seperate_channels(__global const int * data, __global float * redData, __global float * blueData, __global float * greenData, __global float * alphaData){
 int ALPHA_MASK = 0xff000000;
 int ALPHA_OFFSET = 24;
 int RED_MASK = 0x00ff0000;

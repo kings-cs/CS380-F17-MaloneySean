@@ -44,6 +44,7 @@ public class CloneTest  extends ParallelAlgorithm{
 	/**
 	 * The OpenCL program.
 	 */
+	@SuppressWarnings("unused")
 	private cl_program program;
 	
 	/**
