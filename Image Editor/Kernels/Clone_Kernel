@@ -1,4 +1,4 @@
-__kernel void intial_guess(__global const int * scene, __global const int * clone, __global const float * mask, __global int * result){
+__kernel void intial_guess(__global const int * scene, __global const int * clone, __global const float * mask, __global float * result){
 int INTERIOR = 0;
 int EXTERIOR = 1;
 int BORDER = 2;

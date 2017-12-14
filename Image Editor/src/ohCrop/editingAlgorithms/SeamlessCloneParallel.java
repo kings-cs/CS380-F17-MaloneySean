@@ -79,7 +79,10 @@ public class SeamlessCloneParallel extends ParallelAlgorithm {
 		return result;
 	}
 	
-	
+	/**
+	 * Iteratively improves the clone.
+	 * 
+	 */
 	private static void improveClone() {
 		
 	}
