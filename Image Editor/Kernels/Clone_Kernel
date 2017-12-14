@@ -1,5 +1,68 @@
-__kernel void generate_mask(__global const float * alpha, __global float * mask){
+__kernel void generate_mask(__global const int * dimensions, __global const float * alpha, __global float * mask){
 int INTERIOR = 0;
+int EXTERIOR = 1;
+int BORDER = 2;
+
+int group_id = get_group_id(0);
+int group_size   = get_local_size(0);
+int local_number = get_local_id(0);
+
+int i = (group_id * group_size) + local_number;
+
+int cloneHeight = dimensions[0];
+int cloneWidth = dimensions[1];
+
+int row = i / cloneWidth;
+int col = i % cloneWidth;
+
+
+int northAdjust = row - 1;
+int southAdjust = row + 1;
+int eastAdjust = col + 1;
+int westAdjust = col - 1;
+
+
+int northIndex = northAdjust * cloneWidth + col;
+int southIndex = southAdjust * cloneWidth + col;
+int eastIndex = row * cloneWidth + eastAdjust;
+int westIndex = row * cloneWidth + westAdjust;
+
+float currentAlpha = alpha[i];
+
+if(currentAlpha == 0.0){
+	mask[i] = EXTERIOR;
+}
+else{
+	
+	float north = -7;
+	float south = -7;
+	float east = -7;
+	float west = -7;
+	
+	if(northAdjust >= 0){
+		north = alpha[northIndex];
+	}
+	
+	if(southAdjust < cloneHeight){
+		south = alpha[southIndex];
+	}
+	
+	if(eastAdjust < cloneWidth){
+		east = alpha[eastIndex];
+	}
+	
+	if(westAdjust >= 0){
+		west = alpha[westIndex];
+	}
+	
+	if(north == 0.0 || south == 0.0 || east == 0.0 || west == 0.0){
+		mask[i] = INTERIOR;
+	}
+	else{
+		mask[i] = BORDER;
+	}
+	
+}
 
 }
 

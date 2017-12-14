@@ -2,6 +2,8 @@ package ohCrop.editingAlgorithms;
 
 import java.awt.image.BufferedImage;
 
+import javax.swing.JOptionPane;
+
 import org.jocl.CL;
 import org.jocl.Pointer;
 import org.jocl.Sizeof;
@@ -51,7 +53,16 @@ public class SeamlessCloneParallel extends ParallelAlgorithm {
 		
 		
 		float[] mask = new float[cloneData.length];
-		findMaskValues(alphaCloneChannel, mask, context, commandQueue, device, program);
+		int[] cloneDimensions = {clone.getHeight(), clone.getWidth()};
+		findMaskValues(cloneDimensions, alphaCloneChannel, mask, context, commandQueue, device, program);
+		
+		
+		
+		
+		CL.clReleaseProgram(program);
+		
+		double miliSeconds = TIME / 1000000.0;
+		JOptionPane.showMessageDialog(null, "Time Taken: " + miliSeconds + " (ms)");
 		
 		return result;
 	}
@@ -59,6 +70,8 @@ public class SeamlessCloneParallel extends ParallelAlgorithm {
 	
 	/**
 	 * Creates the mask for the clone image.
+	 * 
+	 * @param dimensions The dimensions of the clone image.
 	 * @param alphaChannel The alpha channel.
 	 * @param mask The generated mask.
 	 * @param context The OpenCL context.
@@ -66,22 +79,26 @@ public class SeamlessCloneParallel extends ParallelAlgorithm {
 	 * @param device The OpenCL device.
 	 * @param program The OpenCL program.
 	 */
-	private static void findMaskValues(float[] alphaChannel, float[] mask, cl_context context, cl_command_queue commandQueue, cl_device_id device, cl_program program) {
+	private static void findMaskValues(int[] dimensions, float[] alphaChannel, float[] mask, cl_context context, cl_command_queue commandQueue, cl_device_id device, cl_program program) {
 		int globalSize = alphaChannel.length;
 		int localSize = calculateLocalSize(globalSize, device);
 		
 		long[] globalWorkSize = new long[] {globalSize};
 		long[] localWorkSize = new long[] {localSize};
 		
+		
+		Pointer ptrDimensions = Pointer.to(dimensions);
 		Pointer ptrAlpha = Pointer.to(alphaChannel);
 		Pointer ptrMask = Pointer.to(mask);
 		
+		cl_mem memDimensions = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
+				Sizeof.cl_int * dimensions.length, ptrDimensions, null);
 		cl_mem memAlpha = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
 				Sizeof.cl_float * alphaChannel.length, ptrAlpha, null);
 		cl_mem memMask = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
 				Sizeof.cl_float * mask.length, ptrMask, null);
 		
-		cl_mem[] objects = {memAlpha, memMask};
+		cl_mem[] objects = {memDimensions, memAlpha, memMask};
 		
 		cl_kernel kernel = CL.clCreateKernel(program, "generate_mask", null);
 		setKernelArgs(objects, kernel);
