@@ -1,4 +1,9 @@
-__kernel void improve_clone(__global const int * dimensions, __global const int * scene, __global const int * clone, __global const int * mask, __global const float * merged_data, __global float * result){
+__kernel void improve_clone(__global const int * dimensions, 
+__global const float * redScene, __global const float * greenScene, __global const float * blueScene,
+__global const float * redClone, __global const float * greenClone, __global const float * blueClone,
+__global const int * mask, 
+__global const float * redMerged, __global const float * greenMerged, __global const float * blueMerged,
+__global float * redResult, __global float * greenResult, __global float * blueResult){
 int INTERIOR = 0;
 int EXTERIOR = 1;
 int BORDER = 2;
@@ -27,89 +32,168 @@ int southIndex = southAdjust * width + col;
 int eastIndex = row * width + eastAdjust;
 int westIndex = row * width + westAdjust;
 
-float A = 0;
-float B = 0;
-float C = 0; 
-float D = 0;
+float redA = 0;
+float greenA = 0;
+float blueA = 0;
+
+float redB = 0;
+float greenB = 0;
+float blueB = 0;
+
+
+float redC = 0;
+float greenC = 0;
+float blueC = 0; 
+
+
 int neighborCount = 0;
 
-int currentClone = clone[i];
+float currentCloneRed = redClone[i];
+float currentCloneGreen = greenClone[i];
+float currentCloneBlue = blueClone[i];
 
 
 if(mask[i] == INTERIOR){
 	if(northAdjust >= 0){
-		float mergedNorth = merged_data[northIndex];
 		int northMask = mask[northIndex]; 
-		int sceneNorth = scene[northIndex];
-		int cloneNorth = clone[northIndex];
+	
+		float redMergedNorth = redMerged[northIndex];
+		float greenMergedNorth = greenMerged[northIndex];
+		float blueMergedNorth = blueMerged[northIndex];
+		
+		float redSceneNorth = redScene[northIndex];
+		float greenSceneNorth = greenScene[northIndex];
+		float blueSceneNorth = blueScene[northIndex];
+		
+		
+		float redCloneNorth = redClone[northIndex];
+		float greenCloneNorth = greenClone[northIndex];
+		float blueCloneNorth = blueClone[northIndex];
+		
 		
 		if(northMask == INTERIOR){
-			A += mergedNorth;
+			redA += redMergedNorth;
+			greenA += greenMergedNorth;
+			blueA += blueMergedNorth;
 		}
 		else if(northMask == BORDER){
-			B+= sceneNorth;
+			redB += redSceneNorth;
+			greenB += greenSceneNorth;
+			blueB += blueSceneNorth;
 		}
 		
-		C += (currentClone - cloneNorth);
+		redC += (currentCloneRed - redCloneNorth);
+		greenC += (currentCloneGreen - greenCloneNorth);
+		blueC += (currentCloneBlue - blueCloneNorth);
 	
 		neighborCount++;
 	}
 		
 	if(southAdjust < height){
-		float mergedSouth = merged_data[southIndex];
 		int southMask = mask[southIndex];
-		int sceneSouth = scene[southIndex];
-		int cloneSouth = clone[southIndex];
+	
+		float redMergedSouth = redMerged[southIndex];
+		float greenMergedSouth = greenMerged[southIndex];
+		float blueMergedSouth = blueMerged[southIndex];
+		
+		float redSceneSouth = redScene[southIndex];
+		float greenSceneSouth = greenScene[southIndex];
+		float blueSceneSouth = blueScene[southIndex];
+		
+		
+		float redCloneSouth = redClone[southIndex];
+		float greenCloneSouth = greenClone[southIndex];
+		float blueCloneSouth = blueClone[southIndex];
 		
 		if(southMask == INTERIOR){
-			A += mergedSouth;
+			redA += redMergedSouth;
+			greenA += greenMergedSouth;
+			blueA += blueMergedSouth;
 		}
 		else if(southMask == BORDER){
-			B+= sceneSouth;
+			redB += redSceneSouth;
+			greenB += greenSceneSouth;
+			blueB += blueSceneSouth;
 		}
 		
-		C += (currentClone - cloneSouth);
+		redC += (currentCloneRed - redCloneSouth);
+		greenC += (currentCloneGreen - greenCloneSouth);
+		blueC += (currentCloneBlue - blueCloneSouth);
 	
 		neighborCount++;
 	}
 		
 	if(eastAdjust < width){
-		float mergedEast = merged_data[eastIndex];
 		int eastMask = mask[eastIndex];
-		int sceneEast = scene[eastIndex];
-		int cloneEast = clone[eastIndex];
+		
+		float redMergedEast = redMerged[eastIndex];
+		float greenMergedEast = greenMerged[eastIndex];
+		float blueMergedEast = blueMerged[eastIndex];
+		
+		float redSceneEast = redScene[eastIndex];
+		float greenSceneEast = greenScene[eastIndex];
+		float blueSceneEast = blueScene[eastIndex];
+		
+		
+		float redCloneEast = redClone[eastIndex];
+		float greenCloneEast = greenClone[eastIndex];
+		float blueCloneEast = blueClone[eastIndex];
 		
 		if(eastMask == INTERIOR){
-			A += mergedEast;
+			redA += redMergedEast;
+			greenA += greenMergedEast;
+			blueA += blueMergedEast;
 		}
 		else if(eastMask == BORDER){
-			B+= sceneEast;
+			redB += redSceneEast;
+			greenB += greenSceneEast;
+			blueB += blueSceneEast;
 		}
 	
-		C += (currentClone - cloneEast);
+		redC += (currentCloneRed - redCloneEast);
+		greenC += (currentCloneGreen - greenCloneEast);
+		blueC += (currentCloneBlue - blueCloneEast);
 	
 		neighborCount++;
 	}
 		
 	if(westAdjust >= 0){
-		float mergedWest = merged_data[westIndex];
 		int westMask = mask[westIndex];
-		int sceneWest = scene[westIndex];
-		int cloneWest = clone[westIndex];
+	
+		float redMergedWest = redMerged[westIndex];
+		float greenMergedWest = greenMerged[westIndex];
+		float blueMergedWest = blueMerged[westIndex];
+		
+		float redSceneWest = redScene[westIndex];
+		float greenSceneWest = greenScene[westIndex];
+		float blueSceneWest = blueScene[westIndex];
+		
+		
+		float redCloneWest = redClone[westIndex];
+		float greenCloneWest = greenClone[westIndex];
+		float blueCloneWest = blueClone[westIndex];
 		
 		if(westMask == INTERIOR){
-			A += mergedWest;
+			redA += redMergedWest;
+			greenA += greenMergedWest;
+			blueA += blueMergedWest;
 		}
 		else if(westMask == BORDER){
-			B+= sceneWest;
+			redB += redSceneWest;
+			greenB += greenSceneWest;
+			blueB += blueSceneWest;
 		}
 		
-		C += (currentClone - cloneWest);
+		redC += (currentCloneRed - redCloneWest);
+		greenC += (currentCloneGreen - greenCloneWest);
+		blueC += (currentCloneBlue - blueCloneWest);
 		
 		neighborCount++;
 	}
 	
-	result[i] = (A + B + C) / D;
+	redResult[i] = (redA + redB + redC) / neighborCount;
+	greenResult[i] = (greenA + greenB + greenC) / neighborCount;
+	blueResult[i] = (blueA + blueB + blueC) / neighborCount;
 
 }
 
@@ -210,14 +294,33 @@ else{
 
 
 
-__kernel void int_cast(__global const float * data, __global int * result){
+__kernel void int_cast(__global const float * redChannel, __global const float * greenChannel, __global const float * blueChannel, __global const float * alphaChannel, __global int * result){
+int ALPHA_MASK = 0xff000000;
+int ALPHA_OFFSET = 24;
+int RED_MASK = 0x00ff0000;
+int RED_OFFSET = 16;
+int GREEN_MASK = 0x0000ff00;
+int GREEN_OFFSET = 8;
+int BLUE_MASK = 0x000000ff;
+int BLUE_OFFSET = 0;
+
+
 int group_id = get_group_id(0);
 int group_size   = get_local_size(0);
 int local_number = get_local_id(0);
 
 int i = (group_id * group_size) + local_number;
 
-result[i] = (int) data[i];
+int red = (int) redChannel[i];
+int green = (int) greenChannel[i];
+int blue = (int) blueChannel[i];
+int alpha = (int) alphaChannel[i];
+
+int newPixel = (alpha << ALPHA_OFFSET) | (red << RED_OFFSET) |
+						(green << GREEN_OFFSET) | (blue << BLUE_OFFSET);
+						
+		
+result[i] = newPixel;
 }
 
 

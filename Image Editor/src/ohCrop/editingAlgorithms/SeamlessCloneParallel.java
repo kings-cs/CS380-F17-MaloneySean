@@ -49,6 +49,7 @@ public class SeamlessCloneParallel extends ParallelAlgorithm {
 		float[] blueCloneChannel = new float[cloneData.length];
 		float[] alphaCloneChannel = new float[cloneData.length];
 		
+		
 		convertChannelsToFloats(cloneData, redCloneChannel, blueCloneChannel, greenCloneChannel, alphaCloneChannel, context, commandQueue, device, program);
 		
 		int[] mask = new int[cloneData.length];
@@ -56,23 +57,43 @@ public class SeamlessCloneParallel extends ParallelAlgorithm {
 		findMaskValues(cloneDimensions, alphaCloneChannel, mask, context, commandQueue, device, program);
 		
 		int[] sceneData = strip(scene);
+		float[] redSceneChannel = new float[sceneData.length];
+		float[] greenSceneChannel = new float[sceneData.length];
+		float[] blueSceneChannel = new float[sceneData.length];
+		float[] alphaSceneChannel = new float[sceneData.length];
+		convertChannelsToFloats(sceneData, redSceneChannel, blueSceneChannel, greenSceneChannel, alphaSceneChannel, context, commandQueue, device, program);
 		
-		float[] initial = new float[sceneData.length];
+		int[] initial = new int[sceneData.length];
 		initialGuess(sceneData, cloneData, mask, initial, context, commandQueue, device, program);
 		
 		
 		
-		float[] previousIteration = initial;
-		float[] finalData = new float[sceneData.length];
+		int[] previousIteration = initial;
+		float[] redMergedChannel = new float[sceneData.length];
+		float[] greenMergedChannel = new float[sceneData.length];
+		float[] blueMergedChannel = new float[sceneData.length];
+		float[] alphaMergedChannel = new float[sceneData.length];
+		convertChannelsToFloats(previousIteration, redMergedChannel, blueMergedChannel, greenMergedChannel, alphaMergedChannel, context, commandQueue, device, program);
 		//float[] finalData = initial;
 		
-		improveClone(cloneDimensions, sceneData, cloneData, mask, previousIteration, finalData, context, commandQueue, device, program);
+		float[][] cloneChannels = {redCloneChannel, greenCloneChannel, blueCloneChannel};
+		float[][] sceneChannels = {redSceneChannel, greenSceneChannel, blueSceneChannel};
+		float[][] mergedChannels = {redMergedChannel, greenMergedChannel, blueMergedChannel};
+		
+		float[] redResultChannel = new float[sceneData.length];
+		float[] greenResultChannel = new float[sceneData.length];
+		float[] blueResultChannel = new float[sceneData.length];
+		float[][] resultChannels = {redResultChannel, greenResultChannel, blueResultChannel};
+		improveClone(cloneDimensions, sceneChannels, cloneChannels, mask, mergedChannels, resultChannels, context, commandQueue, device, program);
+		
+		
+		
 		
 		
 		
 		int[] resultData = new int[sceneData.length];
-		//TODO: Is this actually necessary or should it just be getting passed as an int from the initial guess anyway?
-		convertToInt(finalData, resultData, context, commandQueue, device, program);
+		float[][] finalChannels = {resultChannels[0], resultChannels[1], resultChannels[2], alphaSceneChannel};
+		convertToInt(finalChannels, resultData, context, commandQueue, device, program);
 		
 		
 		
@@ -89,45 +110,100 @@ public class SeamlessCloneParallel extends ParallelAlgorithm {
 	 * Iteratively improves the clone.
 	 * 
 	 * @param dimensions The dimensions of the image.
-	 * @param sceneData The scene raster.
-	 * @param cloneData The clone raster.
+	 * @param sceneChannels The RGB scene channels as floats.
+	 * @param cloneChannels The RGB clone channels as floats.
 	 * @param mask The mask data.
-	 * @param mergedData The data from the previous iteration of merging the scene and clone.
-	 * @param resultData The resulting data.
+	 * @param mergedChannels The RGB merged channels as floats.
+	 * @param resultChannels The RGB result channels as floats.
 	 * @param context The OpenCL context.
 	 * @param commandQueue The OpenCL command queue.
 	 * @param device The OpenCL device.
 	 * @param program The OpenCL program.
 	 */
-	private static void improveClone(int[] dimensions, int[] sceneData, int[] cloneData, int[] mask, float[] mergedData, float[] resultData, cl_context context, cl_command_queue commandQueue, cl_device_id device, cl_program program) {
-		int globalSize = sceneData.length;
+	private static void improveClone(int[] dimensions, float[][] sceneChannels, float[][] cloneChannels, int[] mask, float[][] mergedChannels, float[][] resultChannels, cl_context context, cl_command_queue commandQueue, cl_device_id device, cl_program program) {
+		int globalSize = sceneChannels[0].length;
 		int localSize = calculateLocalSize(globalSize, device);
 		
 		long[] globalWorkSize = new long[] {globalSize};
 		long[] localWorkSize = new long[] {localSize};
 		
+		float[] redSceneChannel = sceneChannels[0];
+		float[] greenSceneChannel = sceneChannels[1];
+		float[] blueSceneChannel = sceneChannels[2];
+		
+		float[] redCloneChannel = cloneChannels[0];
+		float[] greenCloneChannel = cloneChannels[1];
+		float[] blueCloneChannel = cloneChannels[2];
+		
+		float[] redMergedChannel = mergedChannels[0];
+		float[] greenMergedChannel = mergedChannels[1];
+		float[] blueMergedChannel = mergedChannels[2];
+		
+		float[] redResultChannel = resultChannels[0];
+		float[] greenResultChannel = resultChannels[1];
+		float[] blueResultChannel = resultChannels[2];
+		
 		Pointer ptrDimensions = Pointer.to(dimensions);
-		Pointer ptrScene = Pointer.to(sceneData);
-		Pointer ptrClone = Pointer.to(cloneData);
+		
+		Pointer ptrRedScene = Pointer.to(redSceneChannel);
+		Pointer ptrGreenScene = Pointer.to(greenSceneChannel);
+		Pointer ptrBlueScene = Pointer.to(blueSceneChannel);
+		
+		Pointer ptrRedClone = Pointer.to(redCloneChannel);
+		Pointer ptrBlueClone = Pointer.to(blueCloneChannel);
+		Pointer ptrGreenClone = Pointer.to(greenCloneChannel);
+		
 		Pointer ptrMask = Pointer.to(mask);
-		Pointer ptrMerged = Pointer.to(mergedData);
-		Pointer ptrResult = Pointer.to(resultData);
+		
+		Pointer ptrRedMerged = Pointer.to(redMergedChannel);
+		Pointer ptrGreenMerged = Pointer.to(greenMergedChannel);
+		Pointer ptrBlueMerged = Pointer.to(blueMergedChannel);
+		
+		Pointer ptrRedResult = Pointer.to(redResultChannel);
+		Pointer ptrGreenResult = Pointer.to(greenResultChannel);
+		Pointer ptrBlueResult = Pointer.to(blueResultChannel);
 		
 		cl_mem memDimensions = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
 				Sizeof.cl_int * dimensions.length, ptrDimensions, null);
-		cl_mem memScene =  CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
-				Sizeof.cl_int * sceneData.length, ptrScene, null);
-		cl_mem memClone = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
-				Sizeof.cl_int * cloneData.length, ptrClone, null);
+		
+		cl_mem memRedScene =  CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
+				Sizeof.cl_float * redSceneChannel.length, ptrRedScene, null);
+		cl_mem memGreenScene =  CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
+				Sizeof.cl_float * greenSceneChannel.length, ptrGreenScene, null);
+		cl_mem memBlueScene =  CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
+				Sizeof.cl_float * blueSceneChannel.length, ptrBlueScene, null);
+		
+		cl_mem memRedClone = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
+				Sizeof.cl_float * redCloneChannel.length, ptrRedClone, null);
+		cl_mem memGreenClone = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
+				Sizeof.cl_float * greenCloneChannel.length, ptrGreenClone, null);
+		cl_mem memBlueClone = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
+				Sizeof.cl_float * blueCloneChannel.length, ptrBlueClone, null);
+		
 		cl_mem memMask = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
 				Sizeof.cl_int * mask.length, ptrMask, null);
-		cl_mem memMerged = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
-				Sizeof.cl_float * mergedData.length, ptrMerged, null);
-		cl_mem memResult = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
-				Sizeof.cl_float * resultData.length, ptrResult, null);
+		
+		cl_mem memRedMerged = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
+				Sizeof.cl_float * redMergedChannel.length, ptrRedMerged, null);
+		cl_mem memGreenMerged = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
+				Sizeof.cl_float * greenMergedChannel.length, ptrGreenMerged, null);
+		cl_mem memBlueMerged = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
+				Sizeof.cl_float * blueMergedChannel.length, ptrBlueMerged, null);
+		
+		cl_mem memRedResult = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
+				Sizeof.cl_float * redResultChannel.length, ptrRedResult, null);
+		cl_mem memGreenResult = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
+				Sizeof.cl_float * greenResultChannel.length, ptrGreenResult, null);
+		cl_mem memBlueResult = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
+				Sizeof.cl_float * blueResultChannel.length, ptrBlueResult, null);
 		
 		
-		cl_mem[] objects = {memDimensions, memScene, memClone, memMask, memMerged, memResult};
+		cl_mem[] objects = {memDimensions, 
+				memRedScene, memGreenScene, memBlueScene,
+				memRedClone, memGreenClone, memBlueClone,
+				memMask, 
+				memRedMerged, memGreenMerged, memBlueMerged,
+				memRedResult, memGreenResult, memBlueResult};
 		cl_kernel kernel = CL.clCreateKernel(program, "improve_clone", null);
 		setKernelArgs(objects, kernel);
 		
@@ -140,9 +216,15 @@ public class SeamlessCloneParallel extends ParallelAlgorithm {
 		
 	
 		
-		CL.clEnqueueReadBuffer(commandQueue, memResult, 
-				CL.CL_TRUE, 0, resultData.length * Sizeof.cl_float,
-				ptrResult, 0, null, null);
+		CL.clEnqueueReadBuffer(commandQueue, memRedResult, 
+				CL.CL_TRUE, 0, redResultChannel.length * Sizeof.cl_float,
+				ptrRedResult, 0, null, null);
+		CL.clEnqueueReadBuffer(commandQueue, memGreenResult, 
+				CL.CL_TRUE, 0, greenResultChannel.length * Sizeof.cl_float,
+				ptrGreenResult, 0, null, null);
+		CL.clEnqueueReadBuffer(commandQueue, memRedResult, 
+				CL.CL_TRUE, 0, blueResultChannel.length * Sizeof.cl_float,
+				ptrBlueResult, 0, null, null);
 		
 		
 		releaseMemObject(objects);
@@ -160,7 +242,7 @@ public class SeamlessCloneParallel extends ParallelAlgorithm {
 	 * @param device The OpenCL device.
 	 * @param program The OpenCL program.
 	 */
-	private static void initialGuess(int[] sceneData, int[] cloneData, int[] maskData, float[] result, cl_context context, cl_command_queue commandQueue, cl_device_id device, cl_program program) {
+	private static void initialGuess(int[] sceneData, int[] cloneData, int[] maskData, int[] result, cl_context context, cl_command_queue commandQueue, cl_device_id device, cl_program program) {
 		int globalSize = sceneData.length;
 		int localSize = calculateLocalSize(globalSize, device);
 		
@@ -179,7 +261,7 @@ public class SeamlessCloneParallel extends ParallelAlgorithm {
 		cl_mem memMask = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
 				Sizeof.cl_int * maskData.length, ptrMask, null);
 		cl_mem memResult = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
-				Sizeof.cl_float * result.length, ptrResult, null);
+				Sizeof.cl_int * result.length, ptrResult, null);
 		
 		cl_mem[] objects = {memScene, memClone, memMask, memResult};
 		cl_kernel kernel = CL.clCreateKernel(program, "intial_guess", null);
@@ -329,29 +411,46 @@ public class SeamlessCloneParallel extends ParallelAlgorithm {
 	
 	/**
 	 * Converts the final result back to be integer values.
-	 * @param data The float data to be converted.
+	 * @param finalChannels The channels to be converted back to ints and combined into the final image.
 	 * @param result The data as ints.
 	 * @param context The OpenCL context.
 	 * @param commandQueue The OpenCL command queue.
 	 * @param device The OpenCL device.
 	 * @param program The OpenCL program.
 	 */
-	private static void convertToInt(float[] data, int[] result, cl_context context, cl_command_queue commandQueue, cl_device_id device, cl_program program) {
-		int globalSize = data.length;
+	private static void convertToInt(float[][] finalChannels, int[] result, cl_context context, cl_command_queue commandQueue, cl_device_id device, cl_program program) {
+		int globalSize = finalChannels[0].length;
 		int localSize = calculateLocalSize(globalSize, device);
 		
 		long[] globalWorkSize = new long[] {globalSize};
 		long[] localWorkSize = new long[] {localSize};
 		
-		Pointer ptrData = Pointer.to(data);
+		
+		float[] redChannel = finalChannels[0];
+		float[] greenChannel = finalChannels[1];
+		float[] blueChannel = finalChannels[2];
+		float[] alphaChannel = finalChannels[3];
+		
+		Pointer ptrRed = Pointer.to(redChannel);
+		Pointer ptrGreen = Pointer.to(greenChannel);
+		Pointer ptrBlue = Pointer.to(blueChannel);
+		Pointer ptrAlpha = Pointer.to(alphaChannel);
+		
 		Pointer ptrResult = Pointer.to(result);
 		
-		cl_mem memData = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
-				Sizeof.cl_float * data.length, ptrData, null);
+		cl_mem memRed = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
+				Sizeof.cl_float * redChannel.length, ptrRed, null);
+		cl_mem memGreen = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
+				Sizeof.cl_float * greenChannel.length, ptrGreen, null);
+		cl_mem memBlue = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
+				Sizeof.cl_float * blueChannel.length, ptrBlue, null);
+		cl_mem memAlpha = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
+				Sizeof.cl_float * alphaChannel.length, ptrAlpha, null);
+		
 		cl_mem memResult = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
 				Sizeof.cl_int * result.length, ptrResult, null);
 		
-		cl_mem[] objects = {memData, memResult};
+		cl_mem[] objects = {memRed, memGreen, memBlue, memAlpha, memResult};
 		
 		cl_kernel kernel = CL.clCreateKernel(program, "int_cast", null);
 		setKernelArgs(objects, kernel);
