@@ -61,8 +61,18 @@ public class SeamlessCloneParallel extends ParallelAlgorithm {
 		float[] initial = new float[sceneData.length];
 		initialGuess(sceneData, cloneData, mask, initial, context, commandQueue, device, program);
 		
-		CL.clReleaseProgram(program);
 		
+		
+		
+		float[] finalData = initial;
+		int[] resultData = new int[sceneData.length];
+		convertToInt(finalData, resultData, context, commandQueue, device, program);
+		
+		
+		
+		result = wrapUp(resultData, scene);
+		
+		CL.clReleaseProgram(program);
 		double miliSeconds = TIME / 1000000.0;
 		JOptionPane.showMessageDialog(null, "Time Taken: " + miliSeconds + " (ms)");
 		
@@ -251,5 +261,48 @@ public class SeamlessCloneParallel extends ParallelAlgorithm {
 		
 		releaseMemObject(objects);
 		
+	}
+	
+	/**
+	 * Converts the final result back to be integer values.
+	 * @param data The float data to be converted.
+	 * @param result The data as ints.
+	 * @param context The OpenCL context.
+	 * @param commandQueue The OpenCL command queue.
+	 * @param device The OpenCL device.
+	 * @param program The OpenCL program.
+	 */
+	private static void convertToInt(float[] data, int[] result, cl_context context, cl_command_queue commandQueue, cl_device_id device, cl_program program) {
+		int globalSize = data.length;
+		int localSize = calculateLocalSize(globalSize, device);
+		
+		long[] globalWorkSize = new long[] {globalSize};
+		long[] localWorkSize = new long[] {localSize};
+		
+		Pointer ptrData = Pointer.to(data);
+		Pointer ptrResult = Pointer.to(result);
+		
+		cl_mem memData = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
+				Sizeof.cl_float * data.length, ptrData, null);
+		cl_mem memResult = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
+				Sizeof.cl_int * result.length, ptrResult, null);
+		
+		cl_mem[] objects = {memData, memResult};
+		
+		cl_kernel kernel = CL.clCreateKernel(program, "int_cast", null);
+		setKernelArgs(objects, kernel);
+		
+		long startTime = System.nanoTime();
+		CL.clEnqueueNDRangeKernel(commandQueue, kernel, 1, null,
+				globalWorkSize, localWorkSize, 
+				0, null, null);
+		long endTime = System.nanoTime();
+		TIME += endTime - startTime;
+		
+		CL.clEnqueueReadBuffer(commandQueue, memResult, 
+				CL.CL_TRUE, 0, result.length * Sizeof.cl_float,
+				ptrResult, 0, null, null);
+		
+		releaseMemObject(objects);
 	}
 }

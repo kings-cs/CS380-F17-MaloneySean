@@ -92,7 +92,15 @@ else{
 
 
 
+__kernel void int_cast(__global const float * data, __global int * result){
+int group_id = get_group_id(0);
+int group_size   = get_local_size(0);
+int local_number = get_local_id(0);
 
+int i = (group_id * group_size) + local_number;
+
+result[i] = (int) data[i];
+}
 
 
 
