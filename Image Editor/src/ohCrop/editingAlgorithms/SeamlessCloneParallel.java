@@ -65,7 +65,7 @@ public class SeamlessCloneParallel extends ParallelAlgorithm {
 		
 		float[] previousIteration = initial;
 		float[] finalData = new float[sceneData.length];
-		
+		//float[] finalData = initial;
 		
 		improveClone(cloneDimensions, sceneData, cloneData, mask, previousIteration, finalData, context, commandQueue, device, program);
 		

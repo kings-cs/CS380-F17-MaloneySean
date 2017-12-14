@@ -1,4 +1,4 @@
-__kernel void improve_clone(__global const int * scene, __ global const int * clone, __global const float * mask, __global const float * merged_data, __global float * result){
+__kernel void improve_clone(__global const int * dimensions, __global const int * scene, __global const int * clone, __global const float * mask, __global const float * merged_data, __global float * result){
 int INTERIOR = 0;
 int EXTERIOR = 1;
 int BORDER = 2;
@@ -22,10 +22,10 @@ int eastAdjust = col + 1;
 int westAdjust = col - 1;
 
 
-int northIndex = northAdjust * cloneWidth + col;
-int southIndex = southAdjust * cloneWidth + col;
-int eastIndex = row * cloneWidth + eastAdjust;
-int westIndex = row * cloneWidth + westAdjust;
+int northIndex = northAdjust * width + col;
+int southIndex = southAdjust * width + col;
+int eastIndex = row * width + eastAdjust;
+int westIndex = row * width + westAdjust;
 
 float A = 0;
 float B = 0;
@@ -35,84 +35,88 @@ int neighborCount = 0;
 
 int currentClone = clone[i];
 
-if(northAdjust >= 0){
-	float mergedNorth = merged_data[northIndex];
-	float northMask = mask[northIndex]; 
-	int sceneNorth = scene[northIndex];
-	int cloneNorth = clone[northIndex];
-	
-	if(northMask == INTERIOR){
-		A += mergedNorth;
-	}
-	else if(northMask == BORDER){
-		B+= sceneNorth;
-	}
-	
-	C += (currentClone - cloneNorth);
 
-	neighborCount++;
+if(mask[i] == INTERIOR){
+	if(northAdjust >= 0){
+		float mergedNorth = merged_data[northIndex];
+		float northMask = mask[northIndex]; 
+		int sceneNorth = scene[northIndex];
+		int cloneNorth = clone[northIndex];
+		
+		if(northMask == INTERIOR){
+			A += mergedNorth;
+		}
+		else if(northMask == BORDER){
+			B+= sceneNorth;
+		}
+		
+		C += (currentClone - cloneNorth);
+	
+		neighborCount++;
+	}
+		
+	if(southAdjust < height){
+		float mergedSouth = merged_data[southIndex];
+		float southMask = mask[southIndex];
+		int sceneSouth = scene[southIndex];
+		int cloneSouth = clone[southIndex];
+		
+		if(southMask == INTERIOR){
+			A += mergedSouth;
+		}
+		else if(southMask == BORDER){
+			B+= sceneSouth;
+		}
+		
+		C += (currentClone - cloneSouth);
+	
+		neighborCount++;
+	}
+		
+	if(eastAdjust < width){
+		float mergedEast = merged_data[eastIndex];
+		float eastMask = mask[eastIndex];
+		int sceneEast = scene[eastIndex];
+		int cloneEast = clone[eastIndex];
+		
+		if(eastMask == INTERIOR){
+			A += mergedEast;
+		}
+		else if(eastMask == BORDER){
+			B+= sceneEast;
+		}
+	
+		C += (currentClone - cloneEast);
+	
+		neighborCount++;
+	}
+		
+	if(westAdjust >= 0){
+		float mergedWest = merged_data[westIndex];
+		float westMask = mask[westIndex];
+		int sceneWest = scene[westIndex];
+		int cloneWest = clone[westIndex];
+		
+		if(westMask == INTERIOR){
+			A += mergedWest;
+		}
+		else if(westMask == BORDER){
+			B+= sceneWest;
+		}
+		
+		C += (currentClone - cloneWest);
+		
+		neighborCount++;
+	}
+	
+	result[i] = (A + B + C) / D;
+
 }
-	
-if(southAdjust < cloneHeight){
-	float mergedSouth = merged_data[southIndex];
-	float southMask = mask[southIndex];
-	int sceneSouth = scene[southIndex];
-	int cloneSouth = clone[southIndex];
-	
-	if(southMask == INTERIOR){
-		A += mergedSouth;
-	}
-	else if(southMask == BORDER){
-		B+= sceneSouth;
-	}
-	
-	C += (currentClone - cloneSouth);
-
-	neighborCount++;
-}
-	
-if(eastAdjust < cloneWidth){
-	float mergedEast = merged_data[eastIndex];
-	float eastMask = mask[eastIndex];
-	int sceneEast = scene[eastIndex];
-	int cloneEast = clone[eastIndex];
-	
-	if(eastMask == INTERIOR){
-		A += mergedEast;
-	}
-	else if(eastMask == BORDER){
-		B+= sceneEast;
-	}
-
-	C += (currentClone - cloneEast);
-
-	neighborCount++;
-}
-	
-if(westAdjust >= 0){
-	float mergedWest = merged_data[westIndex];
-	float westMask = mask[westIndex];
-	int sceneWest = scene[westIndex];
-	int cloneWest = clone[westIndex];
-	
-	if(westMask == INTERIOR){
-		A += mergedWest;
-	}
-	else if(westMask == BORDER){
-		B+= sceneWest;
-	}
-	
-	C += (currentClone - cloneWest);
-	
-	neighborCount++;
-}
-
-result[i] = (A + B + C) / D;
 
 }
 
 
-__kernel void intial_guess(__global const int * dimensions, __global const int * scene, __global const int * clone, __global const float * mask, __global float * result){
+__kernel void intial_guess(__global const int * scene, __global const int * clone, __global const float * mask, __global float * result){
 int INTERIOR = 0;
 int EXTERIOR = 1;
 int BORDER = 2;
