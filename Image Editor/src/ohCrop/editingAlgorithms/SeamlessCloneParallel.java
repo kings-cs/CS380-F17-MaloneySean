@@ -369,6 +369,7 @@ public class SeamlessCloneParallel extends ParallelAlgorithm {
 		Pointer ptrBlueClone = Pointer.to(blueChannel);
 		Pointer ptrAlphaClone = Pointer.to(alphaChannel);
 		
+		
 		cl_mem memData = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
 				Sizeof.cl_int * data.length, ptrData, null);
 		cl_mem memRedClone = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
