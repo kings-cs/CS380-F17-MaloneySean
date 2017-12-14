@@ -56,8 +56,12 @@ public class SeamlessCloneParallel extends ParallelAlgorithm {
 		int[] cloneDimensions = {clone.getHeight(), clone.getWidth()};
 		findMaskValues(cloneDimensions, alphaCloneChannel, mask, context, commandQueue, device, program);
 		
+		int[] sceneData = strip(scene);
 		
-		
+		//TODO: Initial probably shouldnt be a float and this will not be the final wrap up step.
+		int[] initial = new int[sceneData.length];
+		initialGuess(sceneData, cloneData, mask, initial, context, commandQueue, device, program);
+		result = wrapUp(initial, scene);
 		
 		CL.clReleaseProgram(program);
 		
@@ -65,6 +69,62 @@ public class SeamlessCloneParallel extends ParallelAlgorithm {
 		JOptionPane.showMessageDialog(null, "Time Taken: " + miliSeconds + " (ms)");
 		
 		return result;
+	}
+	
+	
+	/**
+	 * Makes the initial guess.
+	 * 
+	 * @param sceneData The raster from the scene image.
+	 * @param cloneData The raster from the clone image.
+	 * @param maskData The mask data.
+	 * @param result The resulting raster.
+	 * @param context The OpenCL context.
+	 * @param commandQueue The OpenCL commandQueue.
+	 * @param device The OpenCL device.
+	 * @param program The OpenCL program.
+	 */
+	private static void initialGuess(int[] sceneData, int[] cloneData, float[] maskData, int[] result, cl_context context, cl_command_queue commandQueue, cl_device_id device, cl_program program) {
+		int globalSize = sceneData.length;
+		int localSize = calculateLocalSize(globalSize, device);
+		
+		long[] globalWorkSize = new long[] {globalSize};
+		long[] localWorkSize = new long[] {localSize};
+		
+		Pointer ptrScene = Pointer.to(sceneData);
+		Pointer ptrClone = Pointer.to(cloneData);
+		Pointer ptrMask = Pointer.to(maskData);
+		Pointer ptrResult = Pointer.to(result);
+		
+		cl_mem memScene =  CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
+				Sizeof.cl_int * sceneData.length, ptrScene, null);
+		cl_mem memClone = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
+				Sizeof.cl_int * cloneData.length, ptrClone, null);
+		cl_mem memMask = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
+				Sizeof.cl_float * maskData.length, ptrMask, null);
+		//TODO: I think this may be changed to float later.
+		cl_mem memResult = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
+				Sizeof.cl_int * result.length, ptrResult, null);
+		
+		cl_mem[] objects = {memScene, memClone, memMask, memResult};
+		cl_kernel kernel = CL.clCreateKernel(program, "intial_guess", null);
+		setKernelArgs(objects, kernel);
+		
+		long startTime = System.nanoTime();
+		CL.clEnqueueNDRangeKernel(commandQueue, kernel, 1, null,
+				globalWorkSize, localWorkSize, 
+				0, null, null);
+		long endTime = System.nanoTime();
+		TIME += endTime - startTime;
+		
+	
+		
+		CL.clEnqueueReadBuffer(commandQueue, memResult, 
+				CL.CL_TRUE, 0, result.length * Sizeof.cl_float,
+				ptrResult, 0, null, null);
+		
+		
+		releaseMemObject(objects);
 	}
 	
 	

@@ -1,3 +1,26 @@
+__kernel void intial_guess(__global const int * scene, __global const int * clone, __global const float * mask, __global int * result){
+int INTERIOR = 0;
+int EXTERIOR = 1;
+int BORDER = 2;
+
+int group_id = get_group_id(0);
+int group_size   = get_local_size(0);
+int local_number = get_local_id(0);
+
+int i = (group_id * group_size) + local_number;
+
+int maskValue = mask[i];
+
+if(maskValue != INTERIOR){
+	result[i] = scene[i];
+}
+else{
+	result[i] = clone[i];
+}
+
+}
+
+
 __kernel void generate_mask(__global const int * dimensions, __global const float * alpha, __global float * mask){
 int INTERIOR = 0;
 int EXTERIOR = 1;
@@ -34,10 +57,10 @@ if(currentAlpha == 0.0){
 }
 else{
 	
-	float north = -7;
-	float south = -7;
-	float east = -7;
-	float west = -7;
+	float north = -3.14;
+	float south = -3.14;
+	float east = -3.14;
+	float west = -3.14;
 	
 	if(northAdjust >= 0){
 		north = alpha[northIndex];

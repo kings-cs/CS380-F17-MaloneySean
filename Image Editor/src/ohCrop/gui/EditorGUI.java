@@ -42,6 +42,7 @@ import ohCrop.editingAlgorithms.HistogramEqualizationParallel;
 import ohCrop.editingAlgorithms.TransformationParallel;
 import ohCrop.editingAlgorithms.MosaicParallel;
 import ohCrop.editingAlgorithms.RedEyeParallel;
+import ohCrop.editingAlgorithms.SeamlessCloneParallel;
 import ohCrop.editingAlgorithms.SepiaParallel;
 import ohCrop.editingAlgorithms.Sepia;
 import ohCrop.utilAlgorithms.ParallelSetUp;
@@ -1116,7 +1117,28 @@ public class EditorGUI extends JFrame{
 				}
 			}
 			else if(action.getSource() == cloneParallel) {
-				//TODO: FILL THIS OUT
+				changeMade = true;
+				double preEditZoom = zoomAmount;
+				
+				JOptionPane.showMessageDialog(null, "Select Clone Location", "Choose Clone File", 
+						JOptionPane.INFORMATION_MESSAGE);
+				BufferedImage clone = templatePrompt();
+				
+				if(clone != null) {
+					
+					BufferedImage cloneMerged =  SeamlessCloneParallel.seamlessClone(parallelControl.getContext(),
+							parallelControl.getCommandQueue(), parallelControl.getDevice(), 
+							preZoomImage, clone);
+
+
+					preZoomImage = cloneMerged;
+
+					paintImage(cloneMerged);
+
+
+					setZoom(preEditZoom * 100);
+				
+				}
 			}
 			else if(action.getSource() == flipHorizontal) {
 				changeMade = true;
