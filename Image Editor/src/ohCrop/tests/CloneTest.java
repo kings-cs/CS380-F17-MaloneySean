@@ -117,7 +117,7 @@ public class CloneTest  extends ParallelAlgorithm{
 	@Test
 	public void runClone() {
 
-		SeamlessCloneParallel.seamlessClone(context, commandQueue, device, scene, clone);
+		SeamlessCloneParallel.seamlessClone(context, commandQueue, device, scene, clone, 1);
 	}
 
 }

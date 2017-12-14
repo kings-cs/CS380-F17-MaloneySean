@@ -1128,7 +1128,7 @@ public class EditorGUI extends JFrame{
 					
 					BufferedImage cloneMerged =  SeamlessCloneParallel.seamlessClone(parallelControl.getContext(),
 							parallelControl.getCommandQueue(), parallelControl.getDevice(), 
-							preZoomImage, clone);
+							preZoomImage, clone, 1);
 
 
 					preZoomImage = cloneMerged;

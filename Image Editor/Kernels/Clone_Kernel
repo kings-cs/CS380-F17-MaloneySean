@@ -52,6 +52,9 @@ float currentCloneRed = redClone[i];
 float currentCloneGreen = greenClone[i];
 float currentCloneBlue = blueClone[i];
 
+float redValue = 0; 
+float greenValue = 0;
+float blueValue = 0;
 
 if(mask[i] == INTERIOR){
 	if(northAdjust >= 0){
@@ -191,11 +194,20 @@ if(mask[i] == INTERIOR){
 		neighborCount++;
 	}
 	
-	redResult[i] = (redA + redB + redC) / neighborCount;
-	greenResult[i] = (greenA + greenB + greenC) / neighborCount;
-	blueResult[i] = (blueA + blueB + blueC) / neighborCount;
+	redValue = (redA + redB + redC) / neighborCount;
+	greenValue = (greenA + greenB + greenC) / neighborCount;
+	blueValue = (blueA + blueB + blueC) / neighborCount;
 
 }
+else{
+	redValue = redMerged[i];
+	greenValue = greenMerged[i];
+	blueValue = blueMerged[i];
+}	
+
+redResult[i] = redValue;
+greenResult[i] = greenValue;
+blueResult[i] = blueValue;
 
 }
 
@@ -315,6 +327,27 @@ int red = (int) redChannel[i];
 int green = (int) greenChannel[i];
 int blue = (int) blueChannel[i];
 int alpha = (int) alphaChannel[i];
+
+if(red > 255){
+	red = 255;
+}
+else if(red < 0){
+	red = 0;
+}
+
+if(green > 255){
+	green = 255;
+}
+else if(green < 0){
+	green = 0;
+}
+
+if(blue > 255){
+	blue = 255;
+}
+else if(blue < 0){
+	blue = 0;
+}
 
 int newPixel = (alpha << ALPHA_OFFSET) | (red << RED_OFFSET) |
 						(green << GREEN_OFFSET) | (blue << BLUE_OFFSET);

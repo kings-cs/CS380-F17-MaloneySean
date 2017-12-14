@@ -34,9 +34,10 @@ public class SeamlessCloneParallel extends ParallelAlgorithm {
 	 * @param device The openCL device. 
 	 * @param scene The openCL scene.
 	 * @param clone The openCL clones.
+	 * @param iterations The amount of iterations to run. 
 	 * @return The combined image.
 	 */
-	public static BufferedImage seamlessClone(cl_context context, cl_command_queue commandQueue, cl_device_id device, BufferedImage scene, BufferedImage clone) {
+	public static BufferedImage seamlessClone(cl_context context, cl_command_queue commandQueue, cl_device_id device, BufferedImage scene, BufferedImage clone, int iterations) {
 		TIME = 0;
 		
 		BufferedImage result = null;
@@ -88,11 +89,9 @@ public class SeamlessCloneParallel extends ParallelAlgorithm {
 		
 		
 		
-		
-		
-		
 		int[] resultData = new int[sceneData.length];
-		float[][] finalChannels = {resultChannels[0], resultChannels[1], resultChannels[2], alphaSceneChannel};
+		//float[][] finalChannels = {resultChannels[0], resultChannels[1], resultChannels[2], alphaSceneChannel};
+		float[][] finalChannels = {redMergedChannel, greenMergedChannel, blueMergedChannel, alphaSceneChannel};
 		convertToInt(finalChannels, resultData, context, commandQueue, device, program);
 		
 		
