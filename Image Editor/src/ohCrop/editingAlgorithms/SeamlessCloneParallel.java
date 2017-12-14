@@ -58,10 +58,8 @@ public class SeamlessCloneParallel extends ParallelAlgorithm {
 		
 		int[] sceneData = strip(scene);
 		
-		//TODO: Initial probably shouldnt be a float and this will not be the final wrap up step.
-		int[] initial = new int[sceneData.length];
+		float[] initial = new float[sceneData.length];
 		initialGuess(sceneData, cloneData, mask, initial, context, commandQueue, device, program);
-		result = wrapUp(initial, scene);
 		
 		CL.clReleaseProgram(program);
 		
@@ -71,6 +69,10 @@ public class SeamlessCloneParallel extends ParallelAlgorithm {
 		return result;
 	}
 	
+	
+	private static void improveClone() {
+		
+	}
 	
 	/**
 	 * Makes the initial guess.
@@ -84,7 +86,7 @@ public class SeamlessCloneParallel extends ParallelAlgorithm {
 	 * @param device The OpenCL device.
 	 * @param program The OpenCL program.
 	 */
-	private static void initialGuess(int[] sceneData, int[] cloneData, float[] maskData, int[] result, cl_context context, cl_command_queue commandQueue, cl_device_id device, cl_program program) {
+	private static void initialGuess(int[] sceneData, int[] cloneData, float[] maskData, float[] result, cl_context context, cl_command_queue commandQueue, cl_device_id device, cl_program program) {
 		int globalSize = sceneData.length;
 		int localSize = calculateLocalSize(globalSize, device);
 		
@@ -102,9 +104,8 @@ public class SeamlessCloneParallel extends ParallelAlgorithm {
 				Sizeof.cl_int * cloneData.length, ptrClone, null);
 		cl_mem memMask = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
 				Sizeof.cl_float * maskData.length, ptrMask, null);
-		//TODO: I think this may be changed to float later.
 		cl_mem memResult = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
-				Sizeof.cl_int * result.length, ptrResult, null);
+				Sizeof.cl_float * result.length, ptrResult, null);
 		
 		cl_mem[] objects = {memScene, memClone, memMask, memResult};
 		cl_kernel kernel = CL.clCreateKernel(program, "intial_guess", null);
