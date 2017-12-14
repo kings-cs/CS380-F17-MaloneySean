@@ -51,7 +51,6 @@ public class SeamlessCloneParallel extends ParallelAlgorithm {
 		
 		convertChannelsToFloats(cloneData, redCloneChannel, blueCloneChannel, greenCloneChannel, alphaCloneChannel, context, commandQueue, device, program);
 		
-		//TODO: I think the mask can be of type int.
 		int[] mask = new int[cloneData.length];
 		int[] cloneDimensions = {clone.getHeight(), clone.getWidth()};
 		findMaskValues(cloneDimensions, alphaCloneChannel, mask, context, commandQueue, device, program);
@@ -64,15 +63,15 @@ public class SeamlessCloneParallel extends ParallelAlgorithm {
 		
 		
 		float[] previousIteration = initial;
-		//float[] finalData = new float[sceneData.length];
-		float[] finalData = initial;
+		float[] finalData = new float[sceneData.length];
+		//float[] finalData = initial;
 		
-		//improveClone(cloneDimensions, sceneData, cloneData, mask, previousIteration, finalData, context, commandQueue, device, program);
+		improveClone(cloneDimensions, sceneData, cloneData, mask, previousIteration, finalData, context, commandQueue, device, program);
 		
 		
 		
 		int[] resultData = new int[sceneData.length];
-		//TODO: Is this actually necessary or should it just be getting passed as an int anyway?
+		//TODO: Is this actually necessary or should it just be getting passed as an int from the initial guess anyway?
 		convertToInt(finalData, resultData, context, commandQueue, device, program);
 		
 		
@@ -100,7 +99,7 @@ public class SeamlessCloneParallel extends ParallelAlgorithm {
 	 * @param device The OpenCL device.
 	 * @param program The OpenCL program.
 	 */
-	private static void improveClone(int[] dimensions, int[] sceneData, int[] cloneData, float[] mask, float[] mergedData, float[] resultData, cl_context context, cl_command_queue commandQueue, cl_device_id device, cl_program program) {
+	private static void improveClone(int[] dimensions, int[] sceneData, int[] cloneData, int[] mask, float[] mergedData, float[] resultData, cl_context context, cl_command_queue commandQueue, cl_device_id device, cl_program program) {
 		int globalSize = sceneData.length;
 		int localSize = calculateLocalSize(globalSize, device);
 		
@@ -121,7 +120,7 @@ public class SeamlessCloneParallel extends ParallelAlgorithm {
 		cl_mem memClone = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
 				Sizeof.cl_int * cloneData.length, ptrClone, null);
 		cl_mem memMask = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
-				Sizeof.cl_float * mask.length, ptrMask, null);
+				Sizeof.cl_int * mask.length, ptrMask, null);
 		cl_mem memMerged = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
 				Sizeof.cl_float * mergedData.length, ptrMerged, null);
 		cl_mem memResult = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
