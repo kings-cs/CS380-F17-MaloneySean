@@ -13,6 +13,7 @@ Last Updated: 09/14/2017
 4. Timing
 5. Limitations
 6. Testing
+7. Histogram Equalization
 
 
 **************************
@@ -80,6 +81,8 @@ once the project has been imported into a workspace.
    Histogram Equalization (Atomic Parallel): Performs a Histogram Equalization on a blurry image, computed in parallel and uses atomic operations in the computation of the Histogram.   
    
    Red Eye Removal (Parallel): Removes red eyes from an image based on a template chosen by the user which they are prompted to enter. Additionally, the user will be prompted to enter the number of red eyes to be removed from the image.
+   
+   Seamless Clone (Parallel): Plcaes a smaller image chosen by the user into the currently opened image in a way that looks natural. 
       
    A separate panel at the bottom of the main window contains additional zoom controls and a device selector. Here, the current level of zoom is displayed and to the 
    left of this text are buttons labeled as + and -. The + will zoom in the picture by 10% and the - will zoom out by 10%. If the current level of
@@ -327,3 +330,6 @@ Utility Algorithm Timing:
 	Test classes can be found in the ohCrop.tests pacakage.
 		Tests for Blelloch Scan are in the ScanTest class.
 		Tests for Radix Sort are in the SortTest class.
+		
+7. Histogram Optimization
+   The Histogram Equalization algorithm is optimized in order to remove the use of atomic operations. This is done by calculating multiple smaller histograms in the local memory of a work group. These local histograms are then coalesced into a global array and summed together in order to obtain the final result. 
