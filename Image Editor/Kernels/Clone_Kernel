@@ -205,14 +205,19 @@ else{
 	blueValue = blueMerged[i];
 }	
 
-redResult[i] = redValue;
-greenResult[i] = greenValue;
-blueResult[i] = blueValue;
+//redResult[i] = redValue;
+//greenResult[i] = greenValue;
+//blueResult[i] = blueValue;
+
+redResult[i] = redMerged[i];
+greenResult[i] = greenMerged[i];
+blueResult[i] = blueMerged[i];
+
 
 }
 
 
-__kernel void intial_guess(__global const int * scene, __global const int * clone, __global const int * mask, __global float * result){
+__kernel void intial_guess(__global const int * scene, __global const int * clone, __global const int * mask, __global int * result){
 int INTERIOR = 0;
 int EXTERIOR = 1;
 int BORDER = 2;

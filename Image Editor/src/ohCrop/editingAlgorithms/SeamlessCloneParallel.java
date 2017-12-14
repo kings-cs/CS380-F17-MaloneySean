@@ -38,6 +38,10 @@ public class SeamlessCloneParallel extends ParallelAlgorithm {
 	 * @return The combined image.
 	 */
 	public static BufferedImage seamlessClone(cl_context context, cl_command_queue commandQueue, cl_device_id device, BufferedImage scene, BufferedImage clone, int iterations) {
+
+
+		
+		
 		TIME = 0;
 		
 		BufferedImage result = null;
@@ -50,8 +54,8 @@ public class SeamlessCloneParallel extends ParallelAlgorithm {
 		float[] blueCloneChannel = new float[cloneData.length];
 		float[] alphaCloneChannel = new float[cloneData.length];
 		
-		
 		convertChannelsToFloats(cloneData, redCloneChannel, blueCloneChannel, greenCloneChannel, alphaCloneChannel, context, commandQueue, device, program);
+		
 		
 		int[] mask = new int[cloneData.length];
 		int[] cloneDimensions = {clone.getHeight(), clone.getWidth()};
@@ -64,10 +68,9 @@ public class SeamlessCloneParallel extends ParallelAlgorithm {
 		float[] alphaSceneChannel = new float[sceneData.length];
 		convertChannelsToFloats(sceneData, redSceneChannel, blueSceneChannel, greenSceneChannel, alphaSceneChannel, context, commandQueue, device, program);
 		
+		//TODO: Initial probably shouldnt be a float and this will not be the final wrap up step.
 		int[] initial = new int[sceneData.length];
 		initialGuess(sceneData, cloneData, mask, initial, context, commandQueue, device, program);
-		
-		
 		
 		int[] previousIteration = initial;
 		float[] redMergedChannel = new float[sceneData.length];
@@ -75,8 +78,7 @@ public class SeamlessCloneParallel extends ParallelAlgorithm {
 		float[] blueMergedChannel = new float[sceneData.length];
 		float[] alphaMergedChannel = new float[sceneData.length];
 		convertChannelsToFloats(previousIteration, redMergedChannel, blueMergedChannel, greenMergedChannel, alphaMergedChannel, context, commandQueue, device, program);
-		//float[] finalData = initial;
-		
+	
 		float[][] cloneChannels = {redCloneChannel, greenCloneChannel, blueCloneChannel};
 		float[][] sceneChannels = {redSceneChannel, greenSceneChannel, blueSceneChannel};
 		float[][] mergedChannels = {redMergedChannel, greenMergedChannel, blueMergedChannel};
@@ -88,21 +90,21 @@ public class SeamlessCloneParallel extends ParallelAlgorithm {
 		improveClone(cloneDimensions, sceneChannels, cloneChannels, mask, mergedChannels, resultChannels, context, commandQueue, device, program);
 		
 		
-		
 		int[] resultData = new int[sceneData.length];
 		//float[][] finalChannels = {resultChannels[0], resultChannels[1], resultChannels[2], alphaSceneChannel};
-		float[][] finalChannels = {redMergedChannel, greenMergedChannel, blueMergedChannel, alphaSceneChannel};
+		float[][] finalChannels = {mergedChannels[0], mergedChannels[1], mergedChannels[2], alphaSceneChannel};
 		convertToInt(finalChannels, resultData, context, commandQueue, device, program);
-		
 		
 		
 		result = wrapUp(resultData, scene);
 		
 		CL.clReleaseProgram(program);
+		
 		double miliSeconds = TIME / 1000000.0;
 		JOptionPane.showMessageDialog(null, "Time Taken: " + miliSeconds + " (ms)");
 		
 		return result;
+		
 	}
 	
 	/**
