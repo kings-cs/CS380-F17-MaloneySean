@@ -205,14 +205,9 @@ else{
 	blueValue = blueMerged[i];
 }	
 
-//redResult[i] = redValue;
-//greenResult[i] = greenValue;
-//blueResult[i] = blueValue;
-
-redResult[i] = redMerged[i];
-greenResult[i] = greenMerged[i];
-blueResult[i] = blueMerged[i];
-
+redResult[i] = redValue;
+greenResult[i] = greenValue;
+blueResult[i] = blueValue;
 
 }
 

@@ -87,12 +87,15 @@ public class SeamlessCloneParallel extends ParallelAlgorithm {
 		float[] greenResultChannel = new float[sceneData.length];
 		float[] blueResultChannel = new float[sceneData.length];
 		float[][] resultChannels = {redResultChannel, greenResultChannel, blueResultChannel};
-		improveClone(cloneDimensions, sceneChannels, cloneChannels, mask, mergedChannels, resultChannels, context, commandQueue, device, program);
 		
+		for(int i = 0; i < iterations; i++) {
+			improveClone(cloneDimensions, sceneChannels, cloneChannels, mask, mergedChannels, resultChannels, context, commandQueue, device, program);
+			mergedChannels = resultChannels;
+		}
 		
 		int[] resultData = new int[sceneData.length];
-		//float[][] finalChannels = {resultChannels[0], resultChannels[1], resultChannels[2], alphaSceneChannel};
-		float[][] finalChannels = {mergedChannels[0], mergedChannels[1], mergedChannels[2], alphaSceneChannel};
+		float[][] finalChannels = {resultChannels[0], resultChannels[1], resultChannels[2], alphaSceneChannel};
+		//float[][] finalChannels = {mergedChannels[0], mergedChannels[1], mergedChannels[2], alphaSceneChannel};
 		convertToInt(finalChannels, resultData, context, commandQueue, device, program);
 		
 		
@@ -223,7 +226,7 @@ public class SeamlessCloneParallel extends ParallelAlgorithm {
 		CL.clEnqueueReadBuffer(commandQueue, memGreenResult, 
 				CL.CL_TRUE, 0, greenResultChannel.length * Sizeof.cl_float,
 				ptrGreenResult, 0, null, null);
-		CL.clEnqueueReadBuffer(commandQueue, memRedResult, 
+		CL.clEnqueueReadBuffer(commandQueue, memBlueResult, 
 				CL.CL_TRUE, 0, blueResultChannel.length * Sizeof.cl_float,
 				ptrBlueResult, 0, null, null);
 		

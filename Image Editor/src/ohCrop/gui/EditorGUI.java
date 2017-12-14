@@ -1126,9 +1126,25 @@ public class EditorGUI extends JFrame{
 				
 				if(clone != null) {
 					
+					int iterations = 10;
+
+
+
+					try {
+						iterations = Integer.parseInt(JOptionPane.showInputDialog("Enter Number of Seam Improvement Iterations: ", 0));
+
+					} catch (NumberFormatException e) {
+						JOptionPane.showMessageDialog(null, "Only Numeric Characters May Be Entered, Setting Count to 10");
+					}
+
+					if(iterations <= 0) {
+						JOptionPane.showMessageDialog(null, "Iteration Count Must Be Greater Than 0, Setting Count to 10");
+					}
+					
+					
 					BufferedImage cloneMerged =  SeamlessCloneParallel.seamlessClone(parallelControl.getContext(),
 							parallelControl.getCommandQueue(), parallelControl.getDevice(), 
-							preZoomImage, clone, 1);
+							preZoomImage, clone, iterations);
 
 
 					preZoomImage = cloneMerged;
