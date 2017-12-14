@@ -51,7 +51,7 @@ public class SeamlessCloneParallel extends ParallelAlgorithm {
 		
 		convertChannelsToFloats(cloneData, redCloneChannel, blueCloneChannel, greenCloneChannel, alphaCloneChannel, context, commandQueue, device, program);
 		
-		
+		//TODO: I think the mask can be of type int.
 		float[] mask = new float[cloneData.length];
 		int[] cloneDimensions = {clone.getHeight(), clone.getWidth()};
 		findMaskValues(cloneDimensions, alphaCloneChannel, mask, context, commandQueue, device, program);
@@ -63,9 +63,16 @@ public class SeamlessCloneParallel extends ParallelAlgorithm {
 		
 		
 		
+		float[] previousIteration = initial;
+		float[] finalData = new float[sceneData.length];
 		
-		float[] finalData = initial;
+		
+		improveClone(cloneDimensions, sceneData, cloneData, mask, previousIteration, finalData, context, commandQueue, device, program);
+		
+		
+		
 		int[] resultData = new int[sceneData.length];
+		//TODO: Is this actually necessary or should it just be getting passed as an int anyway?
 		convertToInt(finalData, resultData, context, commandQueue, device, program);
 		
 		
@@ -82,9 +89,64 @@ public class SeamlessCloneParallel extends ParallelAlgorithm {
 	/**
 	 * Iteratively improves the clone.
 	 * 
+	 * @param dimensions The dimensions of the image.
+	 * @param sceneData The scene raster.
+	 * @param cloneData The clone raster.
+	 * @param mask The mask data.
+	 * @param mergedData The data from the previous iteration of merging the scene and clone.
+	 * @param resultData The resulting data.
+	 * @param context The OpenCL context.
+	 * @param commandQueue The OpenCL command queue.
+	 * @param device The OpenCL device.
+	 * @param program The OpenCL program.
 	 */
-	private static void improveClone() {
+	private static void improveClone(int[] dimensions, int[] sceneData, int[] cloneData, float[] mask, float[] mergedData, float[] resultData, cl_context context, cl_command_queue commandQueue, cl_device_id device, cl_program program) {
+		int globalSize = sceneData.length;
+		int localSize = calculateLocalSize(globalSize, device);
 		
+		long[] globalWorkSize = new long[] {globalSize};
+		long[] localWorkSize = new long[] {localSize};
+		
+		Pointer ptrDimensions = Pointer.to(dimensions);
+		Pointer ptrScene = Pointer.to(sceneData);
+		Pointer ptrClone = Pointer.to(cloneData);
+		Pointer ptrMask = Pointer.to(mask);
+		Pointer ptrMerged = Pointer.to(mergedData);
+		Pointer ptrResult = Pointer.to(resultData);
+		
+		cl_mem memDimensions = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
+				Sizeof.cl_int * dimensions.length, ptrDimensions, null);
+		cl_mem memScene =  CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
+				Sizeof.cl_int * sceneData.length, ptrScene, null);
+		cl_mem memClone = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
+				Sizeof.cl_int * cloneData.length, ptrClone, null);
+		cl_mem memMask = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
+				Sizeof.cl_float * mask.length, ptrMask, null);
+		cl_mem memMerged = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
+				Sizeof.cl_float * mergedData.length, ptrMerged, null);
+		cl_mem memResult = CL.clCreateBuffer(context, CL.CL_MEM_READ_ONLY | CL.CL_MEM_COPY_HOST_PTR, 
+				Sizeof.cl_float * resultData.length, ptrResult, null);
+		
+		
+		cl_mem[] objects = {memDimensions, memScene, memClone, memMask, memMerged, memResult};
+		cl_kernel kernel = CL.clCreateKernel(program, "improve_clone", null);
+		setKernelArgs(objects, kernel);
+		
+		long startTime = System.nanoTime();
+		CL.clEnqueueNDRangeKernel(commandQueue, kernel, 1, null,
+				globalWorkSize, localWorkSize, 
+				0, null, null);
+		long endTime = System.nanoTime();
+		TIME += endTime - startTime;
+		
+	
+		
+		CL.clEnqueueReadBuffer(commandQueue, memResult, 
+				CL.CL_TRUE, 0, resultData.length * Sizeof.cl_float,
+				ptrResult, 0, null, null);
+		
+		
+		releaseMemObject(objects);
 	}
 	
 	/**
