@@ -1,0 +1,45 @@
+__kernel void generate_mask(__global const float * alpha, __global float * mask){
+int INTERIOR = 0;
+
+}
+
+
+
+
+
+
+
+
+__kernel void seperate_channels(__global const int * data, __global  * redData, __global float * blueData, __global float * greenData, __global float * alphaData){
+int ALPHA_MASK = 0xff000000;
+int ALPHA_OFFSET = 24;
+int RED_MASK = 0x00ff0000;
+int RED_OFFSET = 16;
+int GREEN_MASK = 0x0000ff00;
+int GREEN_OFFSET = 8;
+int BLUE_MASK = 0x000000ff;
+int BLUE_OFFSET = 0;
+
+
+int group_id = get_group_id(0);
+int group_size   = get_local_size(0);
+int local_number = get_local_id(0);
+
+int i = (group_id * group_size) + local_number;
+
+
+int pixel = data[i];
+
+int red = (pixel & RED_MASK) >> RED_OFFSET;
+int green = (pixel & GREEN_MASK) >> GREEN_OFFSET;
+int blue = (pixel & BLUE_MASK) >> BLUE_OFFSET;
+int alpha = (pixel & ALPHA_MASK) >> ALPHA_OFFSET;
+
+redData[i] = (float) red;
+blueData[i] = (float) blue;
+greenData[i] = (float) green;
+alphaData[i] = (float) alpha;
+
+
+
+}
