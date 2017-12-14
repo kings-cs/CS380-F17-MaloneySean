@@ -78,7 +78,7 @@ else{
 		west = alpha[westIndex];
 	}
 	
-	if(north == 0.0 || south == 0.0 || east == 0.0 || west == 0.0){
+	if(north != 0.0 && south != 0.0 && east != 0.0 && west != 0.0){
 		mask[i] = INTERIOR;
 	}
 	else{
