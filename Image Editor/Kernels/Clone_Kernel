@@ -1,4 +1,4 @@
-__kernel void improve_clone(__global const int * dimensions, __global const int * scene, __global const int * clone, __global const float * mask, __global const float * merged_data, __global float * result){
+__kernel void improve_clone(__global const int * dimensions, __global const int * scene, __global const int * clone, __global const int * mask, __global const float * merged_data, __global float * result){
 int INTERIOR = 0;
 int EXTERIOR = 1;
 int BORDER = 2;
@@ -39,7 +39,7 @@ int currentClone = clone[i];
 if(mask[i] == INTERIOR){
 	if(northAdjust >= 0){
 		float mergedNorth = merged_data[northIndex];
-		float northMask = mask[northIndex]; 
+		int northMask = mask[northIndex]; 
 		int sceneNorth = scene[northIndex];
 		int cloneNorth = clone[northIndex];
 		
@@ -57,7 +57,7 @@ if(mask[i] == INTERIOR){
 		
 	if(southAdjust < height){
 		float mergedSouth = merged_data[southIndex];
-		float southMask = mask[southIndex];
+		int southMask = mask[southIndex];
 		int sceneSouth = scene[southIndex];
 		int cloneSouth = clone[southIndex];
 		
@@ -75,7 +75,7 @@ if(mask[i] == INTERIOR){
 		
 	if(eastAdjust < width){
 		float mergedEast = merged_data[eastIndex];
-		float eastMask = mask[eastIndex];
+		int eastMask = mask[eastIndex];
 		int sceneEast = scene[eastIndex];
 		int cloneEast = clone[eastIndex];
 		
@@ -93,7 +93,7 @@ if(mask[i] == INTERIOR){
 		
 	if(westAdjust >= 0){
 		float mergedWest = merged_data[westIndex];
-		float westMask = mask[westIndex];
+		int westMask = mask[westIndex];
 		int sceneWest = scene[westIndex];
 		int cloneWest = clone[westIndex];
 		
@@ -116,7 +116,7 @@ if(mask[i] == INTERIOR){
 }
 
 
-__kernel void intial_guess(__global const int * scene, __global const int * clone, __global const float * mask, __global float * result){
+__kernel void intial_guess(__global const int * scene, __global const int * clone, __global const int * mask, __global float * result){
 int INTERIOR = 0;
 int EXTERIOR = 1;
 int BORDER = 2;
@@ -139,7 +139,7 @@ else{
 }
 
 
-__kernel void generate_mask(__global const int * dimensions, __global const float * alpha, __global float * mask){
+__kernel void generate_mask(__global const int * dimensions, __global const float * alpha, __global int * mask){
 int INTERIOR = 0;
 int EXTERIOR = 1;
 int BORDER = 2;
