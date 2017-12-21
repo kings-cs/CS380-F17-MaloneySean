@@ -2,7 +2,7 @@
 Oh Crop Image Editor
 
 Author: Sean Maloney
-Last Updated: 09/14/2017
+Last Updated: 12/14/2017
 
 
    *Table Of Contents*
