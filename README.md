@@ -331,6 +331,7 @@ Utility Algorithm Timing:
 </table>
 	
 5. Current Limitations: May not function for file formats not explicitly listed. Histogram Equalization only works on grayscale images.
+Something is wrong with the timing being reported by Radix Sort (and hence algorithms that rely on Radix).
 
 6. Testing:
 	Test classes can be found in the ohCrop.tests pacakage.
